@@ -8,6 +8,8 @@ let noteMinutes = 60;
 let nowPlaying = normalizeNowPlaying();
 let musicConnected = false;
 let tvLinked = false;
+let tvOnline = false;
+let tvPower = "on";
 const notice = document.querySelector("#notice");
 const initData = telegram?.initData || "";
 
@@ -68,6 +70,12 @@ function paint() {
   document.querySelector("#addNote").hidden = hasNote;
   document.querySelector("#noteCard").hidden = !hasNote;
   document.querySelector("#notePreview").textContent = currentNote?.text || "";
+  const status = document.querySelector("#tvStatus");
+  const state = document.querySelector("#tvState");
+  const power = document.querySelector("#tvPower");
+  status.classList.toggle("online", tvOnline);
+  state.textContent = tvOnline ? "на экране" : tvPower === "off" ? "выключен" : "не на связи";
+  power.textContent = tvOnline ? "Выкл" : "Вкл";
   paintMusic();
 }
 
@@ -98,12 +106,16 @@ function applyState(data) {
   if ("nowPlaying" in data) nowPlaying = normalizeNowPlaying(data.nowPlaying);
   if (data.music) musicConnected = data.music.connected === true;
   if (data.tvLinked !== undefined) tvLinked = Boolean(data.tvLinked);
+  if ("tvOnline" in data) tvOnline = data.tvOnline === true;
+  if (data.tvPower === "on" || data.tvPower === "off") tvPower = data.tvPower;
   paint();
   if (data.connectedCalendars) showCalendarWarning(data.connectedCalendars);
 }
 
 async function save(patch, successText = "") {
   const keepNoteUi = Boolean(patch.note || patch.clearNote);
+  if (patch.tvPower === "off") tvOnline = false;
+  if (patch.tvPower === "on" || patch.tvPower === "off") tvPower = patch.tvPower;
   if (!keepNoteUi) {
     display = normalizeDisplay({ ...display, ...patch });
     paint();
@@ -234,6 +246,7 @@ document.querySelector("#noteForm").addEventListener("submit", async (event) => 
   if (await save({ note: text, noteMinutes })) closeNoteSheet();
 });
 document.querySelector("#clearNote").addEventListener("click", () => save({ clearNote: true }));
+document.querySelector("#tvPower").addEventListener("click", () => save({ tvPower: tvOnline ? "off" : "on" }));
 document.querySelector("#clearBackground").addEventListener("click", () => save({ clearBackground: true }, "Обои сброшены"));
 document.querySelector("#reloadTv").addEventListener("click", async () => {
   try {
@@ -291,7 +304,5 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
 load();
 setInterval(() => {
   if (!initData) return;
-  const musicOpen = !document.querySelector("#pane-music").hidden;
-  if (!musicOpen) return;
   request("/v1/miniapp/state").then(applyState).catch(() => {});
 }, 2000);

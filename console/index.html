@@ -16,6 +16,10 @@
     <main class="remote">
       <header>
         <strong>Dino TV</strong>
+        <div class="tv-status" id="tvStatus">
+          <span><i></i><span id="tvState">не на связи</span></span>
+          <button type="button" id="tvPower">Вкл</button>
+        </div>
       </header>
 
       <section id="pane-screen" class="pane">
@@ -27,12 +31,18 @@
 
         <div class="themes" role="group" aria-label="Сцена">
           <button class="gallery" data-scene="gallery"><i></i><span>Галерея</span></button>
+          <button class="home-day" data-scene="home-day"><i></i><span>Дом · День</span></button>
+          <button class="home-evening" data-scene="home-evening"><i></i><span>Дом · Вечер</span></button>
           <button class="night" data-scene="night"><i></i><span>Ночь</span></button>
           <button class="play" data-scene="play"><i></i><span>Шалость</span></button>
           <button class="forest" data-scene="forest"><i></i><span>Лес</span></button>
           <button class="mountains" data-scene="mountains"><i></i><span>Горы</span></button>
           <button class="sea" data-scene="sea"><i></i><span>Море</span></button>
           <button class="space" data-scene="space"><i></i><span>Космос</span></button>
+          <button class="petersburg" data-scene="petersburg"><i></i><span>Петербург</span></button>
+          <button class="rome" data-scene="rome"><i></i><span>Рим</span></button>
+          <button class="florence" data-scene="florence"><i></i><span>Флоренция</span></button>
+          <button class="venice" data-scene="venice"><i></i><span>Венеция</span></button>
         </div>
 
         <div class="guests" role="group" aria-label="Гости">

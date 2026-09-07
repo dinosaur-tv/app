@@ -8,12 +8,27 @@
   --line: rgba(90, 71, 55, .55);
   --selected: #2d261f;
   --glow: rgba(127, 52, 55, .28);
-  --font: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, ui-sans-serif, system-ui, sans-serif;
   --serif: "Iowan Old Style", Palatino, Georgia, serif;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--font); }
 body { position: relative; }
+body.asleep {
+  background: #050505;
+}
+body.asleep #stage,
+body.asleep #photo,
+body.asleep #wash,
+body.asleep #orbs,
+body.asleep #grain,
+body.asleep #sceneBackdrop,
+body.asleep #sceneDecor,
+body.asleep #mediaBar,
+body.asleep #pair {
+  visibility: hidden;
+  opacity: 0;
+}
 #sceneBackdrop {
   position: absolute;
   inset: -2.5%;
@@ -315,20 +330,20 @@ body[data-theme="gallery"] #mediaBar { background: rgba(16,15,13,.94); }
 #sceneDecor { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
 #sceneDecor i { position: absolute; display: none; }
 
-body:is([data-theme="night"], [data-theme="play"], [data-theme="forest"], [data-theme="mountains"], [data-theme="sea"], [data-theme="space"]) #stage {
+body.immersive #stage {
   display: block;
   padding: 0;
 }
-body:is([data-theme="night"], [data-theme="play"], [data-theme="forest"], [data-theme="mountains"], [data-theme="sea"], [data-theme="space"]) #screen {
+body.immersive #screen {
   position: absolute;
   z-index: 3;
   overflow: hidden;
 }
-body:is([data-theme="night"], [data-theme="play"], [data-theme="forest"], [data-theme="mountains"], [data-theme="sea"], [data-theme="space"]) .scene-event {
+body.immersive .scene-event {
   animation: eventArrive .7s both cubic-bezier(.2,.8,.2,1);
   animation-delay: calc(var(--event-index) * 70ms);
 }
-body:is([data-theme="night"], [data-theme="play"], [data-theme="forest"], [data-theme="mountains"], [data-theme="sea"], [data-theme="space"]) #note {
+body.immersive #note {
   position: absolute;
   z-index: 5;
   left: 4.5%;
@@ -337,7 +352,7 @@ body:is([data-theme="night"], [data-theme="play"], [data-theme="forest"], [data-
   margin: 0;
   backdrop-filter: blur(18px);
 }
-body:is([data-theme="night"], [data-theme="play"], [data-theme="forest"], [data-theme="mountains"], [data-theme="sea"], [data-theme="space"]):not(.has-media) #note { bottom: 4%; }
+body.immersive:not(.has-media) #note { bottom: 4%; }
 
 @keyframes eventArrive { from { opacity: 0; transform: translate3d(0, .8rem, 0); } to { opacity: 1; transform: none; } }
 @keyframes slowZoom { from { transform: scale(1.025); } to { transform: scale(1.085) translate3d(-.7%, -.4%, 0); } }
@@ -349,6 +364,14 @@ body:is([data-theme="night"], [data-theme="play"], [data-theme="forest"], [data-
 @keyframes waveRoll { from { transform: translate3d(-4%,0,0) rotate(-1deg); } to { transform: translate3d(4%,.7rem,0) rotate(1deg); } }
 @keyframes orbit { to { transform: rotate(360deg); } }
 @keyframes nebulaMove { from { transform: scale(1.03) translate3d(0,0,0); } to { transform: scale(1.09) translate3d(-1.2%,.4%,0); } }
+@keyframes cloudSail { from { transform: translate3d(-18vw,0,0) scale(1); opacity: 0; } 18%,76% { opacity: .22; } to { transform: translate3d(118vw,-1.2rem,0) scale(1.16); opacity: 0; } }
+@keyframes forestLeaf { from { transform: translate3d(-10vw,-4vh,0) rotate(0); opacity: 0; } 12%,84% { opacity: .58; } to { transform: translate3d(112vw,22vh,0) rotate(540deg); opacity: 0; } }
+@keyframes shootingStar { 0%,72% { transform: translate3d(0,0,0) rotate(-24deg) scaleX(.1); opacity: 0; } 74% { opacity: .85; } 82%,100% { transform: translate3d(-42vw,31vh,0) rotate(-24deg) scaleX(1); opacity: 0; } }
+@keyframes waterSheen { from { transform: translate3d(-4%,0,0) scaleX(1.04); opacity: .18; } to { transform: translate3d(4%,.55rem,0) scaleX(.96); opacity: .5; } }
+@keyframes curtainLight { from { transform: translate3d(-2%,0,0) skewX(-5deg); opacity: .08; } to { transform: translate3d(4%,0,0) skewX(2deg); opacity: .24; } }
+@keyframes lampBreath { 0%,100% { transform: scale(.88); opacity: .14; } 50% { transform: scale(1.08); opacity: .3; } }
+@keyframes dustFloat { from { transform: translate3d(0,1.5rem,0); opacity: .08; } to { transform: translate3d(1.2rem,-2rem,0); opacity: .55; } }
+@keyframes facadeLight { from { opacity: .2; transform: translate3d(-1%,0,0); } to { opacity: .55; transform: translate3d(1%,0,0); } }
 
 /* Night — a nearly silent clock, a moon and only the essential agenda. */
 body[data-theme="night"] {
@@ -386,6 +409,10 @@ body[data-theme="night"] #sceneDecor i:nth-child(2) { left: 12%; top: 22%; anima
 body[data-theme="night"] #sceneDecor i:nth-child(3) { left: 28%; top: 16%; animation-delay: -4s; }
 body[data-theme="night"] #sceneDecor i:nth-child(4) { right: 32%; top: 38%; animation-delay: -1s; }
 body[data-theme="night"] #sceneDecor i:nth-child(5) { left: 64%; top: 12%; animation-delay: -5s; }
+body[data-theme="night"] #sceneDecor i:nth-child(6) { display: block; left: 82%; top: 13%; width: 11rem; height: 1px; border-radius: 99px; background: linear-gradient(90deg, transparent, rgba(220,232,241,.92)); transform-origin: right center; animation: shootingStar 14s ease-in infinite; }
+body[data-theme="night"] #sceneDecor i:nth-child(6)::before, body[data-theme="night"] #sceneDecor i:nth-child(6)::after { content: ""; position: absolute; width: 7rem; height: 1px; border-radius: 99px; background: linear-gradient(90deg, transparent, rgba(220,232,241,.72)); animation: shootingStar 19s ease-in infinite; }
+body[data-theme="night"] #sceneDecor i:nth-child(6)::before { left: 18vw; top: 16vh; animation-delay: -6s; }
+body[data-theme="night"] #sceneDecor i:nth-child(6)::after { left: -8vw; top: 27vh; animation-delay: -12s; animation-duration: 23s; }
 body[data-theme="night"] #mediaBar { opacity: .58; border-color: rgba(134,146,154,.18); background: rgba(3,4,6,.88); }
 body[data-theme="night"] #note { color: #7b848a; border-color: rgba(134,146,154,.16); background: rgba(3,4,6,.5); }
 
@@ -448,6 +475,9 @@ body[data-theme="forest"] #sceneDecor i:nth-child(-n+3) { display: block; left: 
 body[data-theme="forest"] #sceneDecor i:nth-child(1) { bottom: 18%; }
 body[data-theme="forest"] #sceneDecor i:nth-child(2) { bottom: 33%; animation-delay: -15s; animation-duration: 55s; }
 body[data-theme="forest"] #sceneDecor i:nth-child(3) { top: 31%; animation-delay: -28s; animation-duration: 68s; }
+body[data-theme="forest"] #sceneDecor i:nth-child(n+4) { display: block; left: -6%; top: 20%; width: .7rem; height: 1.1rem; border-radius: 70% 0 70% 0; background: rgba(210,184,105,.72); box-shadow: 16rem 8rem rgba(182,208,128,.38), 38rem -4rem rgba(231,203,116,.3), 61rem 11rem rgba(143,178,105,.36); animation: forestLeaf 34s linear infinite; }
+body[data-theme="forest"] #sceneDecor i:nth-child(5) { top: 46%; animation-delay: -12s; animation-duration: 42s; }
+body[data-theme="forest"] #sceneDecor i:nth-child(6) { top: 67%; animation-delay: -27s; animation-duration: 51s; }
 body[data-theme="forest"] #mediaBar { background: rgba(3,15,10,.88); }
 
 /* Mountains — centered horizon, monumental type and a low panoramic agenda. */
@@ -468,6 +498,9 @@ body[data-theme="mountains"] .scene-event { display: block; min-height: 0; paddi
 body[data-theme="mountains"] .scene-time { display: block; margin-bottom: .6rem; color: #f3d3a6; }
 body[data-theme="mountains"] .scene-title { padding: 0; border: 0; }
 body[data-theme="mountains"] .scene-owner { margin-top: .65rem; }
+body[data-theme="mountains"] #sceneDecor i:nth-child(-n+3) { display: block; left: -20%; top: 22%; width: 24rem; height: 4.8rem; border-radius: 50%; background: rgba(241,244,243,.58); filter: blur(2.4rem); animation: cloudSail 72s linear infinite; }
+body[data-theme="mountains"] #sceneDecor i:nth-child(2) { top: 34%; width: 34rem; animation-delay: -28s; animation-duration: 94s; opacity: .46; }
+body[data-theme="mountains"] #sceneDecor i:nth-child(3) { top: 13%; width: 18rem; animation-delay: -56s; animation-duration: 118s; opacity: .35; }
 body[data-theme="mountains"] #mediaBar { background: rgba(15,21,27,.88); }
 
 /* Sea — floating glass and slow physical wave lines. */
@@ -488,12 +521,15 @@ body[data-theme="sea"] .scene-title { border-color: #82b4c0; }
 body[data-theme="sea"] #sceneDecor i:nth-child(-n+3) { display: block; left: -8%; bottom: 9%; width: 116%; height: 7rem; border-top: 1px solid rgba(205,230,235,.3); border-radius: 50%; animation: waveRoll 18s ease-in-out infinite alternate; }
 body[data-theme="sea"] #sceneDecor i:nth-child(2) { bottom: 13%; opacity: .55; animation-delay: -8s; animation-duration: 24s; }
 body[data-theme="sea"] #sceneDecor i:nth-child(3) { bottom: 18%; opacity: .32; animation-delay: -14s; animation-duration: 31s; }
+body[data-theme="sea"] #sceneDecor i:nth-child(n+4) { display: block; left: -10%; bottom: 30%; width: 120%; height: 2rem; border-top: 1px solid rgba(226,239,242,.22); border-radius: 50%; animation: waterSheen 26s ease-in-out infinite alternate; }
+body[data-theme="sea"] #sceneDecor i:nth-child(5) { bottom: 37%; opacity: .45; animation-delay: -11s; animation-duration: 38s; }
+body[data-theme="sea"] #sceneDecor i:nth-child(6) { bottom: 45%; opacity: .26; animation-delay: -21s; animation-duration: 49s; }
 body[data-theme="sea"] #mediaBar { border-color: rgba(190,217,225,.3); background: rgba(2,17,28,.88); }
 
 /* Space — event capsules arranged beside a slowly turning orbit. */
 body[data-theme="space"] { --bg: #02040b; --ink: #f0effa; --muted: #9ca5c3; --accent: #a98cff; --panel: rgba(14,17,38,.48); --line: rgba(157,170,219,.2); --selected: rgba(127,105,220,.22); --glow: rgba(92,74,189,.28); }
-body[data-theme="space"] #sceneBackdrop { opacity: .92; background-image: url("../assets/scene-space.png"); animation: nebulaMove 145s ease-in-out infinite alternate; }
-body[data-theme="space"] #wash { background: radial-gradient(circle at 72% 56%, transparent 0 16rem, rgba(2,4,11,.2) 38rem), linear-gradient(90deg, rgba(1,3,9,.52), transparent 54%, rgba(1,3,9,.24)); }
+body[data-theme="space"] #sceneBackdrop { opacity: .95; background-image: url("../assets/scene-space.png"); animation: nebulaMove 145s ease-in-out infinite alternate; }
+body[data-theme="space"] #wash { background: radial-gradient(circle at 72% 56%, transparent 0 16rem, rgba(18,20,62,.12) 38rem), linear-gradient(90deg, rgba(7,15,48,.28), transparent 54%, rgba(21,14,55,.16)); }
 body[data-theme="space"] #grain { opacity: .04; }
 body[data-theme="space"] #orbs { display: none; }
 body[data-theme="space"] #top { position: absolute; left: 4.5%; top: 4%; }
@@ -513,6 +549,151 @@ body[data-theme="space"] #sceneDecor i:nth-child(2) { right: 12%; top: 20%; widt
 body[data-theme="space"] #sceneDecor i:nth-child(3) { right: 16%; top: 24%; width: 14rem; height: 14rem; animation-duration: 48s; }
 body[data-theme="space"] #sceneDecor i:nth-child(1)::after, body[data-theme="space"] #sceneDecor i:nth-child(2)::after { content: ""; position: absolute; left: 50%; top: -.3rem; width: .55rem; height: .55rem; border-radius: 50%; background: #cabdff; box-shadow: 0 0 1.4rem #997cf5; }
 body[data-theme="space"] #mediaBar { border-color: rgba(151,164,220,.22); background: rgba(3,4,15,.88); }
+
+/* Home daylight — the actual apartment translated into airy, tactile Apple-like glass. */
+body[data-theme="home-day"] { --bg: #d9c9b2; --ink: #201d19; --muted: #686058; --accent: #8e603f; --panel: rgba(245,239,229,.74); --line: rgba(52,45,38,.18); --selected: rgba(255,251,244,.72); --glow: rgba(255,235,191,.32); color-scheme: light; }
+body[data-theme="home-day"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-home-day.png"); animation: slowZoom 150s ease-in-out infinite alternate; }
+body[data-theme="home-day"] #wash { background: linear-gradient(90deg, rgba(248,241,230,.14), rgba(248,241,230,.04) 48%, rgba(32,27,22,.22)); }
+body[data-theme="home-day"] #grain { opacity: .055; mix-blend-mode: multiply; }
+body[data-theme="home-day"] #orbs { display: none; }
+body[data-theme="home-day"] #top { position: absolute; z-index: 5; right: 4%; top: 4%; }
+body[data-theme="home-day"] #modes button { color: #403a34; background: rgba(248,243,235,.46); backdrop-filter: blur(12px); }
+body[data-theme="home-day"] #modes button.active { background: rgba(31,28,25,.88); color: #fffaf2; }
+body[data-theme="home-day"] #hero { position: absolute; left: 4.5%; top: 10%; display: block; }
+body[data-theme="home-day"] #clock { font: 250 clamp(8.5rem, 13vw, 14rem)/.82 var(--font); letter-spacing: -.085em; color: #211d19; text-shadow: 0 1px rgba(255,255,255,.4); animation: none; }
+body[data-theme="home-day"] .hero-copy { padding: 1.6rem 0 0 .6rem; }
+body[data-theme="home-day"] #dateLine { font: 520 1.08rem var(--font); letter-spacing: .08em; text-transform: uppercase; }
+body[data-theme="home-day"] #weatherLine { color: #4f4943; }
+body[data-theme="home-day"] #screen { right: 3.5%; top: 15%; bottom: 10rem; width: 48%; padding: 2rem 2.3rem; border: 1px solid rgba(255,255,255,.58); border-radius: 2.25rem; background: rgba(244,239,231,.72); backdrop-filter: blur(24px) saturate(1.12); box-shadow: 0 1.4rem 5rem rgba(49,37,26,.18), inset 0 1px rgba(255,255,255,.68); }
+body[data-theme="home-day"]:not(.has-media) #screen { bottom: 5%; }
+body[data-theme="home-day"] .scene-event { padding: 1.05rem 0; border-color: rgba(52,45,38,.14); }
+body[data-theme="home-day"] .scene-title { border-color: #9a6f4e; }
+body[data-theme="home-day"] .scene-time, body[data-theme="home-day"] .scene-title small, body[data-theme="home-day"] .scene-owner { color: #665d55; }
+body[data-theme="home-day"] #sceneDecor i:first-child { display: block; left: 18%; top: -18%; width: 19rem; height: 120%; background: linear-gradient(90deg, transparent, rgba(255,246,211,.48), transparent); filter: blur(2.4rem); transform: skewX(-8deg); animation: curtainLight 38s ease-in-out infinite alternate; }
+body[data-theme="home-day"] #sceneDecor i:nth-child(n+2):nth-child(-n+5) { display: block; top: 36%; width: .22rem; height: .22rem; border-radius: 50%; background: rgba(255,242,192,.8); box-shadow: 8rem 5rem rgba(255,242,192,.45), 17rem -8rem rgba(255,242,192,.34); animation: dustFloat 11s ease-in-out infinite alternate; }
+body[data-theme="home-day"] #sceneDecor i:nth-child(2) { left: 12%; animation-delay: -3s; }
+body[data-theme="home-day"] #sceneDecor i:nth-child(3) { left: 31%; top: 58%; animation-delay: -8s; animation-duration: 16s; }
+body[data-theme="home-day"] #sceneDecor i:nth-child(4) { left: 56%; top: 22%; animation-delay: -11s; animation-duration: 19s; }
+body[data-theme="home-day"] #sceneDecor i:nth-child(5) { left: 74%; top: 49%; animation-delay: -5s; animation-duration: 14s; }
+body[data-theme="home-day"] #mediaBar { --ink: #211e1a; --muted: #6f665d; --line: rgba(42,35,29,.18); border-color: rgba(74,57,42,.22); background: rgba(239,233,224,.9); }
+
+/* Home evening — same room, quieter hierarchy and a breathing chandelier glow. */
+body[data-theme="home-evening"] { --bg: #181411; --ink: #f3eadf; --muted: #b1a79c; --accent: #d1a162; --panel: rgba(25,22,20,.58); --line: rgba(238,220,197,.17); --selected: rgba(219,177,119,.18); --glow: rgba(228,169,93,.25); }
+body[data-theme="home-evening"] #sceneBackdrop { opacity: .96; background-image: url("../assets/scene-home-evening.png"); animation: slowZoom 150s ease-in-out infinite alternate; }
+body[data-theme="home-evening"] #wash { background: linear-gradient(90deg, rgba(10,10,12,.2), transparent 47%, rgba(8,8,10,.46)), linear-gradient(0deg, rgba(8,7,7,.44), transparent 55%); }
+body[data-theme="home-evening"] #orbs { display: none; }
+body[data-theme="home-evening"] #top { position: absolute; left: 4%; top: 4%; }
+body[data-theme="home-evening"] #hero { position: absolute; left: 4.5%; top: 14%; display: block; }
+body[data-theme="home-evening"] #clock { font: 280 clamp(9rem, 14vw, 15rem)/.8 var(--font); letter-spacing: -.08em; text-shadow: 0 1rem 4rem rgba(0,0,0,.32); animation: none; }
+body[data-theme="home-evening"] .hero-copy { padding: 1.8rem 0 0 .7rem; }
+body[data-theme="home-evening"] #dateLine { font: 450 1.15rem var(--font); letter-spacing: .1em; text-transform: uppercase; }
+body[data-theme="home-evening"] #screen { right: 3.8%; top: 8%; bottom: 10rem; width: 46%; padding: 2.2rem 2.5rem; border: 1px solid rgba(255,255,255,.16); border-radius: 2.25rem; background: rgba(18,18,19,.55); backdrop-filter: blur(24px) saturate(1.08); box-shadow: 0 2rem 6rem rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.12); }
+body[data-theme="home-evening"]:not(.has-media) #screen { bottom: 5%; }
+body[data-theme="home-evening"] .scene-event { padding: 1.08rem 0; }
+body[data-theme="home-evening"] #sceneDecor i:first-child { display: block; left: 42%; top: -18%; width: 26rem; height: 26rem; border-radius: 50%; background: radial-gradient(circle, rgba(255,191,101,.72), rgba(255,170,65,.12) 36%, transparent 70%); filter: blur(1.8rem); animation: lampBreath 9s ease-in-out infinite; }
+body[data-theme="home-evening"] #sceneDecor i:nth-child(n+2):nth-child(-n+5) { display: block; width: .2rem; height: .2rem; border-radius: 50%; background: #f4c77f; box-shadow: 7rem 3rem rgba(244,199,127,.38), 14rem -6rem rgba(244,199,127,.3); animation: dustFloat 15s ease-in-out infinite alternate; }
+body[data-theme="home-evening"] #sceneDecor i:nth-child(2) { left: 12%; top: 52%; }
+body[data-theme="home-evening"] #sceneDecor i:nth-child(3) { left: 34%; top: 30%; animation-delay: -7s; }
+body[data-theme="home-evening"] #sceneDecor i:nth-child(4) { left: 68%; top: 48%; animation-delay: -12s; }
+body[data-theme="home-evening"] #sceneDecor i:nth-child(5) { left: 83%; top: 22%; animation-delay: -4s; }
+body[data-theme="home-evening"] #mediaBar { background: rgba(13,12,12,.9); }
+
+/* Petersburg — cool glass, rain-lit granite and slow northern clouds. */
+body[data-theme="petersburg"] { --bg: #172739; --ink: #f3f5f5; --muted: #b8c3cb; --accent: #e2b06e; --panel: rgba(18,39,57,.54); --line: rgba(216,229,235,.2); --selected: rgba(214,227,233,.16); --glow: rgba(112,144,172,.24); }
+body[data-theme="petersburg"] #sceneBackdrop { opacity: .97; background-image: url("../assets/scene-petersburg.png"); animation: mountainPan 150s ease-in-out infinite alternate; }
+body[data-theme="petersburg"] #wash { background: linear-gradient(90deg, rgba(8,22,38,.46), transparent 48%, rgba(8,22,38,.2)), linear-gradient(0deg, rgba(5,16,27,.54), transparent 54%); }
+body[data-theme="petersburg"] #orbs { display: none; }
+body[data-theme="petersburg"] #top { position: absolute; left: 4%; top: 4%; }
+body[data-theme="petersburg"] #hero { position: absolute; left: 4.5%; top: 13%; display: block; }
+body[data-theme="petersburg"] #clock { font: 250 clamp(9rem, 14vw, 15rem)/.8 var(--font); letter-spacing: -.075em; text-shadow: 0 1rem 4rem rgba(4,14,24,.35); animation: none; }
+body[data-theme="petersburg"] .hero-copy { padding: 1.6rem 0 0 .7rem; }
+body[data-theme="petersburg"] #dateLine { font: 520 1rem var(--font); letter-spacing: .16em; text-transform: uppercase; }
+body[data-theme="petersburg"] #screen { right: 3.8%; top: 13%; bottom: 10rem; width: 48%; padding: 2rem 2.4rem; border: 1px solid rgba(226,235,240,.22); border-radius: 2.2rem; background: rgba(16,37,54,.58); backdrop-filter: blur(24px) saturate(1.1); box-shadow: 0 2rem 6rem rgba(3,13,23,.28), inset 0 1px rgba(255,255,255,.14); }
+body[data-theme="petersburg"]:not(.has-media) #screen { bottom: 5%; }
+body[data-theme="petersburg"] .scene-event { padding: 1.08rem 0; }
+body[data-theme="petersburg"] #sceneDecor i:nth-child(-n+3) { display: block; left: -18%; top: 12%; width: 28rem; height: 5rem; border-radius: 50%; background: rgba(225,232,238,.35); filter: blur(2.6rem); animation: cloudSail 86s linear infinite; }
+body[data-theme="petersburg"] #sceneDecor i:nth-child(2) { top: 28%; width: 38rem; animation-delay: -31s; animation-duration: 112s; }
+body[data-theme="petersburg"] #sceneDecor i:nth-child(3) { top: 42%; animation-delay: -69s; animation-duration: 138s; }
+body[data-theme="petersburg"] #sceneDecor i:nth-child(n+4) { display: block; left: 0; bottom: 20%; width: 62%; height: 2rem; border-top: 1px solid rgba(230,195,145,.22); border-radius: 50%; animation: waterSheen 29s ease-in-out infinite alternate; }
+body[data-theme="petersburg"] #sceneDecor i:nth-child(5) { bottom: 27%; opacity: .55; animation-delay: -12s; }
+body[data-theme="petersburg"] #sceneDecor i:nth-child(6) { bottom: 34%; opacity: .34; animation-delay: -21s; }
+body[data-theme="petersburg"] #mediaBar { background: rgba(8,22,34,.9); }
+
+/* Rome — warm stone, a shaded arch and clean ivory agenda. */
+body[data-theme="rome"] { --bg: #9c7755; --ink: #282019; --muted: #6e6054; --accent: #9a5d37; --panel: rgba(248,238,219,.76); --line: rgba(63,46,33,.18); --selected: rgba(255,247,229,.72); --glow: rgba(246,180,95,.28); color-scheme: light; }
+body[data-theme="rome"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-rome.png"); animation: slowZoom 165s ease-in-out infinite alternate; }
+body[data-theme="rome"] #wash { background: linear-gradient(90deg, rgba(22,14,10,.2), transparent 36%, rgba(69,40,23,.1)), linear-gradient(0deg, rgba(45,24,13,.32), transparent 58%); }
+body[data-theme="rome"] #grain { opacity: .06; mix-blend-mode: multiply; }
+body[data-theme="rome"] #orbs { display: none; }
+body[data-theme="rome"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="rome"] #modes button { color: #3e3025; background: rgba(255,247,231,.5); backdrop-filter: blur(12px); }
+body[data-theme="rome"] #modes button.active { color: #fff8ea; background: rgba(45,31,22,.86); }
+body[data-theme="rome"] #hero { position: absolute; left: 4%; top: 14%; width: 34%; display: block; }
+body[data-theme="rome"] #clock { font: 260 clamp(7.8rem, 11.5vw, 12rem)/.82 var(--font); color: #fff5e5; letter-spacing: -.08em; text-shadow: 0 1rem 3rem rgba(15,8,4,.38); animation: none; }
+body[data-theme="rome"] .hero-copy { padding: 1.5rem 0 0 .5rem; color: #f7ecdc; }
+body[data-theme="rome"] #dateLine { font: 520 1rem var(--font); letter-spacing: .14em; text-transform: uppercase; }
+body[data-theme="rome"] #weatherLine { color: #e6d8c7; }
+body[data-theme="rome"] #screen { right: 3.8%; top: 13%; bottom: 10rem; width: 51%; padding: 2rem 2.4rem; border: 1px solid rgba(255,255,255,.55); border-radius: 2.15rem; background: rgba(248,238,219,.76); backdrop-filter: blur(22px) saturate(1.12); box-shadow: 0 2rem 6rem rgba(65,38,21,.2), inset 0 1px rgba(255,255,255,.65); }
+body[data-theme="rome"]:not(.has-media) #screen { bottom: 5%; }
+body[data-theme="rome"] .scene-event { padding: 1.08rem 0; border-color: rgba(63,46,33,.14); }
+body[data-theme="rome"] .scene-title { border-color: #a96e47; }
+body[data-theme="rome"] .scene-time, body[data-theme="rome"] .scene-title small, body[data-theme="rome"] .scene-owner { color: #6a5b4f; }
+body[data-theme="rome"] #sceneDecor i:first-child { display: block; right: 13%; top: -14%; width: 24rem; height: 24rem; border-radius: 50%; background: radial-gradient(circle, rgba(255,226,165,.7), rgba(255,192,102,.13) 42%, transparent 70%); filter: blur(1.8rem); animation: lampBreath 14s ease-in-out infinite; }
+body[data-theme="rome"] #sceneDecor i:nth-child(n+2):nth-child(-n+5) { display: block; width: .2rem; height: .2rem; border-radius: 50%; background: rgba(255,231,182,.9); box-shadow: 9rem 4rem rgba(255,231,182,.45), 18rem -5rem rgba(255,231,182,.28); animation: dustFloat 15s ease-in-out infinite alternate; }
+body[data-theme="rome"] #sceneDecor i:nth-child(2) { left: 21%; top: 42%; }
+body[data-theme="rome"] #sceneDecor i:nth-child(3) { left: 48%; top: 28%; animation-delay: -9s; }
+body[data-theme="rome"] #sceneDecor i:nth-child(4) { left: 70%; top: 54%; animation-delay: -4s; }
+body[data-theme="rome"] #sceneDecor i:nth-child(5) { left: 86%; top: 19%; animation-delay: -12s; }
+body[data-theme="rome"] #mediaBar { --ink: #2b2119; --muted: #716155; --line: rgba(63,46,33,.2); background: rgba(244,232,213,.91); }
+
+/* Florence — gallery-like panorama with a low horizontal schedule. */
+body[data-theme="florence"] { --bg: #76564b; --ink: #fff4ea; --muted: #dbc9be; --accent: #efb985; --panel: rgba(58,35,30,.48); --line: rgba(255,232,213,.23); --selected: rgba(255,235,216,.17); --glow: rgba(229,141,106,.25); }
+body[data-theme="florence"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-florence.png"); animation: mountainPan 165s ease-in-out infinite alternate; }
+body[data-theme="florence"] #wash { background: linear-gradient(180deg, rgba(67,45,57,.08), transparent 42%, rgba(38,21,19,.62) 91%); }
+body[data-theme="florence"] #orbs { display: none; }
+body[data-theme="florence"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="florence"] #hero { position: absolute; inset: 7% 0 auto; display: block; text-align: center; }
+body[data-theme="florence"] #clock { font: 260 clamp(8rem, 12vw, 13rem)/.8 var(--font); letter-spacing: -.08em; text-shadow: 0 .8rem 3rem rgba(62,31,31,.25); animation: none; }
+body[data-theme="florence"] .hero-copy { padding: 1.3rem 0 0; }
+body[data-theme="florence"] #dateLine { font: 520 1rem var(--font); letter-spacing: .18em; text-transform: uppercase; }
+body[data-theme="florence"] #screen { left: 4%; right: 4%; bottom: 10rem; height: 30%; padding: 1.6rem 2rem; border: 1px solid rgba(255,243,233,.2); border-radius: 2rem; background: rgba(48,29,28,.58); backdrop-filter: blur(22px) saturate(1.1); box-shadow: 0 2rem 5rem rgba(48,24,22,.22); }
+body[data-theme="florence"]:not(.has-media) #screen { bottom: 4%; }
+body[data-theme="florence"] .scene-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+body[data-theme="florence"] .scene-event { display: block; min-height: 0; padding: .8rem 1rem; border: 0; border-left: 1px solid var(--line); }
+body[data-theme="florence"] .scene-time { display: block; margin-bottom: .55rem; color: #ffd7b0; }
+body[data-theme="florence"] .scene-title { padding: 0; border: 0; }
+body[data-theme="florence"] .scene-owner { margin-top: .6rem; }
+body[data-theme="florence"] #sceneDecor i:nth-child(-n+3) { display: block; left: -22%; top: 12%; width: 22rem; height: 4rem; border-radius: 50%; background: rgba(255,233,226,.44); filter: blur(2.6rem); animation: cloudSail 98s linear infinite; }
+body[data-theme="florence"] #sceneDecor i:nth-child(2) { top: 29%; width: 32rem; animation-delay: -43s; animation-duration: 126s; }
+body[data-theme="florence"] #sceneDecor i:nth-child(3) { top: 5%; animation-delay: -82s; animation-duration: 147s; }
+body[data-theme="florence"] #mediaBar { background: rgba(39,24,25,.91); }
+
+/* Venice — quiet mist, pale glass and water movement. */
+body[data-theme="venice"] { --bg: #25363d; --ink: #f4f2ec; --muted: #bac8c9; --accent: #e9b48b; --panel: rgba(23,49,57,.52); --line: rgba(220,235,234,.21); --selected: rgba(216,232,231,.16); --glow: rgba(151,191,195,.25); }
+body[data-theme="venice"] #sceneBackdrop { opacity: .98; background-image: url("../assets/scene-venice.png"); animation: slowZoom 160s ease-in-out infinite alternate; }
+body[data-theme="venice"] #wash { background: linear-gradient(90deg, rgba(9,23,28,.54), transparent 44%, rgba(14,31,37,.18)), linear-gradient(0deg, rgba(10,23,28,.52), transparent 56%); }
+body[data-theme="venice"] #orbs { display: none; }
+body[data-theme="venice"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="venice"] #hero { position: absolute; left: 4.5%; top: 13%; display: block; }
+body[data-theme="venice"] #clock { font: 250 clamp(9rem, 14vw, 15rem)/.8 var(--font); letter-spacing: -.08em; text-shadow: 0 1rem 4rem rgba(4,15,19,.42); animation: none; }
+body[data-theme="venice"] .hero-copy { padding: 1.6rem 0 0 .7rem; }
+body[data-theme="venice"] #dateLine { font: 500 1rem var(--font); letter-spacing: .15em; text-transform: uppercase; }
+body[data-theme="venice"] #screen { right: 3.8%; top: 14%; bottom: 10rem; width: 49%; padding: 2rem 2.4rem; border: 1px solid rgba(232,241,239,.24); border-radius: 2.4rem; background: rgba(18,48,57,.55); backdrop-filter: blur(24px) saturate(1.08); box-shadow: 0 2rem 6rem rgba(4,18,23,.27), inset 0 1px rgba(255,255,255,.14); }
+body[data-theme="venice"]:not(.has-media) #screen { bottom: 5%; }
+body[data-theme="venice"] .scene-event { padding: 1.08rem 0; }
+body[data-theme="venice"] .scene-title { border-color: #96c4c3; }
+body[data-theme="venice"] #sceneDecor i:nth-child(-n+3) { display: block; left: -12%; bottom: 24%; width: 118%; height: 6rem; border-radius: 50%; background: rgba(224,239,235,.2); filter: blur(2.5rem); animation: mistPass 48s ease-in-out infinite alternate; }
+body[data-theme="venice"] #sceneDecor i:nth-child(2) { bottom: 36%; opacity: .55; animation-delay: -19s; animation-duration: 66s; }
+body[data-theme="venice"] #sceneDecor i:nth-child(3) { bottom: 48%; opacity: .3; animation-delay: -41s; animation-duration: 81s; }
+body[data-theme="venice"] #sceneDecor i:nth-child(n+4) { display: block; left: -8%; bottom: 14%; width: 116%; height: 2.5rem; border-top: 1px solid rgba(240,218,195,.25); border-radius: 50%; animation: waterSheen 27s ease-in-out infinite alternate; }
+body[data-theme="venice"] #sceneDecor i:nth-child(5) { bottom: 20%; opacity: .52; animation-delay: -12s; }
+body[data-theme="venice"] #sceneDecor i:nth-child(6) { bottom: 28%; opacity: .3; animation-delay: -22s; }
+body[data-theme="venice"] #mediaBar { background: rgba(11,29,35,.91); }
+
+/* Panoramic scenes use the lower third for the agenda, so notes stay above it. */
+body:is([data-theme="mountains"], [data-theme="florence"]) #note { left: 4%; bottom: calc(10rem + 33%); max-width: 28rem; }
+body:is([data-theme="mountains"], [data-theme="florence"]):not(.has-media) #note { bottom: 37%; }
+
 @media (max-width: 1100px) {
   .grid-now, .grid-today, .week { grid-template-columns: 1fr; }
   #clock { font-size: 5.4rem; }

@@ -1,14 +1,23 @@
 export const displayModes = ["NOW", "TODAY", "WEEK"];
-export const displayThemes = ["gallery", "forest", "mountains", "sea", "space"];
+export const displayThemes = [
+  "gallery", "home-day", "home-evening", "forest", "mountains", "sea", "space",
+  "petersburg", "rome", "florence", "venice",
+];
 export const displayMoods = ["home", "night", "play"];
 
 const modeNames = { NOW: "Сейчас", TODAY: "Сегодня", WEEK: "Неделя" };
 export const themeNames = {
   gallery: "Галерея",
+  "home-day": "Дом · День",
+  "home-evening": "Дом · Вечер",
   forest: "Лес",
   mountains: "Горы",
   sea: "Море",
   space: "Космос",
+  petersburg: "Петербург",
+  rome: "Рим",
+  florence: "Флоренция",
+  venice: "Венеция",
 };
 export const moodNames = {
   home: "Дом",

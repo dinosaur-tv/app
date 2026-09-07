@@ -2,7 +2,10 @@ import { normalizeDisplay, screenTheme, shouldApplyTvReload } from "../control-s
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["NOW", "TODAY", "WEEK"];
-const sceneThemes = ["gallery", "night", "play", "forest", "mountains", "sea", "space"];
+const sceneThemes = [
+  "gallery", "home-day", "home-evening", "night", "play", "forest", "mountains", "sea", "space",
+  "petersburg", "rome", "florence", "venice",
+];
 const rotateMs = 30_000;
 const russian = "ru-RU";
 
@@ -29,6 +32,12 @@ let rotateTimer;
 let lastForcedMode = "";
 let paintedKey = "";
 let appliedReloadAt = localStorage.getItem("dinoTvReloadAt") || "";
+let appliedPowerAt = localStorage.getItem("dinoTvPowerAt") || "";
+let asleep = false;
+
+function nativeBridge() {
+  return window.DinoTV || null;
+}
 
 function flushTvApp(reloadAt) {
   if (!shouldApplyTvReload(appliedReloadAt, reloadAt)) return false;
@@ -38,6 +47,21 @@ function flushTvApp(reloadAt) {
   next.searchParams.set("r", String(Date.now()));
   location.replace(next.toString());
   return true;
+}
+
+function applyPower(power, powerAt) {
+  if (!shouldApplyTvReload(appliedPowerAt, powerAt)) return;
+  appliedPowerAt = powerAt;
+  localStorage.setItem("dinoTvPowerAt", powerAt);
+  asleep = power === "off";
+  document.body.classList.toggle("asleep", asleep);
+  const bridge = nativeBridge();
+  if (asleep && bridge) bridge.powerOff();
+}
+
+function syncNativeSession() {
+  const bridge = nativeBridge();
+  if (session && bridge) bridge.saveSession(session);
 }
 
 function readSession() {
@@ -294,6 +318,7 @@ function paint(force = false) {
   const display = normalizeDisplay(snapshot.display);
   const activeTheme = screenTheme(display);
   document.body.dataset.theme = activeTheme;
+  document.body.classList.toggle("immersive", sceneThemes.includes(activeTheme));
   document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.mood !== "night");
   document.body.classList.toggle("guests", display.privacy);
   photo.style.backgroundImage = snapshot.display.backgroundUrl ? `url("${snapshot.display.backgroundUrl}")` : "";
@@ -317,6 +342,7 @@ function paint(force = false) {
 async function request(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (session) headers.authorization = `Bearer ${session}`;
+  headers["x-dino-visible"] = asleep ? "0" : "1";
   const response = await fetch(`${API}${path}`, { ...options, headers });
   if (response.status === 401) {
     session = "";
@@ -330,7 +356,10 @@ async function request(path, options = {}) {
 async function loadSnapshot() {
   const data = await request("/v1/display/snapshot");
   if (flushTvApp(data.reloadAt)) return;
+  applyPower(data.power, data.powerAt);
+  syncNativeSession();
   snapshot = data;
+  if (asleep) return;
   if (modes.includes(data.display?.mode) && data.display.mode !== lastForcedMode) {
     mode = data.display.mode;
     lastForcedMode = data.display.mode;

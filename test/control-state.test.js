@@ -23,7 +23,7 @@ test("treats night and play as moods, not color themes", () => {
 });
 
 test("keeps every designed scene available to the television and console", () => {
-  for (const theme of ["gallery", "forest", "mountains", "sea", "space"]) {
+  for (const theme of ["gallery", "home-day", "home-evening", "forest", "mountains", "sea", "space", "petersburg", "rome", "florence", "venice"]) {
     assert.equal(normalizeDisplay({ theme }).theme, theme);
     assert.equal(screenTheme(normalizeDisplay({ theme })), theme);
   }
