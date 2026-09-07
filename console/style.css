@@ -35,11 +35,10 @@ button {
 }
 header {
   display: grid;
-  grid-template-columns: 1.35rem 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: .6rem;
   align-items: center;
 }
-header img { width: 1.35rem; height: 1.35rem; border-radius: .32rem; }
 header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 #connectionState { color: var(--muted); font-size: .7rem; }
 .modes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .35rem; }

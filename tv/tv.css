@@ -60,8 +60,7 @@ body.has-photo #wash {
   min-height: 0;
 }
 #top { display: flex; align-items: center; gap: 1.5rem; }
-.brand { display: flex; align-items: center; gap: .85rem; min-width: 16rem; }
-.brand img { width: 2.6rem; height: 2.6rem; border-radius: .7rem; }
+.brand { min-width: 16rem; }
 .eyebrow { margin: 0; color: var(--accent); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; }
 .brand strong { display: block; font-weight: 500; font-size: 1.05rem; }
 #modes { display: flex; gap: .4rem; margin: 0 auto; }
