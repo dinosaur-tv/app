@@ -5,7 +5,21 @@ export default [
   eslint.configs.recommended,
   {
     languageOptions: {
-      globals: { window: "readonly", document: "readonly", fetch: "readonly" },
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        fetch: "readonly",
+        localStorage: "readonly",
+        location: "readonly",
+        history: "readonly",
+        navigator: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        setTimeout: "readonly",
+        FileReader: "readonly",
+        URL: "readonly",
+        URLSearchParams: "readonly",
+      },
     },
   },
 ];

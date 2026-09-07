@@ -1,3 +1,11 @@
 .git
+.github
 .env
+node_modules
+test
 README.md
+.pre-commit-config.yaml
+eslint.config.mjs
+package.json
+package-lock.json
+.DS_Store

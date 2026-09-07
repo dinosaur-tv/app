@@ -1,7 +1,7 @@
-export const displayModes = ["NOW", "TODAY", "WEEK", "MONTH"];
+export const displayModes = ["NOW", "TODAY", "WEEK"];
 export const displayThemes = ["gallery", "tobacco", "taupe", "stone", "forest", "apple"];
 
-const modeNames = { NOW: "Сейчас", TODAY: "Сегодня", WEEK: "Неделя", MONTH: "Месяц" };
+const modeNames = { NOW: "Сейчас", TODAY: "Сегодня", WEEK: "Неделя" };
 export const themeNames = { gallery: "Галерея", tobacco: "Табак", taupe: "Тауп", stone: "Камень", forest: "Лес", apple: "Светлый" };
 
 export function displayModeName(mode) {
@@ -13,5 +13,6 @@ export function normalizeDisplay(value = {}) {
     mode: displayModes.includes(value.mode) ? value.mode : "NOW",
     theme: displayThemes.includes(value.theme) ? value.theme : "gallery",
     privacy: value.privacy === true,
+    backgroundUrl: value.backgroundUrl || "",
   };
 }

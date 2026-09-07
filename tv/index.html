@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#171614" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Dino TV</title>
+    <link rel="icon" type="image/png" href="/assets/dino-icon-512.png" />
+    <link rel="stylesheet" href="./tv.css" />
+  </head>
+  <body data-theme="gallery">
+    <div id="photo"></div>
+    <div id="wash"></div>
+    <div id="orbs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div id="grain" aria-hidden="true"></div>
+    <div id="stage">
+      <header id="top">
+        <div class="brand">
+          <img src="/assets/dino-icon-512.png" alt="" />
+          <div>
+            <p class="eyebrow">Dino TV</p>
+            <strong id="dateLine">Санкт-Петербург</strong>
+          </div>
+        </div>
+        <nav id="modes" aria-label="Экран">
+          <button data-mode="NOW">Сейчас</button>
+          <button data-mode="TODAY">Сегодня</button>
+          <button data-mode="WEEK">Неделя</button>
+        </nav>
+        <time id="clock">00:00</time>
+      </header>
+      <p id="note" hidden></p>
+      <main id="screen"></main>
+    </div>
+    <section id="pair" hidden>
+      <p class="eyebrow">Подключение экрана</p>
+      <h1>Откройте Dino TV в телефоне и введите код</h1>
+      <p id="pairCode">••••••</p>
+      <small>Код живёт десять минут. После этого телевизор запомнит дом сам.</small>
+    </section>
+    <script type="module" src="./tv.js"></script>
+  </body>
+</html>

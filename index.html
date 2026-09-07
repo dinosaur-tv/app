@@ -10,6 +10,11 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <title>Dino TV · Дом</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      if (!window.Telegram?.WebApp?.initData && /Android TV|SMART-TV|HbbTV|AFT|BRAVIA|CrKey|GoogleTV|Web0S|Tizen|AppleTV/i.test(navigator.userAgent)) {
+        location.replace("/tv/");
+      }
+    </script>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -35,10 +40,9 @@
       <section class="section">
         <div class="section-title"><p class="eyebrow">Вид</p><span>01</span></div>
         <div class="mode-grid" role="group" aria-label="Режим экрана">
-          <button class="mode" data-mode="NOW"><span>Сейчас</span><small>Время и музыка</small></button>
-          <button class="mode" data-mode="TODAY"><span>Сегодня</span><small>Ближайшие дела</small></button>
+          <button class="mode" data-mode="NOW"><span>Сейчас</span><small>Время и погода</small></button>
+          <button class="mode" data-mode="TODAY"><span>Сегодня</span><small>Дела и прогноз</small></button>
           <button class="mode" data-mode="WEEK"><span>Неделя</span><small>Общий ритм</small></button>
-          <button class="mode" data-mode="MONTH"><span>Месяц</span><small>Панорама дел</small></button>
         </div>
       </section>
 
@@ -54,6 +58,16 @@
         </div>
       </section>
 
+      <section class="section">
+        <div class="section-title"><p class="eyebrow">Фон телевизора</p><span>03</span></div>
+        <label class="upload" for="background">
+          <input id="background" type="file" accept="image/jpeg,image/png,image/webp" />
+          <span>Выбрать картинку с телефона</span>
+        </label>
+        <div class="background-preview" id="backgroundPreview" hidden></div>
+        <button type="button" class="quiet-button" id="clearBackground">Убрать свой фон</button>
+      </section>
+
       <section class="section privacy-section">
         <div>
           <p class="eyebrow">Гостевой режим</p>
@@ -64,7 +78,7 @@
       </section>
 
       <section class="section note-section">
-        <div class="section-title"><p class="eyebrow">Заметка на экране</p><span>03</span></div>
+        <div class="section-title"><p class="eyebrow">Заметка на экране</p><span>04</span></div>
         <form id="noteForm">
           <label for="note">Текст появится на телевизоре на один час</label>
           <textarea id="note" maxlength="180" placeholder="Например: ужин в 20:00"></textarea>
@@ -72,8 +86,17 @@
         </form>
       </section>
 
+      <section class="section">
+        <div class="section-title"><p class="eyebrow">Телевизор</p><span>05</span></div>
+        <p class="muted">Если на экране код, введите его сюда. После этого телевизор будет открывать <code>home.dym-dino.ru/tv</code> сам.</p>
+        <form id="pairForm" class="pair-form">
+          <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" />
+          <button type="submit" class="text-button">Подключить <b>→</b></button>
+        </form>
+      </section>
+
       <section class="section people-section">
-        <div class="section-title"><p class="eyebrow">Календари</p><span>04</span></div>
+        <div class="section-title"><p class="eyebrow">Календари</p><span>06</span></div>
         <div class="people">
           <div><i class="misha-dot"></i><span>Миша</span><small id="mishaStatus">Проверяем</small></div>
           <div><i class="natasha-dot"></i><span>Наташа</span><small id="natashaStatus">Проверяем</small></div>
