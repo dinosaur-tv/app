@@ -16,71 +16,95 @@
     <main class="remote">
       <header>
         <strong>Dino TV</strong>
-        <button type="button" id="settingsBtn" class="icon" aria-label="Настройки">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.22-1.14.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.4.31.64.22l2.39-.96c.49.4 1.04.72 1.63.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.22 1.14-.53 1.63-.94l2.39.96c.24.1.51 0 .64-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
-        </button>
       </header>
 
-      <div class="modes" role="group" aria-label="Экран">
-        <button data-mode="NOW">Сейчас</button>
-        <button data-mode="TODAY">Сегодня</button>
-        <button data-mode="WEEK">Неделя</button>
-      </div>
+      <section id="pane-screen" class="pane">
+        <div class="modes" role="group" aria-label="Экран">
+          <button data-mode="NOW">Сейчас</button>
+          <button data-mode="TODAY">Сегодня</button>
+          <button data-mode="WEEK">Неделя</button>
+        </div>
 
-      <div class="moods" role="group" aria-label="Режим">
-        <button data-mood="home">Дом</button>
-        <button data-mood="night">Ночь</button>
-        <button data-mood="play">Шалость</button>
-      </div>
+        <div class="themes" role="group" aria-label="Сцена">
+          <button class="gallery" data-scene="gallery"><i></i><span>Галерея</span></button>
+          <button class="night" data-scene="night"><i></i><span>Ночь</span></button>
+          <button class="play" data-scene="play"><i></i><span>Шалость</span></button>
+          <button class="forest" data-scene="forest"><i></i><span>Лес</span></button>
+          <button class="mountains" data-scene="mountains"><i></i><span>Горы</span></button>
+          <button class="sea" data-scene="sea"><i></i><span>Море</span></button>
+          <button class="space" data-scene="space"><i></i><span>Космос</span></button>
+        </div>
 
-      <div class="themes" role="group" aria-label="Тема">
-        <button class="gallery" data-theme="gallery" aria-label="Галерея"></button>
-        <button class="tobacco" data-theme="tobacco" aria-label="Табак"></button>
-        <button class="taupe" data-theme="taupe" aria-label="Тауп"></button>
-        <button class="stone" data-theme="stone" aria-label="Камень"></button>
-        <button class="forest" data-theme="forest" aria-label="Лес"></button>
-        <button class="apple" data-theme="apple" aria-label="Светлый"></button>
-      </div>
+        <div class="guests" role="group" aria-label="Гости">
+          <button type="button" data-privacy="false">Нет гостей</button>
+          <button type="button" data-privacy="true">Гости</button>
+        </div>
 
-      <div class="guests" role="group" aria-label="Гости">
-        <button type="button" data-privacy="false">Нет гостей</button>
-        <button type="button" data-privacy="true">Гости</button>
-      </div>
+        <div class="note-block">
+          <button type="button" class="action" id="addNote">Добавить</button>
+          <div id="noteCard" class="note-card" hidden>
+            <p id="notePreview"></p>
+            <button type="button" class="action" id="clearNote">Снять</button>
+          </div>
+        </div>
 
-      <form id="noteForm" class="compose">
-        <input id="note" maxlength="180" placeholder="Заметка на час" />
-        <button type="submit">Ок</button>
-        <button type="button" id="clearNote" class="ghost">Снять</button>
-      </form>
+        <div class="wallpaper">
+          <label class="upload">
+            <input id="background" type="file" accept="image/*" />
+            <span id="wallpaperLabel">Поставить обои</span>
+          </label>
+          <span id="backgroundPreview" hidden></span>
+          <button type="button" class="ghost" id="clearBackground">Сброс</button>
+        </div>
+      </section>
 
-      <div class="wallpaper">
-        <label class="upload">
-          <input id="background" type="file" accept="image/*" />
-          <span id="wallpaperLabel">Поставить обои</span>
+      <section id="pane-music" class="pane" hidden>
+        <div class="now-playing">
+          <div id="musicArt" class="art" aria-hidden="true"></div>
+          <strong id="musicTitle">Тихо</strong>
+          <span id="musicArtist">Яндекс Музыка</span>
+        </div>
+        <div class="transport" role="group" aria-label="Плеер">
+          <button type="button" data-music="previous" aria-label="Предыдущий">⏮</button>
+          <button type="button" class="primary" data-music="toggle" id="musicToggle" aria-label="Играть">▶</button>
+          <button type="button" data-music="next" aria-label="Следующий">⏭</button>
+        </div>
+        <label class="volume">
+          <span>Громкость</span>
+          <input id="musicVolume" type="range" min="0" max="100" value="50" />
         </label>
-        <span id="backgroundPreview" hidden></span>
-        <button type="button" class="ghost" id="clearBackground">Сброс</button>
-      </div>
+        <button type="button" class="action" data-music="toTv">На телевизор</button>
+        <p class="hint" id="musicHint">Откройте Кинопоиск на ТВ и войдите в тот же Яндекс. Тогда звук пойдёт с гостиной, а пульт будет им управлять.</p>
+      </section>
 
-      <button type="button" class="action" id="reloadTv">Залить обновления</button>
-
-      <p class="people" id="calendarWarning" hidden></p>
-      <p class="status" id="notice" role="status"></p>
-    </main>
-
-    <section id="settings" hidden>
-      <div class="sheet">
-        <header>
-          <strong>Экран</strong>
-          <button type="button" id="closeSettings" class="ghost">Закрыть</button>
-        </header>
+      <section id="pane-more" class="pane" hidden>
         <p class="hint">Если телевизор забыл дом, введите код с экрана.</p>
         <form id="pairForm" class="compose">
           <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />
           <button type="submit">Связать</button>
         </form>
-      </div>
-    </section>
+        <button type="button" class="action" id="reloadTv">Залить обновления</button>
+        <p class="people" id="calendarWarning" hidden></p>
+      </section>
+
+      <p class="status" id="notice" role="status"></p>
+    </main>
+
+    <div id="noteSheet" class="sheet-root" hidden>
+      <button type="button" class="sheet-backdrop" id="noteSheetClose" aria-label="Закрыть"></button>
+      <form id="noteForm" class="sheet">
+        <strong>Заметка</strong>
+        <textarea id="note" maxlength="180" rows="3" placeholder="Что написать на экране"></textarea>
+        <div id="noteDurations" class="durations" role="group" aria-label="Сколько держать"></div>
+        <button type="submit">Поставить</button>
+      </form>
+    </div>
+
+    <nav class="dock" role="tablist" aria-label="Разделы">
+      <button type="button" data-tab="screen" class="active">Экран</button>
+      <button type="button" data-tab="music">Музыка</button>
+      <button type="button" data-tab="more">Ещё</button>
+    </nav>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

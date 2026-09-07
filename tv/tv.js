@@ -2,6 +2,7 @@ import { normalizeDisplay, screenTheme, shouldApplyTvReload } from "../control-s
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["NOW", "TODAY", "WEEK"];
+const sceneThemes = ["gallery", "night", "play", "forest", "mountains", "sea", "space"];
 const rotateMs = 30_000;
 const russian = "ru-RU";
 
@@ -212,19 +213,18 @@ function renderToday(now) {
   </section>`;
 }
 
-function renderGallery(now) {
+function renderSceneAgenda(now, scene) {
   if (snapshot.display?.privacy) return renderGuest();
-  if (mode === "WEEK") return renderWeek(now);
   const events = mode === "TODAY"
     ? eventsFor(todayStamp(now), now, true).slice(0, 5)
-    : upcomingEvents(now, 5);
-  const title = mode === "TODAY" ? "Сегодня" : "Ближайшие дела";
-  return `<section class="gallery-agenda">
+    : upcomingEvents(now, mode === "WEEK" ? 6 : 5);
+  const title = mode === "TODAY" ? "Сегодня" : mode === "WEEK" ? "Эта неделя" : "Ближайшие дела";
+  return `<section class="scene-agenda scene-${scene}">
     <p class="kicker">${title}</p>
-    <div class="gallery-list">${events.length ? events.map((event) => `<article class="gallery-event">
-      <time class="gallery-time">${timeOf(event.start)}</time>
-      <div class="gallery-title"><strong>${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
-      <span class="gallery-owner"><i style="background:${event.color}"></i>${escapeHtml(eventOwner(event))}</span>
+    <div class="scene-list">${events.length ? events.map((event, index) => `<article class="scene-event" style="--event-index:${index}">
+      <time class="scene-time">${timeOf(event.start)}</time>
+      <div class="scene-title"><strong>${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
+      <span class="scene-owner"><i style="background:${event.color}"></i>${escapeHtml(eventOwner(event))}</span>
     </article>`).join("") : `<p class="empty">Сегодня тихо. Можно никуда не спешить.</p>`}</div>
   </section>`;
 }
@@ -309,8 +309,8 @@ function paint(force = false) {
   const key = `${viewSig()}|${now.getMinutes()}`;
   if (!force && key === paintedKey) return;
   paintedKey = key;
-  screen.innerHTML = activeTheme === "gallery"
-    ? renderGallery(now)
+  screen.innerHTML = sceneThemes.includes(activeTheme)
+    ? renderSceneAgenda(now, activeTheme)
     : mode === "WEEK" ? renderWeek(now) : mode === "TODAY" ? renderToday(now) : renderNow(now);
 }
 
@@ -406,6 +406,14 @@ async function boot() {
     try {
       const preview = await fetch("./_preview.json").then((response) => (response.ok ? response.json() : null));
       if (preview) {
+        const requestedScene = new URLSearchParams(location.search).get("scene");
+        if (sceneThemes.includes(requestedScene)) {
+          preview.display = {
+            ...preview.display,
+            theme: requestedScene === "night" || requestedScene === "play" ? "gallery" : requestedScene,
+            mood: requestedScene === "night" || requestedScene === "play" ? requestedScene : "home",
+          };
+        }
         snapshot = preview;
         pairEl.hidden = true;
         paint(true);

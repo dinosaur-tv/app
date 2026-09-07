@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { displayModeName, displayMoodName, normalizeDisplay, screenTheme, shouldApplyTvReload } from "../control-state.js";
+import { displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, screenTheme, shouldApplyTvReload } from "../control-state.js";
 
 test("normalizes incomplete display state to a safe gallery dashboard", () => {
   assert.deepEqual(normalizeDisplay(), { mode: "NOW", theme: "gallery", mood: "home", privacy: false, backgroundUrl: "" });
-  assert.deepEqual(normalizeDisplay({ mode: "TODAY", theme: "stone", privacy: true }), { mode: "TODAY", theme: "stone", mood: "home", privacy: true, backgroundUrl: "" });
+  assert.deepEqual(normalizeDisplay({ mode: "TODAY", theme: "forest", privacy: true }), { mode: "TODAY", theme: "forest", mood: "home", privacy: true, backgroundUrl: "" });
 });
 
 test("does not let unknown API values break the controls", () => {
@@ -22,9 +22,30 @@ test("treats night and play as moods, not color themes", () => {
   assert.equal(screenTheme(normalizeDisplay({ theme: "forest", mood: "home" })), "forest");
 });
 
+test("keeps every designed scene available to the television and console", () => {
+  for (const theme of ["gallery", "forest", "mountains", "sea", "space"]) {
+    assert.equal(normalizeDisplay({ theme }).theme, theme);
+    assert.equal(screenTheme(normalizeDisplay({ theme })), theme);
+  }
+});
+
 test("reloads the television only when a new flush token arrives", () => {
   assert.equal(shouldApplyTvReload("", ""), false);
   assert.equal(shouldApplyTvReload("", "2026-09-07T18:00:00.000Z"), true);
   assert.equal(shouldApplyTvReload("2026-09-07T18:00:00.000Z", "2026-09-07T18:00:00.000Z"), false);
   assert.equal(shouldApplyTvReload("2026-09-07T18:00:00.000Z", "2026-09-07T18:00:01.000Z"), true);
+});
+
+test("keeps a living note and drops an expired one", () => {
+  assert.equal(noteDurations.length, 10);
+  assert.equal(noteDurations[0].minutes, 5);
+  assert.equal(noteDurations.at(-1).minutes, 720);
+  assert.equal(normalizeNote(), null);
+  assert.equal(normalizeNote({ text: "хлеб", expiresAt: new Date(Date.now() - 1000).toISOString() }), null);
+  assert.equal(normalizeNote({ text: " хлеб ", expiresAt: new Date(Date.now() + 60_000).toISOString() }).text, "хлеб");
+});
+
+test("keeps now-playing values safe for the remote and the living-room bar", () => {
+  assert.deepEqual(normalizeNowPlaying(), { title: "", artist: "", source: "Яндекс Музыка", isPlaying: false, volumePercent: 50, artworkUrl: "", deviceName: "" });
+  assert.equal(normalizeNowPlaying({ title: "Ночь", isPlaying: true, volumePercent: 140 }).volumePercent, 100);
 });
