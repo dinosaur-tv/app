@@ -1,9 +1,9 @@
 {
   "name": "Dino TV · Дом",
   "short_name": "Dino TV",
-  "start_url": "/",
+  "start_url": "/console/",
   "display": "standalone",
   "background_color": "#171614",
   "theme_color": "#171614",
-  "icons": [{ "src": "./assets/dino-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
+  "icons": [{ "src": "/assets/dino-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
 }

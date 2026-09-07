@@ -1,9 +1,16 @@
 # Dino TV Home
 
-На `https://home.dym-dino.ru` живут две поверхности:
+На `https://home.dym-dino.ru` живут три поверхности:
 
-- `/` — Telegram Mini App и телефон: вид экрана, тема, фон, заметка, гостевой режим;
-- `/tv/` — сам телевизор. Android-приложение только открывает эту страницу.
+- `/` — публичный лендинг для случайного гостя;
+- `/console/` — Telegram Mini App и телефон;
+- `/tv/` — экран в гостиной.
+
+В BotFather в поле Mini App вставляйте только:
+
+```text
+https://home.dym-dino.ru/console/
+```
 
 ## Запуск на VPS
 
@@ -12,11 +19,9 @@ cp .env.example .env
 docker compose -f docker-compose.traefik.yml up -d --build
 ```
 
-В backend `.env` задайте:
+В backend `.env`:
 
 ```dotenv
 MINI_APP_ORIGIN=https://home.dym-dino.ru
-TELEGRAM_WEB_APP_URL=https://home.dym-dino.ru
+TELEGRAM_WEB_APP_URL=https://home.dym-dino.ru/console/
 ```
-
-Затем перезапустите backend и выполните `bash scripts/set-telegram-webhook.sh`. У бота появится кнопка **Dino TV** у поля ввода, а нижняя клавиатура скроется после `/start`.

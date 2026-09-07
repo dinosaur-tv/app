@@ -1,4 +1,4 @@
-import { displayModeName, normalizeDisplay, themeNames } from "./control-state.js";
+import { displayModeName, normalizeDisplay, themeNames } from "../control-state.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const telegram = window.Telegram?.WebApp;
