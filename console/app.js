@@ -70,7 +70,6 @@ async function load() {
   paint();
   if (!initData) {
     document.querySelector("#connectionState").textContent = "превью";
-    setNotice("Откройте пульт из бота", "error");
     return;
   }
   try {
