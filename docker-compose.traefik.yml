@@ -1,0 +1,19 @@
+services:
+  dino-home:
+    build: .
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-proxy}
+      - traefik.http.routers.dino-home.rule=Host(`${HOME_DOMAIN}`)
+      - traefik.http.routers.dino-home.entrypoints=websecure
+      - traefik.http.routers.dino-home.tls=true
+      - traefik.http.routers.dino-home.tls.certresolver=letsencrypt
+      - traefik.http.services.dino-home.loadbalancer.server.port=80
+
+networks:
+  proxy:
+    external: true
+    name: ${TRAEFIK_NETWORK:-proxy}

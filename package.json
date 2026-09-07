@@ -1,0 +1,14 @@
+{
+  "name": "dino-tv-home-miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test",
+    "quality": "npm run lint && npm test"
+  },
+  "devDependencies": {
+    "eslint": "^9.36.0"
+  }
+}
