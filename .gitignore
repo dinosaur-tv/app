@@ -1,5 +1,6 @@
 node_modules/
 .DS_Store
+tv/_preview.json
+.playwright-cli/
 .env
 *.log
-tv/_preview.json

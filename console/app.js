@@ -1,4 +1,4 @@
-import { displayModeName, normalizeDisplay, themeNames } from "../control-state.js";
+import { displayModeName, displayMoodName, normalizeDisplay, themeNames } from "../control-state.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const telegram = window.Telegram?.WebApp;
@@ -22,7 +22,8 @@ function setNotice(text, type = "") {
 
 function paint() {
   document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === display.mode));
-  document.querySelectorAll("[data-theme]").forEach((button) => button.classList.toggle("active", button.dataset.theme === display.theme));
+  document.querySelectorAll("[data-mood]").forEach((button) => button.classList.toggle("active", button.dataset.mood === display.mood));
+  document.querySelectorAll("[data-theme]").forEach((button) => button.classList.toggle("active", display.mood === "home" && button.dataset.theme === display.theme));
   document.querySelectorAll("[data-privacy]").forEach((button) => button.classList.toggle("active", String(display.privacy) === button.dataset.privacy));
   const preview = document.querySelector("#backgroundPreview");
   const wallpaperLabel = document.querySelector("#wallpaperLabel");
@@ -105,8 +106,11 @@ async function load() {
 document.querySelectorAll("[data-mode]").forEach((button) => {
   button.addEventListener("click", () => save({ mode: button.dataset.mode }, displayModeName(button.dataset.mode)));
 });
+document.querySelectorAll("[data-mood]").forEach((button) => {
+  button.addEventListener("click", () => save({ mood: button.dataset.mood }, displayMoodName(button.dataset.mood)));
+});
 document.querySelectorAll("[data-theme]").forEach((button) => {
-  button.addEventListener("click", () => save({ theme: button.dataset.theme }, themeNames[button.dataset.theme]));
+  button.addEventListener("click", () => save({ theme: button.dataset.theme, mood: "home" }, themeNames[button.dataset.theme]));
 });
 document.querySelectorAll("[data-privacy]").forEach((button) => {
   button.addEventListener("click", () => {
@@ -121,6 +125,16 @@ document.querySelector("#noteForm").addEventListener("submit", (event) => {
 });
 document.querySelector("#clearNote").addEventListener("click", () => save({ clearNote: true }, "Снято"));
 document.querySelector("#clearBackground").addEventListener("click", () => save({ clearBackground: true }, "Обои сброшены"));
+document.querySelector("#reloadTv").addEventListener("click", async () => {
+  try {
+    await request("/v1/miniapp/display", { method: "PATCH", body: JSON.stringify({ reloadTv: true }) });
+    telegram?.HapticFeedback?.impactOccurred?.("light");
+    setNotice("Заливаю на телевизор", "online");
+  } catch (error) {
+    telegram?.HapticFeedback?.notificationOccurred("error");
+    setNotice(error.message, "error");
+  }
+});
 document.querySelector("#background").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;

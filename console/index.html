@@ -27,6 +27,12 @@
         <button data-mode="WEEK">Неделя</button>
       </div>
 
+      <div class="moods" role="group" aria-label="Режим">
+        <button data-mood="home">Дом</button>
+        <button data-mood="night">Ночь</button>
+        <button data-mood="play">Шалость</button>
+      </div>
+
       <div class="themes" role="group" aria-label="Тема">
         <button class="gallery" data-theme="gallery" aria-label="Галерея"></button>
         <button class="tobacco" data-theme="tobacco" aria-label="Табак"></button>
@@ -34,8 +40,6 @@
         <button class="stone" data-theme="stone" aria-label="Камень"></button>
         <button class="forest" data-theme="forest" aria-label="Лес"></button>
         <button class="apple" data-theme="apple" aria-label="Светлый"></button>
-        <button class="night" data-theme="night" aria-label="Ночь"></button>
-        <button class="play" data-theme="play" aria-label="Шалость"></button>
       </div>
 
       <div class="guests" role="group" aria-label="Гости">
@@ -57,6 +61,8 @@
         <span id="backgroundPreview" hidden></span>
         <button type="button" class="ghost" id="clearBackground">Сброс</button>
       </div>
+
+      <button type="button" class="action" id="reloadTv">Залить обновления</button>
 
       <p class="people" id="calendarWarning" hidden></p>
       <p class="status" id="notice" role="status"></p>

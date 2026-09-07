@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./tv.css" />
   </head>
   <body data-theme="gallery">
+    <div id="galleryBackdrop" aria-hidden="true"></div>
     <div id="photo"></div>
     <div id="wash"></div>
     <div id="orbs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -32,6 +33,16 @@
       <p id="note" hidden></p>
       <main id="screen"></main>
     </div>
+    <section id="mediaBar" hidden aria-label="Сейчас играет">
+      <div class="media-art" id="mediaArt" aria-hidden="true"></div>
+      <div class="media-copy">
+        <p class="eyebrow">Сейчас играет</p>
+        <strong id="mediaTitle"></strong>
+        <span id="mediaArtist"></span>
+      </div>
+      <div class="media-state" id="mediaState"></div>
+      <div class="media-volume"><span aria-hidden="true">◖</span><i><b id="volumeFill"></b></i><small id="mediaVolume"></small></div>
+    </section>
     <section id="pair" hidden>
       <p class="eyebrow">Подключение экрана</p>
       <h1>Откройте Dino TV в телефоне и введите код</h1>

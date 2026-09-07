@@ -54,9 +54,9 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
   padding: 0;
 }
 .icon svg { width: 1.1rem; height: 1.1rem; }
-.modes, .guests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; }
+.modes, .moods, .guests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; }
 .guests { grid-template-columns: 1fr 1fr; }
-.modes button, .guests button {
+.modes button, .moods button, .guests button {
   min-height: 2.55rem;
   padding: 0 .35rem;
   border: 1px solid var(--line);
@@ -65,7 +65,8 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
   font-size: .8rem;
   white-space: nowrap;
 }
-.modes button.active, .guests button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.modes button.active, .moods button.active, .guests button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.moods button[data-mood="play"].active { background: #8a1733; color: #ffd6de; border-color: #8a1733; }
 .themes {
   display: flex;
   justify-content: space-between;
@@ -88,8 +89,6 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 .stone { background: #2d3032; }
 .forest { background: #202c24; }
 .apple { background: #e6e3df; }
-.night { background: #0b0b0c; border-color: #3a3936 !important; }
-.play { background: radial-gradient(circle at 30% 30%, #ff8aa0, #8a1733); }
 .compose {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
@@ -146,6 +145,14 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
   font-size: .86rem;
 }
 .upload input { display: none; }
+.action {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  font-size: .86rem;
+}
 #backgroundPreview {
   width: 1.5rem;
   height: 1.5rem;

@@ -1,8 +1,8 @@
-import { normalizeDisplay } from "../control-state.js";
+import { normalizeDisplay, screenTheme, shouldApplyTvReload } from "../control-state.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["NOW", "TODAY", "WEEK"];
-const rotateMs = 12_000;
+const rotateMs = 30_000;
 const russian = "ru-RU";
 
 const screen = document.querySelector("#screen");
@@ -13,6 +13,13 @@ const weatherLine = document.querySelector("#weatherLine");
 const pairEl = document.querySelector("#pair");
 const pairCode = document.querySelector("#pairCode");
 const photo = document.querySelector("#photo");
+const mediaBar = document.querySelector("#mediaBar");
+const mediaArt = document.querySelector("#mediaArt");
+const mediaTitle = document.querySelector("#mediaTitle");
+const mediaArtist = document.querySelector("#mediaArtist");
+const mediaState = document.querySelector("#mediaState");
+const mediaVolume = document.querySelector("#mediaVolume");
+const volumeFill = document.querySelector("#volumeFill");
 
 let snapshot = null;
 let mode = "NOW";
@@ -20,6 +27,17 @@ let session = readSession();
 let rotateTimer;
 let lastForcedMode = "";
 let paintedKey = "";
+let appliedReloadAt = localStorage.getItem("dinoTvReloadAt") || "";
+
+function flushTvApp(reloadAt) {
+  if (!shouldApplyTvReload(appliedReloadAt, reloadAt)) return false;
+  appliedReloadAt = reloadAt;
+  localStorage.setItem("dinoTvReloadAt", reloadAt);
+  const next = new URL(location.href);
+  next.searchParams.set("r", String(Date.now()));
+  location.replace(next.toString());
+  return true;
+}
 
 function readSession() {
   const fromHash = location.hash.replace(/^#/, "").trim();
@@ -117,9 +135,22 @@ function eventRow(event) {
     <i style="background:${event.color}"></i>
     <div>
       <strong>${escapeHtml(titleOf(event))}</strong>
+      <span class="event-owner">${escapeHtml(eventOwner(event))}</span>
       <div class="muted">${timeOf(event.start)} — ${timeOf(event.end)}</div>
     </div>
   </div>`;
+}
+
+function durationLabel(event) {
+  if (event.allDay) return "Весь день";
+  const minutes = Math.max(0, Math.round((asDate(event.end).getTime() - asDate(event.start).getTime()) / 60_000));
+  if (minutes < 60) return `${minutes} мин`;
+  if (minutes % 60 === 0) return `${minutes / 60} ч`;
+  return `${Math.floor(minutes / 60)} ч ${minutes % 60} мин`;
+}
+
+function eventOwner(event) {
+  return event.ownerName || event.calendarName || "Дом";
 }
 
 function escapeHtml(value) {
@@ -181,6 +212,23 @@ function renderToday(now) {
   </section>`;
 }
 
+function renderGallery(now) {
+  if (snapshot.display?.privacy) return renderGuest();
+  if (mode === "WEEK") return renderWeek(now);
+  const events = mode === "TODAY"
+    ? eventsFor(todayStamp(now), now, true).slice(0, 5)
+    : upcomingEvents(now, 5);
+  const title = mode === "TODAY" ? "Сегодня" : "Ближайшие дела";
+  return `<section class="gallery-agenda">
+    <p class="kicker">${title}</p>
+    <div class="gallery-list">${events.length ? events.map((event) => `<article class="gallery-event">
+      <time class="gallery-time">${timeOf(event.start)}</time>
+      <div class="gallery-title"><strong>${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
+      <span class="gallery-owner"><i style="background:${event.color}"></i>${escapeHtml(eventOwner(event))}</span>
+    </article>`).join("") : `<p class="empty">Сегодня тихо. Можно никуда не спешить.</p>`}</div>
+  </section>`;
+}
+
 function renderWeek(now) {
   if (snapshot.display?.privacy) return renderGuest();
   const weekday = new Intl.DateTimeFormat(russian, { weekday: "short" });
@@ -205,16 +253,35 @@ function paintClock(now = new Date()) {
   weatherLine.textContent = weather ? `${weather.temperature}° · ${weather.description}` : "";
 }
 
+function paintMedia() {
+  const playing = snapshot?.nowPlaying;
+  const visible = Boolean(playing?.title);
+  mediaBar.hidden = !visible;
+  document.body.classList.toggle("has-media", visible);
+  if (!visible) return;
+  mediaTitle.textContent = playing.title;
+  mediaArtist.textContent = [playing.artist, playing.source].filter(Boolean).join(" · ");
+  mediaState.textContent = playing.isPlaying ? "││" : "▶";
+  const volume = Math.max(0, Math.min(100, Number(playing.volumePercent) || 0));
+  mediaVolume.textContent = String(volume);
+  volumeFill.style.width = `${volume}%`;
+  mediaArt.style.backgroundImage = playing.artworkUrl ? `url("${playing.artworkUrl}")` : "";
+  mediaArt.style.backgroundSize = playing.artworkUrl ? "cover" : "auto";
+}
+
 function viewSig() {
   const display = normalizeDisplay(snapshot.display);
   const events = (snapshot.days || []).flatMap((day) => day.events || []);
   return [
     mode,
     display.theme,
+    display.mood,
     display.privacy,
     snapshot.display?.note?.text || "",
     snapshot.display?.backgroundUrl || "",
     snapshot.weather?.temperature,
+    snapshot.nowPlaying?.title || "",
+    snapshot.nowPlaying?.isPlaying || false,
     events.length,
     events[0]?.id || "",
     events[events.length - 1]?.id || "",
@@ -225,11 +292,13 @@ function paint(force = false) {
   if (!snapshot) return;
   const now = new Date();
   const display = normalizeDisplay(snapshot.display);
-  document.body.dataset.theme = display.theme;
-  document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.theme !== "night");
+  const activeTheme = screenTheme(display);
+  document.body.dataset.theme = activeTheme;
+  document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.mood !== "night");
   document.body.classList.toggle("guests", display.privacy);
   photo.style.backgroundImage = snapshot.display.backgroundUrl ? `url("${snapshot.display.backgroundUrl}")` : "";
   paintClock(now);
+  paintMedia();
   document.querySelectorAll("#modes [data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
   if (snapshot.display.note?.text && !display.privacy) {
     noteEl.hidden = false;
@@ -240,7 +309,9 @@ function paint(force = false) {
   const key = `${viewSig()}|${now.getMinutes()}`;
   if (!force && key === paintedKey) return;
   paintedKey = key;
-  screen.innerHTML = mode === "WEEK" ? renderWeek(now) : mode === "TODAY" ? renderToday(now) : renderNow(now);
+  screen.innerHTML = activeTheme === "gallery"
+    ? renderGallery(now)
+    : mode === "WEEK" ? renderWeek(now) : mode === "TODAY" ? renderToday(now) : renderNow(now);
 }
 
 async function request(path, options = {}) {
@@ -258,6 +329,7 @@ async function request(path, options = {}) {
 
 async function loadSnapshot() {
   const data = await request("/v1/display/snapshot");
+  if (flushTvApp(data.reloadAt)) return;
   snapshot = data;
   if (modes.includes(data.display?.mode) && data.display.mode !== lastForcedMode) {
     mode = data.display.mode;
@@ -312,7 +384,22 @@ setInterval(() => {
   paintClock(now);
   if (now.getSeconds() === 0) paint();
 }, 1000);
-setInterval(() => { if (session) loadSnapshot().catch(() => {}); }, 2_000);
+let polling = false;
+setInterval(() => {
+  if (!session || polling) return;
+  polling = true;
+  loadSnapshot().catch(() => {}).finally(() => { polling = false; });
+}, 500);
+
+const pixelShifts = [[0, 0], [7, -4], [-5, 6], [4, 5], [-7, -3], [2, -6]];
+let pixelShiftIndex = 0;
+function shiftPixels() {
+  pixelShiftIndex = (pixelShiftIndex + 1) % pixelShifts.length;
+  const [x, y] = pixelShifts[pixelShiftIndex];
+  document.documentElement.style.setProperty("--pixel-x", `${x}px`);
+  document.documentElement.style.setProperty("--pixel-y", `${y}px`);
+}
+setInterval(shiftPixels, 90_000);
 
 async function boot() {
   if (["127.0.0.1", "localhost"].includes(location.hostname)) {
