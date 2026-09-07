@@ -16,7 +16,9 @@
     <main class="remote">
       <header>
         <strong>Dino TV</strong>
-        <span id="connectionState">…</span>
+        <button type="button" id="settingsBtn" class="icon" aria-label="Настройки">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.22-1.14.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.4.31.64.22l2.39-.96c.49.4 1.04.72 1.63.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.22 1.14-.53 1.63-.94l2.39.96c.24.1.51 0 .64-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+        </button>
       </header>
 
       <div class="modes" role="group" aria-label="Экран">
@@ -32,12 +34,14 @@
         <button class="stone" data-theme="stone" aria-label="Камень"></button>
         <button class="forest" data-theme="forest" aria-label="Лес"></button>
         <button class="apple" data-theme="apple" aria-label="Светлый"></button>
+        <button class="night" data-theme="night" aria-label="Ночь"></button>
+        <button class="play" data-theme="play" aria-label="Шалость"></button>
       </div>
 
-      <label class="row">
-        <span>Гости</span>
-        <button class="switch" id="privacySwitch" type="button" aria-label="Гостевой режим" aria-pressed="false"><i></i></button>
-      </label>
+      <div class="guests" role="group" aria-label="Гости">
+        <button type="button" data-privacy="false">Нет гостей</button>
+        <button type="button" data-privacy="true">Гости</button>
+      </div>
 
       <form id="noteForm" class="compose">
         <input id="note" maxlength="180" placeholder="Заметка на час" />
@@ -45,26 +49,32 @@
         <button type="button" id="clearNote" class="ghost">Снять</button>
       </form>
 
-      <div class="row files">
-        <label class="ghost">
-          Фон
-          <input id="background" type="file" accept="image/jpeg,image/png,image/webp" />
+      <div class="wallpaper">
+        <label class="upload">
+          <input id="background" type="file" accept="image/*" />
+          <span id="wallpaperLabel">Поставить обои</span>
         </label>
         <span id="backgroundPreview" hidden></span>
         <button type="button" class="ghost" id="clearBackground">Сброс</button>
       </div>
 
-      <form id="pairForm" class="compose">
-        <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />
-        <button type="submit">Связать</button>
-      </form>
-
-      <p class="people">
-        <span><i class="misha"></i> Миша <small id="mishaStatus"></small></span>
-        <span><i class="natasha"></i> Наташа <small id="natashaStatus"></small></span>
-      </p>
+      <p class="people" id="calendarWarning" hidden></p>
       <p class="status" id="notice" role="status"></p>
     </main>
+
+    <section id="settings" hidden>
+      <div class="sheet">
+        <header>
+          <strong>Экран</strong>
+          <button type="button" id="closeSettings" class="ghost">Закрыть</button>
+        </header>
+        <p class="hint">Если телевизор забыл дом, введите код с экрана.</p>
+        <form id="pairForm" class="compose">
+          <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />
+          <button type="submit">Связать</button>
+        </form>
+      </div>
+    </section>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

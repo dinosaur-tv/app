@@ -2,7 +2,7 @@ import { normalizeDisplay } from "../control-state.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["NOW", "TODAY", "WEEK"];
-const rotateMs = 18_000;
+const rotateMs = 12_000;
 const russian = "ru-RU";
 
 const screen = document.querySelector("#screen");
@@ -47,8 +47,7 @@ function timeOf(value) {
 }
 
 function titleOf(event) {
-  if (!snapshot?.display?.privacy) return event.title;
-  return "Личное";
+  return event.title;
 }
 
 function dayKey(value, now = new Date()) {
@@ -59,8 +58,14 @@ function dayKey(value, now = new Date()) {
   return todayStamp(date);
 }
 
-function eventsFor(date) {
-  return (snapshot?.days || []).flatMap((item) => item.events || []).filter((event) => dayKey(event.start) === date);
+function isLive(event, now = new Date()) {
+  return asDate(event.end).getTime() >= now.getTime();
+}
+
+function eventsFor(date, now = new Date(), liveOnly = false) {
+  return (snapshot?.days || [])
+    .flatMap((item) => item.events || [])
+    .filter((event) => dayKey(event.start, now) === date && (!liveOnly || isLive(event, now)));
 }
 
 function todayStamp(now = new Date()) {
@@ -78,11 +83,11 @@ function weekDates(now = new Date()) {
   });
 }
 
-function upcomingEvents(now = new Date(), limit = 5) {
-  const stamp = now.toISOString();
+function upcomingEvents(now = new Date(), limit = 6) {
   return (snapshot?.days || [])
     .flatMap((day) => day.events || [])
-    .filter((event) => event.end >= stamp)
+    .filter((event) => isLive(event, now))
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)))
     .slice(0, limit);
 }
 
@@ -112,7 +117,7 @@ function eventRow(event) {
     <i style="background:${event.color}"></i>
     <div>
       <strong>${escapeHtml(titleOf(event))}</strong>
-      <div class="muted">${timeOf(event.start)} — ${timeOf(event.end)} · ${escapeHtml(event.calendarName)}</div>
+      <div class="muted">${timeOf(event.start)} — ${timeOf(event.end)}</div>
     </div>
   </div>`;
 }
@@ -121,66 +126,76 @@ function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
 }
 
+function weatherFor(date) {
+  return (snapshot?.weather?.days || []).find((day) => day.date === date);
+}
+
+function periodsBlock(periods) {
+  if (!periods?.length) return "";
+  return `<div class="periods">${periods.map((period) => `<div class="period"><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><small>${escapeHtml(period.description)}</small></div>`).join("")}</div>`;
+}
+
+function renderGuest() {
+  const weather = snapshot.weather;
+  return `<section class="guest-weather">
+    <div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>
+    ${periodsBlock(weather.periods)}
+  </section>`;
+}
+
 function renderNow(now) {
+  if (snapshot.display?.privacy) return renderGuest();
   const next = nextEvent(now);
   const rest = upcomingEvents(now, 6).filter((event) => event.id !== next?.id).slice(0, 4);
+  const weather = snapshot.weather;
   return `<section class="grid-now">
     <article class="card next-card">
-      <p class="kicker">Дальше</p>
+      <p class="kicker">${next && asDate(next.start) <= now ? "Сейчас" : "Дальше"}</p>
       ${next ? `<h3>${escapeHtml(titleOf(next))}</h3>
-        <p class="muted">${timeOf(next.start)} — ${timeOf(next.end)} · ${escapeHtml(next.calendarName)}</p>
-        <p class="when">${waitLabel(next, now)}</p>` : `<h3>Свободно</h3><p class="muted">В календаре больше ничего нет.</p>`}
+        <p class="muted">${timeOf(next.start)} — ${timeOf(next.end)}</p>
+        <p class="when">${waitLabel(next, now)}</p>` : `<h3>Свободно</h3><p class="muted">Ближайших дел нет.</p>`}
     </article>
     <article class="card">
-      <p class="kicker">Ближайшее</p>
-      <div class="events">${rest.length ? rest.map((event) => eventRow(event)).join("") : `<p class="empty">Больше ничего рядом нет.</p>`}</div>
+      <p class="kicker">Погода</p>
+      <div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>
+      ${periodsBlock(weather.periods)}
+      ${rest.length ? `<div class="events">${rest.map((event) => eventRow(event)).join("")}</div>` : ""}
     </article>
   </section>`;
 }
 
 function renderToday(now) {
-  const today = eventsFor(todayStamp(now));
+  if (snapshot.display?.privacy) return renderGuest();
+  const today = eventsFor(todayStamp(now), now, true);
   const weather = snapshot.weather;
-  const periods = weather.periods?.length ? weather.periods : [];
-  const hours = weather.hours || [];
   return `<section class="grid-today">
     <article class="card">
       <p class="kicker">Расписание</p>
-      <div class="events">${today.length ? today.map((event) => eventRow(event)).join("") : `<p class="empty">Сегодня можно никуда не спешить.</p>`}</div>
+      <div class="events">${today.length ? today.map((event) => eventRow(event)).join("") : `<p class="empty">Сегодня больше ничего нет.</p>`}</div>
     </article>
     <article class="card">
       <p class="kicker">Погода</p>
       <div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>
-      <div class="periods">${periods.map((period) => `<div class="period"><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><small>${escapeHtml(period.description)}</small></div>`).join("")}</div>
-      <div class="hours">${hours.map((hour) => `<span><small>${pad(hour.hour)}:00</small><b>${hour.temperature}°</b></span>`).join("")}</div>
+      ${periodsBlock(weather.periods)}
     </article>
   </section>`;
 }
 
 function renderWeek(now) {
+  if (snapshot.display?.privacy) return renderGuest();
   const weekday = new Intl.DateTimeFormat(russian, { weekday: "short" });
-  const weekdayLong = new Intl.DateTimeFormat(russian, { weekday: "long", day: "numeric", month: "long" });
-  const days = weekDates(now).map((date) => {
+  return `<section class="week">${weekDates(now).map((date) => {
     const stamp = new Date(`${date}T12:00:00+03:00`);
-    return {
-      date,
-      stamp,
-      events: eventsFor(date),
-      current: date === todayStamp(now),
-    };
-  });
-  const busy = days.filter((day) => day.events.length);
-  return `<section class="week">
-    <div class="week-strip">${days.map((day) => `<div class="strip-day ${day.current ? "today" : ""} ${day.events.length ? "" : "idle"}">
-      <small>${weekday.format(day.stamp)}</small>
-      <b>${day.stamp.getDate()}</b>
-      <span>${day.events.length ? `${day.events.length}` : ""}</span>
-    </div>`).join("")}</div>
-    <div class="week-agenda">${busy.length ? busy.map((day) => `<article class="card">
-      <p class="kicker">${weekdayLong.format(day.stamp)}</p>
-      <div class="events">${day.events.map((event) => eventRow(event)).join("")}</div>
-    </article>`).join("") : `<article class="card"><p class="empty">На ближайшие семь дней ничего не стоит.</p></article>`}</div>
-  </section>`;
+    const weather = weatherFor(date);
+    const liveOnly = date === todayStamp(now);
+    const events = eventsFor(date, now, liveOnly);
+    return `<article class="card ${date === todayStamp(now) ? "today" : ""}">
+      <div class="day-name">${weekday.format(stamp)}</div>
+      <div class="day-num">${stamp.getDate()}</div>
+      <div class="day-weather">${weather ? `${weather.high}° / ${weather.low}°` : "—"}<small>${weather ? escapeHtml(weather.description) : ""}</small></div>
+      <div class="events">${events.length ? events.map((event) => eventRow(event)).join("") : `<p class="empty">Тихо</p>`}</div>
+    </article>`;
+  }).join("")}</section>`;
 }
 
 function paintClock(now = new Date()) {
@@ -190,22 +205,39 @@ function paintClock(now = new Date()) {
   weatherLine.textContent = weather ? `${weather.temperature}° · ${weather.description}` : "";
 }
 
+function viewSig() {
+  const display = normalizeDisplay(snapshot.display);
+  const events = (snapshot.days || []).flatMap((day) => day.events || []);
+  return [
+    mode,
+    display.theme,
+    display.privacy,
+    snapshot.display?.note?.text || "",
+    snapshot.display?.backgroundUrl || "",
+    snapshot.weather?.temperature,
+    events.length,
+    events[0]?.id || "",
+    events[events.length - 1]?.id || "",
+  ].join("|");
+}
+
 function paint(force = false) {
   if (!snapshot) return;
   const now = new Date();
   const display = normalizeDisplay(snapshot.display);
   document.body.dataset.theme = display.theme;
-  document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl));
+  document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.theme !== "night");
+  document.body.classList.toggle("guests", display.privacy);
   photo.style.backgroundImage = snapshot.display.backgroundUrl ? `url("${snapshot.display.backgroundUrl}")` : "";
   paintClock(now);
   document.querySelectorAll("#modes [data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
-  if (snapshot.display.note?.text) {
+  if (snapshot.display.note?.text && !display.privacy) {
     noteEl.hidden = false;
     noteEl.textContent = snapshot.display.note.text;
   } else {
     noteEl.hidden = true;
   }
-  const key = `${mode}|${snapshot.generatedAt}|${display.theme}|${display.privacy}|${snapshot.display.note?.text || ""}|${snapshot.display.backgroundUrl || ""}|${now.getMinutes()}`;
+  const key = `${viewSig()}|${now.getMinutes()}`;
   if (!force && key === paintedKey) return;
   paintedKey = key;
   screen.innerHTML = mode === "WEEK" ? renderWeek(now) : mode === "TODAY" ? renderToday(now) : renderNow(now);
@@ -232,7 +264,7 @@ async function loadSnapshot() {
     lastForcedMode = data.display.mode;
     if (session) startRotation();
   }
-  paint(true);
+  paint();
 }
 
 async function startPairing() {
@@ -280,7 +312,7 @@ setInterval(() => {
   paintClock(now);
   if (now.getSeconds() === 0) paint();
 }, 1000);
-setInterval(() => { if (session) loadSnapshot().catch(() => {}); }, 20_000);
+setInterval(() => { if (session) loadSnapshot().catch(() => {}); }, 2_000);
 
 async function boot() {
   if (["127.0.0.1", "localhost"].includes(location.hostname)) {

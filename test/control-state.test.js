@@ -11,3 +11,8 @@ test("does not let unknown API values break the controls", () => {
   assert.equal(displayModeName("UNKNOWN"), "Сейчас");
   assert.deepEqual(normalizeDisplay({ mode: "MONTH", theme: "pink", privacy: "yes" }), { mode: "NOW", theme: "gallery", privacy: false, backgroundUrl: "" });
 });
+
+test("keeps night and play as first-class living-room moods", () => {
+  assert.equal(normalizeDisplay({ theme: "night" }).theme, "night");
+  assert.equal(normalizeDisplay({ theme: "play" }).theme, "play");
+});

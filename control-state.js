@@ -1,8 +1,17 @@
 export const displayModes = ["NOW", "TODAY", "WEEK"];
-export const displayThemes = ["gallery", "tobacco", "taupe", "stone", "forest", "apple"];
+export const displayThemes = ["gallery", "tobacco", "taupe", "stone", "forest", "apple", "night", "play"];
 
 const modeNames = { NOW: "Сейчас", TODAY: "Сегодня", WEEK: "Неделя" };
-export const themeNames = { gallery: "Галерея", tobacco: "Табак", taupe: "Тауп", stone: "Камень", forest: "Лес", apple: "Светлый" };
+export const themeNames = {
+  gallery: "Галерея",
+  tobacco: "Табак",
+  taupe: "Тауп",
+  stone: "Камень",
+  forest: "Лес",
+  apple: "Светлый",
+  night: "Ночь",
+  play: "Шалость",
+};
 
 export function displayModeName(mode) {
   return modeNames[mode] || modeNames.NOW;

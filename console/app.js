@@ -3,7 +3,9 @@ import { displayModeName, normalizeDisplay, themeNames } from "../control-state.
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const telegram = window.Telegram?.WebApp;
 let display = normalizeDisplay();
+let tvLinked = false;
 const notice = document.querySelector("#notice");
+const settings = document.querySelector("#settings");
 const initData = telegram?.initData || "";
 
 if (telegram) {
@@ -21,21 +23,22 @@ function setNotice(text, type = "") {
 function paint() {
   document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === display.mode));
   document.querySelectorAll("[data-theme]").forEach((button) => button.classList.toggle("active", button.dataset.theme === display.theme));
-  const privacy = document.querySelector("#privacySwitch");
-  privacy.classList.toggle("active", display.privacy);
-  privacy.setAttribute("aria-pressed", String(display.privacy));
+  document.querySelectorAll("[data-privacy]").forEach((button) => button.classList.toggle("active", String(display.privacy) === button.dataset.privacy));
   const preview = document.querySelector("#backgroundPreview");
+  const wallpaperLabel = document.querySelector("#wallpaperLabel");
   if (display.backgroundUrl) {
     preview.hidden = false;
     preview.style.backgroundImage = `url("${display.backgroundUrl}")`;
+    wallpaperLabel.textContent = "Сменить обои";
   } else {
     preview.hidden = true;
     preview.style.backgroundImage = "";
+    wallpaperLabel.textContent = "Поставить обои";
   }
 }
 
 async function request(path, options = {}) {
-  if (!initData) throw new Error("Откройте пульт из Telegram");
+  if (!initData) throw new Error("Откройте пульт из приложения");
   const response = await fetch(`${API}${path}`, {
     ...options,
     headers: { "content-type": "application/json", "x-telegram-init-data": initData, ...(options.headers || {}) },
@@ -44,13 +47,16 @@ async function request(path, options = {}) {
   return response.status === 204 ? null : response.json();
 }
 
-async function save(patch, successText = "Готово") {
+async function save(patch, successText = "") {
+  display = normalizeDisplay({ ...display, ...patch });
+  paint();
   try {
     const data = await request("/v1/miniapp/display", { method: "PATCH", body: JSON.stringify(patch) });
-    display = normalizeDisplay(data.display);
+    display = normalizeDisplay({ ...data.display, backgroundUrl: data.display.backgroundUrl || display.backgroundUrl });
     paint();
-    telegram?.HapticFeedback?.notificationOccurred("success");
-    setNotice(successText, "online");
+    telegram?.HapticFeedback?.impactOccurred?.("light");
+    if (successText) setNotice(successText, "online");
+    else setNotice("");
   } catch (error) {
     telegram?.HapticFeedback?.notificationOccurred("error");
     setNotice(error.message, "error");
@@ -66,22 +72,32 @@ function readFile(file) {
   });
 }
 
-async function load() {
-  paint();
-  if (!initData) {
-    document.querySelector("#connectionState").textContent = "превью";
+function showCalendarWarning(connected = {}) {
+  const missing = [];
+  if (!connected.misha) missing.push("Миша");
+  if (!connected.natasha) missing.push("Наташа");
+  const warning = document.querySelector("#calendarWarning");
+  if (!missing.length) {
+    warning.hidden = true;
+    warning.textContent = "";
     return;
   }
+  warning.hidden = false;
+  warning.textContent = missing.length === 2 ? "Календари отвалились" : `Календарь ${missing[0]} отвалился`;
+}
+
+async function load() {
+  paint();
+  if (!initData) return;
   try {
     const data = await request("/v1/miniapp/state");
     display = normalizeDisplay(data.display);
+    tvLinked = Boolean(data.tvLinked);
     paint();
-    document.querySelector("#mishaStatus").textContent = data.connectedCalendars.misha ? "ок" : "нет";
-    document.querySelector("#natashaStatus").textContent = data.connectedCalendars.natasha ? "ок" : "нет";
-    document.querySelector("#connectionState").textContent = "онлайн";
+    showCalendarWarning(data.connectedCalendars);
+    if (!tvLinked) settings.hidden = false;
     setNotice("");
   } catch (error) {
-    document.querySelector("#connectionState").textContent = "нет сети";
     setNotice(error.message, "error");
   }
 }
@@ -92,8 +108,11 @@ document.querySelectorAll("[data-mode]").forEach((button) => {
 document.querySelectorAll("[data-theme]").forEach((button) => {
   button.addEventListener("click", () => save({ theme: button.dataset.theme }, themeNames[button.dataset.theme]));
 });
-document.querySelector("#privacySwitch").addEventListener("click", () => {
-  save({ privacy: !display.privacy }, !display.privacy ? "Гости" : "Свои");
+document.querySelectorAll("[data-privacy]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const privacy = button.dataset.privacy === "true";
+    save({ privacy }, privacy ? "Гости" : "Нет гостей");
+  });
 });
 document.querySelector("#noteForm").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -101,7 +120,7 @@ document.querySelector("#noteForm").addEventListener("submit", (event) => {
   if (text) save({ note: text }, "Заметка");
 });
 document.querySelector("#clearNote").addEventListener("click", () => save({ clearNote: true }, "Снято"));
-document.querySelector("#clearBackground").addEventListener("click", () => save({ clearBackground: true }, "Фон сброшен"));
+document.querySelector("#clearBackground").addEventListener("click", () => save({ clearBackground: true }, "Обои сброшены"));
 document.querySelector("#background").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -111,13 +130,18 @@ document.querySelector("#background").addEventListener("change", async (event) =
     display = normalizeDisplay(data.display);
     paint();
     telegram?.HapticFeedback?.notificationOccurred("success");
-    setNotice("Фон", "online");
+    setNotice("Обои", "online");
   } catch (error) {
     telegram?.HapticFeedback?.notificationOccurred("error");
     setNotice(error.message, "error");
   } finally {
     event.target.value = "";
   }
+});
+document.querySelector("#settingsBtn").addEventListener("click", () => { settings.hidden = false; });
+document.querySelector("#closeSettings").addEventListener("click", () => { settings.hidden = true; });
+settings.addEventListener("click", (event) => {
+  if (event.target === settings) settings.hidden = true;
 });
 document.querySelector("#pairForm").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -129,6 +153,8 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
   try {
     await request("/v1/miniapp/pair/approve", { method: "POST", body: JSON.stringify({ code }) });
     document.querySelector("#pairCode").value = "";
+    tvLinked = true;
+    settings.hidden = true;
     telegram?.HapticFeedback?.notificationOccurred("success");
     setNotice("Телевизор связан", "online");
   } catch (error) {
