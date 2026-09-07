@@ -8,97 +8,63 @@
     <link rel="icon" type="image/png" href="/assets/dino-icon-512.png" />
     <link rel="apple-touch-icon" href="/assets/dino-icon-512.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <title>Dino TV · Дом</title>
+    <title>Dino TV</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="app-shell" id="app">
-      <header class="masthead">
-        <img class="brand-logo" src="/assets/dinosaur-wordmark.png" alt="Dinosaur" />
-        <p class="eyebrow">Dino TV · домашняя консоль</p>
-        <div class="masthead-row">
-          <h1>Ваш дом,<br /><em>настроенный вами.</em></h1>
-          <span class="presence" id="connectionState">Подключение</span>
-        </div>
+    <main class="remote">
+      <header>
+        <img src="/assets/dino-icon-512.png" alt="" />
+        <strong>Dino TV</strong>
+        <span id="connectionState">…</span>
       </header>
 
-      <section class="hero" aria-labelledby="screen-title">
-        <div>
-          <p class="eyebrow">Сейчас на экране</p>
-          <h2 id="screen-title" data-current-mode>Сейчас</h2>
-          <p class="muted">Санкт-Петербург · обновляется на телевизоре</p>
-        </div>
-        <div class="clock-mark" aria-hidden="true"><span></span><span></span><span></span></div>
-      </section>
+      <div class="modes" role="group" aria-label="Экран">
+        <button data-mode="NOW">Сейчас</button>
+        <button data-mode="TODAY">Сегодня</button>
+        <button data-mode="WEEK">Неделя</button>
+      </div>
 
-      <section class="section">
-        <div class="section-title"><p class="eyebrow">Вид</p><span>01</span></div>
-        <div class="mode-grid" role="group" aria-label="Режим экрана">
-          <button class="mode" data-mode="NOW"><span>Сейчас</span><small>Время и погода</small></button>
-          <button class="mode" data-mode="TODAY"><span>Сегодня</span><small>Дела и прогноз</small></button>
-          <button class="mode" data-mode="WEEK"><span>Неделя</span><small>Общий ритм</small></button>
-        </div>
-      </section>
+      <div class="themes" role="group" aria-label="Тема">
+        <button class="gallery" data-theme="gallery" aria-label="Галерея"></button>
+        <button class="tobacco" data-theme="tobacco" aria-label="Табак"></button>
+        <button class="taupe" data-theme="taupe" aria-label="Тауп"></button>
+        <button class="stone" data-theme="stone" aria-label="Камень"></button>
+        <button class="forest" data-theme="forest" aria-label="Лес"></button>
+        <button class="apple" data-theme="apple" aria-label="Светлый"></button>
+      </div>
 
-      <section class="section">
-        <div class="section-title"><p class="eyebrow">Настроение</p><span>02</span></div>
-        <div class="themes" role="group" aria-label="Тема экрана">
-          <button class="theme-swatch gallery" data-theme="gallery"><i></i><span>Галерея</span></button>
-          <button class="theme-swatch tobacco" data-theme="tobacco"><i></i><span>Табак</span></button>
-          <button class="theme-swatch taupe" data-theme="taupe"><i></i><span>Тауп</span></button>
-          <button class="theme-swatch stone" data-theme="stone"><i></i><span>Камень</span></button>
-          <button class="theme-swatch forest" data-theme="forest"><i></i><span>Лес</span></button>
-          <button class="theme-swatch apple" data-theme="apple"><i></i><span>Светлый</span></button>
-        </div>
-      </section>
+      <label class="row">
+        <span>Гости</span>
+        <button class="switch" id="privacySwitch" type="button" aria-label="Гостевой режим" aria-pressed="false"><i></i></button>
+      </label>
 
-      <section class="section">
-        <div class="section-title"><p class="eyebrow">Фон телевизора</p><span>03</span></div>
-        <label class="upload" for="background">
+      <form id="noteForm" class="note">
+        <input id="note" maxlength="180" placeholder="Заметка на час" />
+        <button type="submit">Ок</button>
+        <button type="button" id="clearNote" class="ghost">Снять</button>
+      </form>
+
+      <div class="row files">
+        <label class="ghost">
+          Фон
           <input id="background" type="file" accept="image/jpeg,image/png,image/webp" />
-          <span>Выбрать картинку с телефона</span>
         </label>
-        <div class="background-preview" id="backgroundPreview" hidden></div>
-        <button type="button" class="quiet-button" id="clearBackground">Убрать свой фон</button>
-      </section>
+        <span id="backgroundPreview" hidden></span>
+        <button type="button" class="ghost" id="clearBackground">Сброс</button>
+      </div>
 
-      <section class="section privacy-section">
-        <div>
-          <p class="eyebrow">Гостевой режим</p>
-          <h3>Скрыть календарь</h3>
-          <p class="muted">На экране останутся только время и погода.</p>
-        </div>
-        <button class="switch" id="privacySwitch" aria-label="Переключить гостевой режим" aria-pressed="false"><i></i></button>
-      </section>
+      <form id="pairForm" class="note">
+        <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />
+        <button type="submit">Связать</button>
+      </form>
 
-      <section class="section note-section">
-        <div class="section-title"><p class="eyebrow">Заметка на экране</p><span>04</span></div>
-        <form id="noteForm">
-          <label for="note">Текст появится на телевизоре на один час</label>
-          <textarea id="note" maxlength="180" placeholder="Например: ужин в 20:00"></textarea>
-          <div class="note-actions"><button type="submit" class="text-button">Показать заметку <b>→</b></button><button type="button" class="quiet-button" id="clearNote">Убрать</button></div>
-        </form>
-      </section>
-
-      <section class="section">
-        <div class="section-title"><p class="eyebrow">Телевизор</p><span>05</span></div>
-        <p class="muted">Если на экране код, введите его сюда. После этого телевизор будет открывать https://home.dym-dino.ru/tv/ сам.</p>
-        <form id="pairForm" class="pair-form">
-          <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" />
-          <button type="submit" class="text-button">Подключить <b>→</b></button>
-        </form>
-      </section>
-
-      <section class="section people-section">
-        <div class="section-title"><p class="eyebrow">Календари</p><span>06</span></div>
-        <div class="people">
-          <div><i class="misha-dot"></i><span>Миша</span><small id="mishaStatus">Проверяем</small></div>
-          <div><i class="natasha-dot"></i><span>Наташа</span><small id="natashaStatus">Проверяем</small></div>
-        </div>
-      </section>
-
-      <p class="footnote" id="notice" role="status">Загрузка настроек…</p>
+      <p class="people">
+        <i class="misha"></i> Миша <small id="mishaStatus"></small>
+        <i class="natasha"></i> Наташа <small id="natashaStatus"></small>
+      </p>
+      <p class="status" id="notice" role="status"></p>
     </main>
     <script type="module" src="./app.js"></script>
   </body>
