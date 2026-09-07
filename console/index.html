@@ -39,7 +39,7 @@
         <button class="switch" id="privacySwitch" type="button" aria-label="Гостевой режим" aria-pressed="false"><i></i></button>
       </label>
 
-      <form id="noteForm" class="note">
+      <form id="noteForm" class="compose">
         <input id="note" maxlength="180" placeholder="Заметка на час" />
         <button type="submit">Ок</button>
         <button type="button" id="clearNote" class="ghost">Снять</button>
@@ -54,14 +54,14 @@
         <button type="button" class="ghost" id="clearBackground">Сброс</button>
       </div>
 
-      <form id="pairForm" class="note">
+      <form id="pairForm" class="compose">
         <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />
         <button type="submit">Связать</button>
       </form>
 
       <p class="people">
-        <i class="misha"></i> Миша <small id="mishaStatus"></small>
-        <i class="natasha"></i> Наташа <small id="natashaStatus"></small>
+        <span><i class="misha"></i> Миша <small id="mishaStatus"></small></span>
+        <span><i class="natasha"></i> Наташа <small id="natashaStatus"></small></span>
       </p>
       <p class="status" id="notice" role="status"></p>
     </main>

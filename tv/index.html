@@ -16,17 +16,19 @@
     <div id="grain" aria-hidden="true"></div>
     <div id="stage">
       <header id="top">
-        <div class="brand">
-          <p class="eyebrow">Dino TV</p>
-          <strong id="dateLine">Санкт-Петербург</strong>
-        </div>
         <nav id="modes" aria-label="Экран">
           <button data-mode="NOW">Сейчас</button>
           <button data-mode="TODAY">Сегодня</button>
           <button data-mode="WEEK">Неделя</button>
         </nav>
-        <time id="clock">00:00</time>
       </header>
+      <section id="hero">
+        <time id="clock">00:00</time>
+        <div class="hero-copy">
+          <p id="dateLine">Санкт-Петербург</p>
+          <p id="weatherLine"></p>
+        </div>
+      </section>
       <p id="note" hidden></p>
       <main id="screen"></main>
     </div>
