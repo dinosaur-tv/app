@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#171614" />
     <meta name="color-scheme" content="dark" />
     <link rel="icon" type="image/png" href="/assets/dino-icon-512.png" />
@@ -29,20 +29,44 @@
           <button data-mode="WEEK">Неделя</button>
         </div>
 
-        <div class="themes" role="group" aria-label="Сцена">
-          <button class="gallery" data-scene="gallery"><i></i><span>Галерея</span></button>
-          <button class="home-day" data-scene="home-day"><i></i><span>Дом · День</span></button>
-          <button class="home-evening" data-scene="home-evening"><i></i><span>Дом · Вечер</span></button>
-          <button class="night" data-scene="night"><i></i><span>Ночь</span></button>
-          <button class="play" data-scene="play"><i></i><span>Шалость</span></button>
-          <button class="forest" data-scene="forest"><i></i><span>Лес</span></button>
-          <button class="mountains" data-scene="mountains"><i></i><span>Горы</span></button>
-          <button class="sea" data-scene="sea"><i></i><span>Море</span></button>
-          <button class="space" data-scene="space"><i></i><span>Космос</span></button>
-          <button class="petersburg" data-scene="petersburg"><i></i><span>Петербург</span></button>
-          <button class="rome" data-scene="rome"><i></i><span>Рим</span></button>
-          <button class="florence" data-scene="florence"><i></i><span>Флоренция</span></button>
-          <button class="venice" data-scene="venice"><i></i><span>Венеция</span></button>
+        <div class="theme-groups" aria-label="Сцена">
+          <section class="theme-group">
+            <h2>Дом</h2>
+            <div class="themes">
+              <button type="button" class="gallery" data-scene="gallery"><i></i><span>Галерея</span></button>
+              <button type="button" class="home-day" data-scene="home-day"><i></i><span>День</span></button>
+              <button type="button" class="home-evening" data-scene="home-evening"><i></i><span>Вечер</span></button>
+              <button type="button" class="night" data-scene="night"><i></i><span>Ночь</span></button>
+              <button type="button" class="play" data-scene="play"><i></i><span>Шалость</span></button>
+            </div>
+          </section>
+          <section class="theme-group">
+            <h2>Природа</h2>
+            <div class="themes">
+              <button type="button" class="forest" data-scene="forest"><i></i><span>Лес</span></button>
+              <button type="button" class="mountains" data-scene="mountains"><i></i><span>Горы</span></button>
+              <button type="button" class="sea" data-scene="sea"><i></i><span>Море</span></button>
+              <button type="button" class="space" data-scene="space"><i></i><span>Космос</span></button>
+            </div>
+          </section>
+          <section class="theme-group">
+            <h2>Города</h2>
+            <div class="themes">
+              <button type="button" class="petersburg" data-scene="petersburg"><i></i><span>Петербург</span></button>
+              <button type="button" class="rome" data-scene="rome"><i></i><span>Рим</span></button>
+              <button type="button" class="florence" data-scene="florence"><i></i><span>Флоренция</span></button>
+              <button type="button" class="venice" data-scene="venice"><i></i><span>Венеция</span></button>
+            </div>
+          </section>
+          <section class="theme-group">
+            <h2>Узоры</h2>
+            <div class="themes">
+              <button type="button" class="rus" data-scene="rus"><i></i><span>Русский</span></button>
+              <button type="button" class="byzantium" data-scene="byzantium"><i></i><span>Византия</span></button>
+              <button type="button" class="india" data-scene="india"><i></i><span>Индия</span></button>
+              <button type="button" class="italy" data-scene="italy"><i></i><span>Италия</span></button>
+            </div>
+          </section>
         </div>
 
         <div class="guests" role="group" aria-label="Гости">
@@ -51,7 +75,7 @@
         </div>
 
         <div class="note-block">
-          <button type="button" class="action" id="addNote">Добавить</button>
+          <button type="button" class="action" id="addNote">Заметка</button>
           <div id="noteCard" class="note-card" hidden>
             <p id="notePreview"></p>
             <button type="button" class="action" id="clearNote">Снять</button>
@@ -84,10 +108,37 @@
           <input id="musicVolume" type="range" min="0" max="100" value="50" />
         </label>
         <button type="button" class="action" data-music="toTv">На телевизор</button>
-        <p class="hint" id="musicHint">Откройте Кинопоиск на ТВ и войдите в тот же Яндекс. Тогда звук пойдёт с гостиной, а пульт будет им управлять.</p>
+        <p class="hint" id="musicHint">Кнопка «На телевизор» не переносит трек. В Яндекс Музыке на телефоне нажмите колонку и выберите Кинопоиск. «Вкл» справа вверху открывает сам Dino TV.</p>
       </section>
 
       <section id="pane-more" class="pane" hidden>
+        <div class="settings-block">
+          <h2>На экране</h2>
+          <button type="button" class="switch-row" data-layer="showWeather" role="switch" aria-checked="true">
+            <span>Погода</span>
+            <i class="switch" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="switch-row" data-layer="showCalendar" role="switch" aria-checked="true">
+            <span>Календарь</span>
+            <i class="switch" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="settings-block">
+          <h2>Смена вкладок</h2>
+          <p class="hint">Телевизор сам листает Сейчас, Сегодня и Неделю.</p>
+          <div class="guests" role="group" aria-label="Смена вкладок">
+            <button type="button" data-rotation-enabled="true">Вкл</button>
+            <button type="button" data-rotation-enabled="false">Выкл</button>
+          </div>
+          <p class="hint">Интервал</p>
+          <div id="rotationPresets" class="durations rotation-presets" role="group" aria-label="Интервал"></div>
+          <p class="hint">Сколько держать вкладку</p>
+          <div class="rotation-times">
+            <label>Сейчас<input id="rotateNow" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
+            <label>Сегодня<input id="rotateToday" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
+            <label>Неделя<input id="rotateWeek" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
+          </div>
+        </div>
         <p class="hint">Если телевизор забыл дом, введите код с экрана.</p>
         <form id="pairForm" class="compose">
           <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />

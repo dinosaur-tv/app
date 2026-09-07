@@ -1,4 +1,4 @@
-import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, screenTheme } from "../control-state.js";
+import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme } from "../control-state.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const telegram = window.Telegram?.WebApp;
@@ -12,6 +12,23 @@ let tvOnline = false;
 let tvPower = "on";
 const notice = document.querySelector("#notice");
 const initData = telegram?.initData || "";
+
+function homeToken() {
+  try {
+    return window.DINO_HOME_TOKEN || localStorage.getItem("dinoHomeToken") || "";
+  } catch {
+    return window.DINO_HOME_TOKEN || "";
+  }
+}
+
+function rememberHomeToken(token) {
+  if (!token) return;
+  try { localStorage.setItem("dinoHomeToken", token); } catch { /* ignore */ }
+}
+
+function hasRemoteAuth() {
+  return Boolean(initData || homeToken());
+}
 
 if (telegram) {
   telegram.ready();
@@ -47,7 +64,33 @@ function paintMusic() {
   volume.disabled = !musicConnected;
   hint.textContent = musicConnected
     ? (nowPlaying.deviceName ? `Играет: ${nowPlaying.deviceName}` : "Управляется через Яндекс Музыку")
-    : "Откройте Кинопоиск на ТВ и войдите в тот же Яндекс. Тогда звук пойдёт с гостиной, а пульт будет им управлять.";
+    : "Кнопка «На телевизор» не переносит трек. В Яндекс Музыке на телефоне нажмите колонку и выберите Кинопоиск. «Вкл» справа вверху открывает сам Dino TV.";
+}
+
+function rotationInputs() {
+  return [
+    ["rotateNow", "now"],
+    ["rotateToday", "today"],
+    ["rotateWeek", "week"],
+  ];
+}
+
+function paintRotation() {
+  const rotation = display.rotation;
+  document.querySelectorAll("[data-rotation-enabled]").forEach((button) => {
+    button.classList.toggle("active", String(rotation.enabled) === button.dataset.rotationEnabled);
+  });
+  const focused = document.activeElement;
+  for (const [id, key] of rotationInputs()) {
+    const input = document.querySelector(`#${id}`);
+    input.disabled = !rotation.enabled;
+    if (focused !== input) input.value = String(rotation[key]);
+  }
+  const uniform = rotation.now === rotation.today && rotation.today === rotation.week;
+  document.querySelectorAll("[data-rotation-seconds]").forEach((button) => {
+    button.disabled = !rotation.enabled;
+    button.classList.toggle("active", uniform && Number(button.dataset.rotationSeconds) === rotation.now);
+  });
 }
 
 function paint() {
@@ -55,6 +98,12 @@ function paint() {
   const activeScene = screenTheme(display);
   document.querySelectorAll("[data-scene]").forEach((button) => button.classList.toggle("active", button.dataset.scene === activeScene));
   document.querySelectorAll("[data-privacy]").forEach((button) => button.classList.toggle("active", String(display.privacy) === button.dataset.privacy));
+  document.querySelectorAll("[data-layer]").forEach((button) => {
+    const layer = button.dataset.layer;
+    const on = layer === "showWeather" ? display.showWeather : layer === "showCalendar" ? display.showCalendar : false;
+    button.setAttribute("aria-pressed", String(on));
+    button.setAttribute("aria-checked", String(on));
+  });
   const preview = document.querySelector("#backgroundPreview");
   const wallpaperLabel = document.querySelector("#wallpaperLabel");
   if (display.backgroundUrl) {
@@ -77,13 +126,19 @@ function paint() {
   state.textContent = tvOnline ? "на экране" : tvPower === "off" ? "выключен" : "не на связи";
   power.textContent = tvOnline ? "Выкл" : "Вкл";
   paintMusic();
+  paintRotation();
 }
 
 async function request(path, options = {}) {
-  if (!initData) throw new Error("Откройте пульт из приложения");
+  const allowUnauthedPair = path.includes("/pair/approve");
+  if (!hasRemoteAuth() && !allowUnauthedPair) throw new Error("Введите код с телевизора во вкладке «Ещё»");
+  const headers = { "content-type": "application/json", ...(options.headers || {}) };
+  if (initData) headers["x-telegram-init-data"] = initData;
+  const token = homeToken();
+  if (token) headers["x-dino-home-token"] = token;
   const response = await fetch(`${API}${path}`, {
     ...options,
-    headers: { "content-type": "application/json", "x-telegram-init-data": initData, ...(options.headers || {}) },
+    headers,
   });
   if (!response.ok) {
     const text = await response.text() || "Не удалось сохранить";
@@ -117,7 +172,9 @@ async function save(patch, successText = "") {
   if (patch.tvPower === "off") tvOnline = false;
   if (patch.tvPower === "on" || patch.tvPower === "off") tvPower = patch.tvPower;
   if (!keepNoteUi) {
-    display = normalizeDisplay({ ...display, ...patch });
+    const next = { ...patch };
+    if (patch.rotation) next.rotation = { ...display.rotation, ...patch.rotation };
+    display = normalizeDisplay({ ...display, ...next });
     paint();
   }
   try {
@@ -171,7 +228,11 @@ function showCalendarWarning(connected = {}) {
 
 async function load() {
   paint();
-  if (!initData) return;
+  if (!hasRemoteAuth()) {
+    showTab("more");
+    setNotice("Введите код с телевизора, чтобы пульт запомнил дом");
+    return;
+  }
   try {
     const data = await request("/v1/miniapp/state");
     applyState(data);
@@ -198,6 +259,42 @@ document.querySelectorAll("[data-scene]").forEach((button) => {
 document.querySelectorAll("[data-privacy]").forEach((button) => {
   button.addEventListener("click", () => save({ privacy: button.dataset.privacy === "true" }));
 });
+document.querySelectorAll("[data-layer]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const layer = button.dataset.layer;
+    if (layer !== "showWeather" && layer !== "showCalendar") return;
+    save({ [layer]: display[layer] === false });
+  });
+});
+document.querySelectorAll("[data-rotation-enabled]").forEach((button) => {
+  button.addEventListener("click", () => save({ rotation: { enabled: button.dataset.rotationEnabled === "true" } }));
+});
+
+const rotationPresetsEl = document.querySelector("#rotationPresets");
+for (const seconds of rotationPresets) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.rotationSeconds = String(seconds);
+  button.textContent = seconds % 60 === 0 ? `${seconds / 60}м` : `${seconds}с`;
+  rotationPresetsEl.append(button);
+}
+rotationPresetsEl.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-rotation-seconds]");
+  if (!button || button.disabled) return;
+  const seconds = Number(button.dataset.rotationSeconds);
+  save({ rotation: { now: seconds, today: seconds, week: seconds } });
+});
+
+function readRotationField(input, key) {
+  const seconds = Number(input.value);
+  if (!Number.isFinite(seconds)) return;
+  save({ rotation: { [key]: seconds } });
+}
+
+for (const [id, key] of rotationInputs()) {
+  const input = document.querySelector(`#${id}`);
+  input.addEventListener("change", () => readRotationField(input, key));
+}
 
 const noteSheet = document.querySelector("#noteSheet");
 const noteField = document.querySelector("#note");
@@ -221,7 +318,6 @@ function openNoteSheet() {
   noteField.value = "";
   paintDurations();
   noteSheet.hidden = false;
-  noteField.focus();
 }
 
 function closeNoteSheet() {
@@ -290,12 +386,15 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
     return;
   }
   try {
-    await request("/v1/miniapp/pair/approve", { method: "POST", body: JSON.stringify({ code }) });
+    const data = await request("/v1/miniapp/pair/approve", { method: "POST", body: JSON.stringify({ code }) });
+    rememberHomeToken(data.homeToken);
     document.querySelector("#pairCode").value = "";
     tvLinked = true;
     showTab("screen");
     telegram?.HapticFeedback?.notificationOccurred("success");
     setNotice("Телевизор связан", "online");
+    const state = await request("/v1/miniapp/state");
+    applyState(state);
   } catch (error) {
     telegram?.HapticFeedback?.notificationOccurred("error");
     setNotice(error.message, "error");
@@ -303,6 +402,6 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
 });
 load();
 setInterval(() => {
-  if (!initData) return;
+  if (!hasRemoteAuth()) return;
   request("/v1/miniapp/state").then(applyState).catch(() => {});
 }, 2000);

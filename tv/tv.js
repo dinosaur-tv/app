@@ -1,12 +1,11 @@
-import { normalizeDisplay, screenTheme, shouldApplyTvReload } from "../control-state.js";
+import { normalizeDisplay, normalizeRotation, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["NOW", "TODAY", "WEEK"];
 const sceneThemes = [
   "gallery", "home-day", "home-evening", "night", "play", "forest", "mountains", "sea", "space",
-  "petersburg", "rome", "florence", "venice",
+  "petersburg", "rome", "florence", "venice", "rus", "byzantium", "india", "italy",
 ];
-const rotateMs = 30_000;
 const russian = "ru-RU";
 
 const screen = document.querySelector("#screen");
@@ -30,10 +29,13 @@ let mode = "NOW";
 let session = readSession();
 let rotateTimer;
 let lastForcedMode = "";
+let lastRotationKey = "";
 let paintedKey = "";
 let appliedReloadAt = localStorage.getItem("dinoTvReloadAt") || "";
 let appliedPowerAt = localStorage.getItem("dinoTvPowerAt") || "";
 let asleep = false;
+let agendaPage = 0;
+let agendaPageCount = 1;
 
 function nativeBridge() {
   return window.DinoTV || null;
@@ -41,10 +43,16 @@ function nativeBridge() {
 
 function flushTvApp(reloadAt) {
   if (!shouldApplyTvReload(appliedReloadAt, reloadAt)) return false;
-  appliedReloadAt = reloadAt;
-  localStorage.setItem("dinoTvReloadAt", reloadAt);
   const next = new URL(location.href);
-  next.searchParams.set("r", String(Date.now()));
+  if (next.searchParams.get("reloadAt") === reloadAt) {
+    appliedReloadAt = reloadAt;
+    try { localStorage.setItem("dinoTvReloadAt", reloadAt); } catch { /* ignore */ }
+    return false;
+  }
+  appliedReloadAt = reloadAt;
+  try { localStorage.setItem("dinoTvReloadAt", reloadAt); } catch { /* ignore */ }
+  next.searchParams.set("reloadAt", reloadAt);
+  next.searchParams.delete("r");
   location.replace(next.toString());
   return true;
 }
@@ -126,12 +134,12 @@ function weekDates(now = new Date()) {
   });
 }
 
-function upcomingEvents(now = new Date(), limit = 6) {
-  return (snapshot?.days || [])
+function upcomingEvents(now = new Date(), limit) {
+  const events = (snapshot?.days || [])
     .flatMap((day) => day.events || [])
     .filter((event) => isLive(event, now))
-    .sort((a, b) => String(a.start).localeCompare(String(b.start)))
-    .slice(0, limit);
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)));
+  return Number.isFinite(limit) ? events.slice(0, limit) : events;
 }
 
 function nextEvent(now = new Date()) {
@@ -191,19 +199,37 @@ function periodsBlock(periods) {
   return `<div class="periods">${periods.map((period) => `<div class="period"><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><small>${escapeHtml(period.description)}</small></div>`).join("")}</div>`;
 }
 
-function renderGuest() {
+function screenLayers() {
+  const display = normalizeDisplay(snapshot?.display);
+  return {
+    weather: display.showWeather && Boolean(snapshot?.weather),
+    calendar: display.showCalendar && !display.privacy,
+    privacy: display.privacy,
+  };
+}
+
+function weatherNowHtml() {
   const weather = snapshot.weather;
-  return `<section class="guest-weather">
-    <div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>
-    ${periodsBlock(weather.periods)}
-  </section>`;
+  if (!weather) return "";
+  return `<div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>${periodsBlock(weather.periods)}`;
+}
+
+function weatherCard() {
+  return `<article class="card"><p class="kicker">Погода</p>${weatherNowHtml()}</article>`;
+}
+
+function renderGuest() {
+  if (!screenLayers().weather) return "";
+  return `<section class="guest-weather">${weatherNowHtml()}</section>`;
 }
 
 function renderNow(now) {
-  if (snapshot.display?.privacy) return renderGuest();
-  const next = nextEvent(now);
-  const rest = upcomingEvents(now, 6).filter((event) => event.id !== next?.id).slice(0, 4);
-  const weather = snapshot.weather;
+  const layers = screenLayers();
+  if (layers.privacy) return renderGuest();
+  const next = layers.calendar ? nextEvent(now) : null;
+  const rest = layers.calendar ? upcomingEvents(now, 6).filter((event) => event.id !== next?.id).slice(0, 4) : [];
+  if (!layers.calendar && !layers.weather) return "";
+  if (!layers.calendar) return `<section class="grid-now">${weatherCard()}</section>`;
   return `<section class="grid-now">
     <article class="card next-card">
       <p class="kicker">${next && asDate(next.start) <= now ? "Сейчас" : "Дальше"}</p>
@@ -211,70 +237,122 @@ function renderNow(now) {
         <p class="muted">${timeOf(next.start)} — ${timeOf(next.end)}</p>
         <p class="when">${waitLabel(next, now)}</p>` : `<h3>Свободно</h3><p class="muted">Ближайших дел нет.</p>`}
     </article>
-    <article class="card">
+    ${layers.weather ? `<article class="card">
       <p class="kicker">Погода</p>
-      <div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>
-      ${periodsBlock(weather.periods)}
+      ${weatherNowHtml()}
       ${rest.length ? `<div class="events">${rest.map((event) => eventRow(event)).join("")}</div>` : ""}
-    </article>
+    </article>` : rest.length ? `<article class="card"><p class="kicker">Дальше</p><div class="events">${rest.map((event) => eventRow(event)).join("")}</div></article>` : ""}
   </section>`;
 }
 
 function renderToday(now) {
-  if (snapshot.display?.privacy) return renderGuest();
-  const today = eventsFor(todayStamp(now), now, true);
-  const weather = snapshot.weather;
+  const layers = screenLayers();
+  if (layers.privacy) return renderGuest();
+  const today = layers.calendar ? eventsFor(todayStamp(now), now, true) : [];
+  if (!layers.calendar && !layers.weather) return "";
   return `<section class="grid-today">
-    <article class="card">
+    ${layers.calendar ? `<article class="card">
       <p class="kicker">Расписание</p>
       <div class="events">${today.length ? today.map((event) => eventRow(event)).join("") : `<p class="empty">Сегодня больше ничего нет.</p>`}</div>
-    </article>
-    <article class="card">
-      <p class="kicker">Погода</p>
-      <div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>
-      ${periodsBlock(weather.periods)}
-    </article>
+    </article>` : ""}
+    ${layers.weather ? weatherCard() : ""}
   </section>`;
 }
 
+function sceneWeather(periods) {
+  if (!periods?.length) return "";
+  return `<div class="scene-weather">${periods.slice(0, 4).map((period) => `<div><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><span>${escapeHtml(period.description)}</span></div>`).join("")}</div>`;
+}
+
+function scenePageSize(scene) {
+  const compactVertical = ["night", "mountains", "florence", "byzantium"].includes(scene);
+  if (mode === "TODAY") return compactVertical && window.innerHeight <= 800 ? 2 : window.innerHeight <= 800 ? 3 : 5;
+  if (compactVertical) return window.innerHeight <= 800 ? 4 : 6;
+  return window.innerHeight <= 800 ? 5 : 6;
+}
+
+function agendaDayLabel(date, now, compact = false) {
+  const stamp = new Date(`${date}T12:00:00+03:00`);
+  const full = stamp.toLocaleDateString(russian, { weekday: "long", day: "numeric", month: "long" });
+  if (compact) return full;
+  if (date === todayStamp(now)) return `Сегодня · ${full}`;
+  if (date === weekDates(now)[1]) return `Завтра · ${full}`;
+  return full;
+}
+
+function agendaPages(events, size, now) {
+  const groups = new Map();
+  events.forEach((event) => {
+    const date = dayKey(event.start, now);
+    if (!groups.has(date)) groups.set(date, []);
+    groups.get(date).push(event);
+  });
+  const pages = [];
+  groups.forEach((dayEvents, date) => {
+    const parts = Math.max(1, Math.ceil(dayEvents.length / size));
+    for (let part = 0; part < parts; part += 1) {
+      pages.push({ date, events: dayEvents.slice(part * size, (part + 1) * size), part: part + 1, parts });
+    }
+  });
+  return pages.length ? pages : [{ date: todayStamp(now), events: [], part: 1, parts: 1 }];
+}
+
 function renderSceneAgenda(now, scene) {
-  if (snapshot.display?.privacy) return renderGuest();
-  const events = mode === "TODAY"
-    ? eventsFor(todayStamp(now), now, true).slice(0, 5)
-    : upcomingEvents(now, mode === "WEEK" ? 6 : 5);
+  agendaPageCount = 1;
+  const layers = screenLayers();
+  if (layers.privacy) return renderGuest();
+  if (!layers.calendar && !layers.weather) return "";
+  const week = new Set(weekDates(now));
+  const events = layers.calendar
+    ? (mode === "TODAY"
+      ? eventsFor(todayStamp(now), now, true)
+      : upcomingEvents(now).filter((event) => mode !== "WEEK" || week.has(dayKey(event.start, now))))
+    : [];
+  const pages = agendaPages(events, scenePageSize(scene), now);
+  agendaPageCount = layers.calendar ? pages.length : 1;
+  const pageIndex = agendaPage % pages.length;
+  const page = pages[pageIndex];
   const title = mode === "TODAY" ? "Сегодня" : mode === "WEEK" ? "Эта неделя" : "Ближайшие дела";
   return `<section class="scene-agenda scene-${scene}">
-    <p class="kicker">${title}</p>
-    <div class="scene-list">${events.length ? events.map((event, index) => `<article class="scene-event" style="--event-index:${index}">
+    ${layers.calendar ? `<p class="kicker"><span>${title}</span><span class="scene-day-label">${escapeHtml(agendaDayLabel(page.date, now, mode === "TODAY"))}${page.parts > 1 ? ` · ${page.part}/${page.parts}` : ""}</span></p>` : ""}
+    ${layers.weather && mode === "TODAY" ? sceneWeather(snapshot.weather?.periods) : ""}
+    ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map((event, index) => `<article class="scene-event" style="--event-index:${index}">
       <time class="scene-time">${timeOf(event.start)}</time>
       <div class="scene-title"><strong>${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
       <span class="scene-owner"><i style="background:${event.color}"></i>${escapeHtml(eventOwner(event))}</span>
     </article>`).join("") : `<p class="empty">Сегодня тихо. Можно никуда не спешить.</p>`}</div>
+    ${pages.length > 1 ? `<div class="agenda-pages"><span>${pageIndex + 1} / ${pages.length}</span><i style="--page-progress:${((pageIndex + 1) / pages.length) * 100}%"></i></div>` : ""}` : ""}
   </section>`;
 }
 
 function renderWeek(now) {
-  if (snapshot.display?.privacy) return renderGuest();
+  const layers = screenLayers();
+  if (layers.privacy) return renderGuest();
+  if (!layers.calendar && !layers.weather) return "";
   const weekday = new Intl.DateTimeFormat(russian, { weekday: "short" });
   return `<section class="week">${weekDates(now).map((date) => {
     const stamp = new Date(`${date}T12:00:00+03:00`);
-    const weather = weatherFor(date);
+    const weather = layers.weather ? weatherFor(date) : null;
     const liveOnly = date === todayStamp(now);
-    const events = eventsFor(date, now, liveOnly);
+    const events = layers.calendar ? eventsFor(date, now, liveOnly) : [];
     return `<article class="card ${date === todayStamp(now) ? "today" : ""}">
       <div class="day-name">${weekday.format(stamp)}</div>
       <div class="day-num">${stamp.getDate()}</div>
-      <div class="day-weather">${weather ? `${weather.high}° / ${weather.low}°` : "—"}<small>${weather ? escapeHtml(weather.description) : ""}</small></div>
-      <div class="events">${events.length ? events.map((event) => eventRow(event)).join("") : `<p class="empty">Тихо</p>`}</div>
+      ${layers.weather ? `<div class="day-weather">${weather ? `${weather.high}° / ${weather.low}°` : "—"}<small>${weather ? escapeHtml(weather.description) : ""}</small></div>` : ""}
+      ${layers.calendar ? `<div class="events">${events.length ? events.map((event) => eventRow(event)).join("") : `<p class="empty">Тихо</p>`}</div>` : ""}
     </article>`;
   }).join("")}</section>`;
 }
 
 function paintClock(now = new Date()) {
+  if (!clockEl) return;
   clockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  dateLine.textContent = now.toLocaleDateString(russian, { weekday: "long", day: "numeric", month: "long" });
-  const weather = snapshot?.weather;
-  weatherLine.textContent = weather ? `${weather.temperature}° · ${weather.description}` : "";
+  if (dateLine) dateLine.textContent = now.toLocaleDateString(russian, { weekday: "long", day: "numeric", month: "long" });
+  if (weatherLine) {
+    const visible = screenLayers().weather;
+    weatherLine.hidden = !visible;
+    weatherLine.textContent = visible ? `${snapshot.weather.temperature}° · ${snapshot.weather.description}` : "";
+  }
 }
 
 function paintMedia() {
@@ -301,6 +379,8 @@ function viewSig() {
     display.theme,
     display.mood,
     display.privacy,
+    display.showWeather,
+    display.showCalendar,
     snapshot.display?.note?.text || "",
     snapshot.display?.backgroundUrl || "",
     snapshot.weather?.temperature,
@@ -309,6 +389,7 @@ function viewSig() {
     events.length,
     events[0]?.id || "",
     events[events.length - 1]?.id || "",
+    agendaPage,
   ].join("|");
 }
 
@@ -317,10 +398,14 @@ function paint(force = false) {
   const now = new Date();
   const display = normalizeDisplay(snapshot.display);
   const activeTheme = screenTheme(display);
+  if (!sceneThemes.includes(activeTheme)) agendaPageCount = 1;
   document.body.dataset.theme = activeTheme;
+  document.body.dataset.mode = mode.toLowerCase();
   document.body.classList.toggle("immersive", sceneThemes.includes(activeTheme));
   document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.mood !== "night");
   document.body.classList.toggle("guests", display.privacy);
+  document.body.classList.toggle("hide-weather", !display.showWeather);
+  document.body.classList.toggle("hide-calendar", !display.showCalendar);
   photo.style.backgroundImage = snapshot.display.backgroundUrl ? `url("${snapshot.display.backgroundUrl}")` : "";
   paintClock(now);
   paintMedia();
@@ -360,10 +445,20 @@ async function loadSnapshot() {
   syncNativeSession();
   snapshot = data;
   if (asleep) return;
+  const rotation = normalizeRotation(data.display?.rotation);
+  if (!rotation.enabled && modes.includes(data.display?.mode)) {
+    mode = data.display.mode;
+  }
   if (modes.includes(data.display?.mode) && data.display.mode !== lastForcedMode) {
     mode = data.display.mode;
     lastForcedMode = data.display.mode;
     if (session) startRotation();
+    agendaPage = 0;
+  }
+  const nextRotationKey = rotationSignature(rotation);
+  if (session && nextRotationKey !== lastRotationKey) {
+    lastRotationKey = nextRotationKey;
+    startRotation();
   }
   paint();
 }
@@ -391,26 +486,46 @@ async function startPairing() {
   wait();
 }
 
+function dwellMs(currentMode) {
+  const rotation = normalizeRotation(snapshot?.display?.rotation);
+  const seconds = currentMode === "TODAY" ? rotation.today : currentMode === "WEEK" ? rotation.week : rotation.now;
+  return seconds * 1000;
+}
+
 function startRotation() {
+  clearTimeout(rotateTimer);
   clearInterval(rotateTimer);
-  rotateTimer = setInterval(() => {
+  rotateTimer = undefined;
+  const rotation = normalizeRotation(snapshot?.display?.rotation);
+  if (!rotation.enabled) return;
+  rotateTimer = setTimeout(() => {
     mode = modes[(modes.indexOf(mode) + 1) % modes.length];
+    agendaPage = 0;
     paint(true);
-  }, rotateMs);
+    startRotation();
+  }, dwellMs(mode));
 }
 
 document.querySelectorAll("#modes [data-mode]").forEach((button) => {
   button.addEventListener("click", () => {
     mode = button.dataset.mode;
+    agendaPage = 0;
     paint(true);
     startRotation();
   });
 });
 
 setInterval(() => {
+  if (!snapshot || asleep || agendaPageCount <= 1) return;
+  agendaPage = (agendaPage + 1) % agendaPageCount;
+  paint(true);
+}, 10_000);
+
+paintClock();
+setInterval(() => {
   const now = new Date();
-  if (!snapshot) return;
   paintClock(now);
+  if (!snapshot) return;
   if (now.getSeconds() === 0) paint();
 }, 1000);
 let polling = false;

@@ -20,6 +20,8 @@ export default [
         FileReader: "readonly",
         URL: "readonly",
         URLSearchParams: "readonly",
+        innerHeight: "readonly",
+        innerWidth: "readonly",
       },
     },
   },
