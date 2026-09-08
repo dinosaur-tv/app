@@ -24,8 +24,8 @@
 
       <section id="pane-screen" class="pane">
         <div class="modes" role="group" aria-label="Экран">
-          <button data-mode="NOW">Сейчас</button>
           <button data-mode="TODAY">Сегодня</button>
+          <button data-mode="TOMORROW">Завтра</button>
           <button data-mode="WEEK">Неделя</button>
         </div>
 
@@ -127,7 +127,7 @@
         </div>
         <div class="settings-block">
           <h2>Смена вкладок</h2>
-          <p class="hint">Телевизор сам листает Сейчас, Сегодня и Неделю.</p>
+          <p class="hint">Телевизор сам листает Сегодня, Завтра и Неделю.</p>
           <div class="guests" role="group" aria-label="Смена вкладок">
             <button type="button" data-rotation-enabled="true">Вкл</button>
             <button type="button" data-rotation-enabled="false">Выкл</button>
@@ -136,8 +136,8 @@
           <div id="rotationPresets" class="durations rotation-presets" role="group" aria-label="Интервал"></div>
           <p class="hint">Сколько держать вкладку</p>
           <div class="rotation-times">
-            <label>Сейчас<input id="rotateNow" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
             <label>Сегодня<input id="rotateToday" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
+            <label>Завтра<input id="rotateTomorrow" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
             <label>Неделя<input id="rotateWeek" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
           </div>
         </div>

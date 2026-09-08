@@ -69,8 +69,8 @@ function paintMusic() {
 
 function rotationInputs() {
   return [
-    ["rotateNow", "now"],
     ["rotateToday", "today"],
+    ["rotateTomorrow", "tomorrow"],
     ["rotateWeek", "week"],
   ];
 }
@@ -86,10 +86,10 @@ function paintRotation() {
     input.disabled = !rotation.enabled;
     if (focused !== input) input.value = String(rotation[key]);
   }
-  const uniform = rotation.now === rotation.today && rotation.today === rotation.week;
+  const uniform = rotation.today === rotation.tomorrow && rotation.tomorrow === rotation.week;
   document.querySelectorAll("[data-rotation-seconds]").forEach((button) => {
     button.disabled = !rotation.enabled;
-    button.classList.toggle("active", uniform && Number(button.dataset.rotationSeconds) === rotation.now);
+    button.classList.toggle("active", uniform && Number(button.dataset.rotationSeconds) === rotation.today);
   });
 }
 
@@ -282,7 +282,7 @@ rotationPresetsEl.addEventListener("click", (event) => {
   const button = event.target.closest("[data-rotation-seconds]");
   if (!button || button.disabled) return;
   const seconds = Number(button.dataset.rotationSeconds);
-  save({ rotation: { now: seconds, today: seconds, week: seconds } });
+  save({ rotation: { today: seconds, tomorrow: seconds, week: seconds } });
 });
 
 function readRotationField(input, key) {

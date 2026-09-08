@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, normalizeRotation, noteDurations, screenTheme, shouldApplyTvReload } from "../control-state.js";
 
-const idleDisplay = { mode: "NOW", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, now: 30, today: 30, week: 30 } };
+const idleDisplay = { mode: "TODAY", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, today: 30, tomorrow: 30, week: 30 } };
 
 test("normalizes incomplete display state to a safe gallery dashboard", () => {
   assert.deepEqual(normalizeDisplay(), idleDisplay);
@@ -10,7 +10,9 @@ test("normalizes incomplete display state to a safe gallery dashboard", () => {
 });
 
 test("does not let unknown API values break the controls", () => {
-  assert.equal(displayModeName("UNKNOWN"), "Сейчас");
+  assert.equal(displayModeName("UNKNOWN"), "Сегодня");
+  assert.equal(displayModeName("TOMORROW"), "Завтра");
+  assert.equal(normalizeDisplay({ mode: "NOW" }).mode, "TODAY");
   assert.equal(displayMoodName("UNKNOWN"), "Дом");
   assert.deepEqual(normalizeDisplay({ mode: "MONTH", theme: "pink", privacy: "yes" }), idleDisplay);
 });
@@ -53,10 +55,11 @@ test("keeps now-playing values safe for the remote and the living-room bar", () 
 });
 
 test("keeps tab rotation on by default and clamps how long each view stays", () => {
-  assert.deepEqual(normalizeRotation(), { enabled: true, now: 30, today: 30, week: 30 });
-  assert.deepEqual(normalizeRotation({ enabled: false, seconds: 15 }), { enabled: false, now: 15, today: 15, week: 15 });
-  assert.deepEqual(normalizeRotation({ enabled: true, now: 10, today: 45, week: 120 }), { enabled: true, now: 10, today: 45, week: 120 });
-  assert.equal(normalizeRotation({ now: 1 }).now, 5);
+  assert.deepEqual(normalizeRotation(), { enabled: true, today: 30, tomorrow: 30, week: 30 });
+  assert.deepEqual(normalizeRotation({ enabled: false, seconds: 15 }), { enabled: false, today: 15, tomorrow: 15, week: 15 });
+  assert.deepEqual(normalizeRotation({ enabled: true, today: 45, tomorrow: 60, week: 120 }), { enabled: true, today: 45, tomorrow: 60, week: 120 });
+  assert.deepEqual(normalizeRotation({ now: 10, today: 45, week: 120 }), { enabled: true, today: 45, tomorrow: 45, week: 120 });
+  assert.equal(normalizeRotation({ today: 1 }).today, 5);
   assert.equal(normalizeRotation({ week: 900 }).week, 300);
   assert.equal(normalizeDisplay({ rotation: { enabled: false, interval: 20 } }).rotation.enabled, false);
   assert.equal(normalizeDisplay({ rotation: { interval: 20 } }).rotation.today, 20);

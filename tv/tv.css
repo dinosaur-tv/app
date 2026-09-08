@@ -433,7 +433,7 @@ body[data-theme="night"] #dateLine { color: #777f84; font: 400 1.15rem var(--fon
 body[data-theme="night"] #weatherLine { color: #667078; font-size: 1rem; }
 body[data-theme="night"] #screen { right: 4.5%; bottom: 3.5%; width: 36%; height: 40%; padding: 1.1rem 1.5rem; border-left: 1px solid var(--line); background: linear-gradient(90deg, transparent, rgba(6,8,11,.62)); }
 body[data-theme="night"].has-media #screen { bottom: 10rem; }
-body[data-theme="night"][data-mode="today"] #screen { height: 52%; }
+body[data-theme="night"]:is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
 body[data-theme="night"] .scene-agenda > .kicker { height: 2rem; opacity: .7; }
 body[data-theme="night"] .scene-event { grid-template-columns: 3.2rem minmax(0,1fr) 5.2rem; min-height: 2.8rem; padding: .42rem 0; gap: .65rem; border-color: rgba(142,153,161,.12); }
 body[data-theme="night"] .scene-owner { display: flex; color: #68727a; font-size: .7rem; }
@@ -876,7 +876,7 @@ body[data-theme="oak-study"] #sceneDecor i:nth-child(6) { left: 74%; top: 62%; a
 /* Panoramic scenes reserve the upper-left corner for notes, away from the centered clock. */
 body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) #note,
 body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]):not(.has-media) #note { left: 4%; top: 4%; bottom: auto; max-width: 24%; }
-body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"])[data-mode="today"] #screen { height: 52%; }
+body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]):is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
 
 @media (max-height: 800px) {
   body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) #screen {
@@ -889,7 +889,7 @@ body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantiu
   body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-agenda > .kicker { height: 2.4rem; }
   body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-event { min-height: 3.6rem; padding-block: .5rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) #screen { height: 40%; padding-block: 1.1rem; }
-  body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"])[data-mode="today"] #screen { height: 52%; }
+  body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]):is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-agenda > .kicker { height: 2.15rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-event { padding: .35rem .6rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-time { margin-bottom: .25rem; }

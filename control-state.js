@@ -1,11 +1,11 @@
-export const displayModes = ["NOW", "TODAY", "WEEK"];
+export const displayModes = ["TODAY", "TOMORROW", "WEEK"];
 export const displayThemes = [
   "gallery", "home-day", "home-evening", "forest", "mountains", "sea", "space",
   "petersburg", "rome", "florence", "venice", "palace", "oak-study", "rus", "byzantium", "india", "italy",
 ];
 export const displayMoods = ["home", "night", "play"];
 
-const modeNames = { NOW: "Сейчас", TODAY: "Сегодня", WEEK: "Неделя" };
+const modeNames = { TODAY: "Сегодня", TOMORROW: "Завтра", WEEK: "Неделя" };
 export const themeNames = {
   gallery: "Галерея",
   "home-day": "Дом · День",
@@ -47,7 +47,7 @@ export const noteDurations = [
 export const rotationPresets = [10, 15, 30, 45, 60, 120];
 
 export function defaultRotation() {
-  return { enabled: true, now: 30, today: 30, week: 30 };
+  return { enabled: true, today: 30, tomorrow: 30, week: 30 };
 }
 
 export function clampRotationSeconds(value, fallback = 30) {
@@ -62,19 +62,19 @@ export function normalizeRotation(value = {}) {
   const shared = value.seconds ?? value.interval;
   return {
     enabled: value.enabled !== false,
-    now: clampRotationSeconds(value.now ?? shared, base.now),
-    today: clampRotationSeconds(value.today ?? shared, base.today),
+    today: clampRotationSeconds(value.today ?? value.now ?? shared, base.today),
+    tomorrow: clampRotationSeconds(value.tomorrow ?? value.today ?? value.now ?? shared, base.tomorrow),
     week: clampRotationSeconds(value.week ?? shared, base.week),
   };
 }
 
 export function rotationSignature(rotation) {
   const value = normalizeRotation(rotation);
-  return `${value.enabled ? "on" : "off"}:${value.now}:${value.today}:${value.week}`;
+  return `${value.enabled ? "on" : "off"}:${value.today}:${value.tomorrow}:${value.week}`;
 }
 
 export function displayModeName(mode) {
-  return modeNames[mode] || modeNames.NOW;
+  return modeNames[mode === "NOW" ? "TODAY" : mode] || modeNames.TODAY;
 }
 
 export function displayMoodName(mood) {
@@ -110,10 +110,11 @@ export function normalizeNowPlaying(value = {}) {
 
 export function normalizeDisplay(value = {}) {
   const legacyMood = value.theme === "night" || value.theme === "play" ? value.theme : "";
+  const requestedMode = value.mode === "NOW" ? "TODAY" : value.mode;
   let mood = displayMoods.includes(value.mood) ? value.mood : "home";
   if (legacyMood && mood === "home") mood = legacyMood;
   return {
-    mode: displayModes.includes(value.mode) ? value.mode : "NOW",
+    mode: displayModes.includes(requestedMode) ? requestedMode : "TODAY",
     theme: displayThemes.includes(value.theme) ? value.theme : "gallery",
     mood,
     privacy: value.privacy === true,

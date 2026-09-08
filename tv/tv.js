@@ -1,7 +1,7 @@
 import { normalizeDisplay, normalizeRotation, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
-const modes = ["NOW", "TODAY", "WEEK"];
+const modes = ["TODAY", "TOMORROW", "WEEK"];
 const sceneThemes = [
   "gallery", "home-day", "home-evening", "night", "play", "forest", "mountains", "sea", "space",
   "petersburg", "rome", "florence", "venice", "palace", "oak-study", "rus", "byzantium", "india", "italy",
@@ -25,7 +25,7 @@ const mediaVolume = document.querySelector("#mediaVolume");
 const volumeFill = document.querySelector("#volumeFill");
 
 let snapshot = null;
-let mode = "NOW";
+let mode = "TODAY";
 let session = readSession();
 let rotateTimer;
 let lastForcedMode = "";
@@ -142,27 +142,6 @@ function upcomingEvents(now = new Date(), limit) {
   return Number.isFinite(limit) ? events.slice(0, limit) : events;
 }
 
-function nextEvent(now = new Date()) {
-  return upcomingEvents(now, 1)[0];
-}
-
-function minutesUntil(event, now = new Date()) {
-  const start = asDate(event.start).getTime() - now.getTime();
-  return Math.max(0, Math.round(start / 60_000));
-}
-
-function waitLabel(event, now = new Date()) {
-  const start = asDate(event.start);
-  if (start.getTime() <= now.getTime()) return "Сейчас";
-  const mins = minutesUntil(event, now);
-  if (mins < 60) return `Через ${mins} мин`;
-  const hours = Math.max(1, Math.round(mins / 60));
-  if (dayKey(event.start, now) === todayStamp(now)) return `Через ${hours} ч`;
-  const tomorrow = weekDates(now)[1];
-  if (dayKey(event.start, now) === tomorrow) return `Завтра в ${timeOf(event.start)}`;
-  return `${start.toLocaleDateString(russian, { weekday: "short", day: "numeric", month: "short" })} · ${timeOf(event.start)}`;
-}
-
 function eventRow(event) {
   return `<div class="event">
     <i style="background:${event.color}"></i>
@@ -194,6 +173,15 @@ function weatherFor(date) {
   return (snapshot?.weather?.days || []).find((day) => day.date === date);
 }
 
+function dayForMode(now = new Date()) {
+  return mode === "TOMORROW" ? weekDates(now)[1] : todayStamp(now);
+}
+
+function weatherForSelectedDay(date, now = new Date()) {
+  if (date === todayStamp(now)) return snapshot?.weather || null;
+  return weatherFor(date) || null;
+}
+
 function periodsBlock(periods) {
   if (!periods?.length) return "";
   return `<div class="periods">${periods.map((period) => `<div class="period"><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><small>${escapeHtml(period.description)}</small></div>`).join("")}</div>`;
@@ -208,54 +196,33 @@ function screenLayers() {
   };
 }
 
-function weatherNowHtml() {
-  const weather = snapshot.weather;
-  if (!weather) return "";
-  return `<div class="weather-now"><b>${weather.temperature}°</b><div>${escapeHtml(weather.description)}<div class="muted">${weather.high}° / ${weather.low}°</div></div></div>${periodsBlock(weather.periods)}`;
+function weatherDayHtml(date, now = new Date()) {
+  const weather = weatherForSelectedDay(date, now);
+  if (!weather) return `<p class="empty">Прогноз пока недоступен.</p>`;
+  const today = date === todayStamp(now);
+  const headline = today ? `${weather.temperature}°` : `${weather.high}° / ${weather.low}°`;
+  return `<div class="weather-now"><b>${headline}</b><div>${escapeHtml(weather.description)}<div class="muted">Санкт-Петербург</div></div></div>${periodsBlock(weather.periods)}`;
 }
 
-function weatherCard() {
-  return `<article class="card"><p class="kicker">Погода</p>${weatherNowHtml()}</article>`;
-}
-
-function renderGuest() {
+function renderGuest(now = new Date()) {
   if (!screenLayers().weather) return "";
-  return `<section class="guest-weather">${weatherNowHtml()}</section>`;
+  const date = mode === "WEEK" ? todayStamp(now) : dayForMode(now);
+  return `<section class="guest-weather">${weatherDayHtml(date, now)}</section>`;
 }
 
-function renderNow(now) {
+function renderDay(now) {
   const layers = screenLayers();
-  if (layers.privacy) return renderGuest();
-  const next = layers.calendar ? nextEvent(now) : null;
-  const rest = layers.calendar ? upcomingEvents(now, 6).filter((event) => event.id !== next?.id).slice(0, 4) : [];
-  if (!layers.calendar && !layers.weather) return "";
-  if (!layers.calendar) return `<section class="grid-now">${weatherCard()}</section>`;
-  return `<section class="grid-now">
-    <article class="card next-card">
-      <p class="kicker">${next && asDate(next.start) <= now ? "Сейчас" : "Дальше"}</p>
-      ${next ? `<h3>${escapeHtml(titleOf(next))}</h3>
-        <p class="muted">${timeOf(next.start)} — ${timeOf(next.end)}</p>
-        <p class="when">${waitLabel(next, now)}</p>` : `<h3>Свободно</h3><p class="muted">Ближайших дел нет.</p>`}
-    </article>
-    ${layers.weather ? `<article class="card">
-      <p class="kicker">Погода</p>
-      ${weatherNowHtml()}
-      ${rest.length ? `<div class="events">${rest.map((event) => eventRow(event)).join("")}</div>` : ""}
-    </article>` : rest.length ? `<article class="card"><p class="kicker">Дальше</p><div class="events">${rest.map((event) => eventRow(event)).join("")}</div></article>` : ""}
-  </section>`;
-}
-
-function renderToday(now) {
-  const layers = screenLayers();
-  if (layers.privacy) return renderGuest();
-  const today = layers.calendar ? eventsFor(todayStamp(now), now, true) : [];
+  if (layers.privacy) return renderGuest(now);
+  const date = dayForMode(now);
+  const title = mode === "TOMORROW" ? "Завтра" : "Сегодня";
+  const events = layers.calendar ? eventsFor(date, now, mode === "TODAY") : [];
   if (!layers.calendar && !layers.weather) return "";
   return `<section class="grid-today">
     ${layers.calendar ? `<article class="card">
-      <p class="kicker">Расписание</p>
-      <div class="events">${today.length ? today.map((event) => eventRow(event)).join("") : `<p class="empty">Сегодня больше ничего нет.</p>`}</div>
+      <p class="kicker">${title}</p>
+      <div class="events">${events.length ? events.map((event) => eventRow(event)).join("") : `<p class="empty">${title} спокойно — дел нет.</p>`}</div>
     </article>` : ""}
-    ${layers.weather ? weatherCard() : ""}
+    ${layers.weather ? `<article class="card"><p class="kicker">Погода</p>${weatherDayHtml(date, now)}</article>` : ""}
   </section>`;
 }
 
@@ -266,7 +233,7 @@ function sceneWeather(periods) {
 
 function scenePageSize(scene) {
   const compactVertical = ["night", "mountains", "florence", "byzantium", "palace", "oak-study"].includes(scene);
-  if (mode === "TODAY") return compactVertical && window.innerHeight <= 800 ? 2 : window.innerHeight <= 800 ? 3 : 5;
+  if (mode === "TODAY" || mode === "TOMORROW") return compactVertical && window.innerHeight <= 800 ? 2 : window.innerHeight <= 800 ? 3 : 5;
   if (compactVertical) return window.innerHeight <= 800 ? 4 : 6;
   return window.innerHeight <= 800 ? 5 : 6;
 }
@@ -280,7 +247,7 @@ function agendaDayLabel(date, now, compact = false) {
   return full;
 }
 
-function agendaPages(events, size, now) {
+function agendaPages(events, size, now, fallbackDate = todayStamp(now)) {
   const groups = new Map();
   events.forEach((event) => {
     const date = dayKey(event.start, now);
@@ -294,33 +261,35 @@ function agendaPages(events, size, now) {
       pages.push({ date, events: dayEvents.slice(part * size, (part + 1) * size), part: part + 1, parts });
     }
   });
-  return pages.length ? pages : [{ date: todayStamp(now), events: [], part: 1, parts: 1 }];
+  return pages.length ? pages : [{ date: fallbackDate, events: [], part: 1, parts: 1 }];
 }
 
 function renderSceneAgenda(now, scene) {
   agendaPageCount = 1;
   const layers = screenLayers();
-  if (layers.privacy) return renderGuest();
+  if (layers.privacy) return renderGuest(now);
   if (!layers.calendar && !layers.weather) return "";
   const week = new Set(weekDates(now));
+  const daily = mode === "TODAY" || mode === "TOMORROW";
+  const selectedDate = dayForMode(now);
   const events = layers.calendar
-    ? (mode === "TODAY"
-      ? eventsFor(todayStamp(now), now, true)
-      : upcomingEvents(now).filter((event) => mode !== "WEEK" || week.has(dayKey(event.start, now))))
+    ? (daily
+      ? eventsFor(selectedDate, now, mode === "TODAY")
+      : upcomingEvents(now).filter((event) => week.has(dayKey(event.start, now))))
     : [];
-  const pages = agendaPages(events, scenePageSize(scene), now);
+  const pages = agendaPages(events, scenePageSize(scene), now, selectedDate);
   agendaPageCount = layers.calendar ? pages.length : 1;
   const pageIndex = agendaPage % pages.length;
   const page = pages[pageIndex];
-  const title = mode === "TODAY" ? "Сегодня" : mode === "WEEK" ? "Эта неделя" : "Ближайшие дела";
+  const title = mode === "TODAY" ? "Сегодня" : mode === "TOMORROW" ? "Завтра" : "Эта неделя";
   return `<section class="scene-agenda scene-${scene}">
-    ${layers.calendar ? `<p class="kicker"><span>${title}</span><span class="scene-day-label">${escapeHtml(agendaDayLabel(page.date, now, mode === "TODAY"))}${page.parts > 1 ? ` · ${page.part}/${page.parts}` : ""}</span></p>` : ""}
-    ${layers.weather && mode === "TODAY" ? sceneWeather(snapshot.weather?.periods) : ""}
+    ${layers.calendar ? `<p class="kicker"><span>${title}</span><span class="scene-day-label">${escapeHtml(agendaDayLabel(page.date, now, daily))}${page.parts > 1 ? ` · ${page.part}/${page.parts}` : ""}</span></p>` : ""}
+    ${layers.weather && daily ? sceneWeather(weatherForSelectedDay(selectedDate, now)?.periods) : ""}
     ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map((event, index) => `<article class="scene-event" style="--event-index:${index}">
       <time class="scene-time">${timeOf(event.start)}</time>
       <div class="scene-title"><strong>${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
       <span class="scene-owner"><i style="background:${event.color}"></i>${escapeHtml(eventOwner(event))}</span>
-    </article>`).join("") : `<p class="empty">Сегодня тихо. Можно никуда не спешить.</p>`}</div>
+    </article>`).join("") : `<p class="empty">${mode === "TOMORROW" ? "Завтра" : "Сегодня"} тихо. Можно никуда не спешить.</p>`}</div>
     ${pages.length > 1 ? `<div class="agenda-pages"><span>${pageIndex + 1} / ${pages.length}</span><i style="--page-progress:${((pageIndex + 1) / pages.length) * 100}%"></i></div>` : ""}` : ""}
   </section>`;
 }
@@ -421,7 +390,7 @@ function paint(force = false) {
   paintedKey = key;
   screen.innerHTML = sceneThemes.includes(activeTheme)
     ? renderSceneAgenda(now, activeTheme)
-    : mode === "WEEK" ? renderWeek(now) : mode === "TODAY" ? renderToday(now) : renderNow(now);
+    : mode === "WEEK" ? renderWeek(now) : renderDay(now);
 }
 
 async function request(path, options = {}) {
@@ -488,7 +457,7 @@ async function startPairing() {
 
 function dwellMs(currentMode) {
   const rotation = normalizeRotation(snapshot?.display?.rotation);
-  const seconds = currentMode === "TODAY" ? rotation.today : currentMode === "WEEK" ? rotation.week : rotation.now;
+  const seconds = currentMode === "TODAY" ? rotation.today : currentMode === "TOMORROW" ? rotation.tomorrow : rotation.week;
   return seconds * 1000;
 }
 
