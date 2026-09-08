@@ -170,7 +170,8 @@ function isLive(event, now = new Date()) {
 function eventsFor(date, now = new Date(), liveOnly = false) {
   return (snapshot?.days || [])
     .flatMap((item) => item.events || [])
-    .filter((event) => dayKey(event.start, now) === date && (!liveOnly || isLive(event, now)));
+    .filter((event) => dayKey(event.start, now) === date && (!liveOnly || isLive(event, now)))
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)));
 }
 
 function todayStamp(now = new Date()) {
@@ -307,9 +308,19 @@ function measuredScenePageSize(scene) {
     const gap = Number.parseFloat(window.getComputedStyle(list).columnGap) || 0;
   return Math.max(1, Math.min(16, Math.floor((list.clientWidth + gap) / (190 + gap))));
   }
-  const rowHeight = Math.max(...rows.map((row) => row.getBoundingClientRect().height));
-  if (!Number.isFinite(rowHeight) || rowHeight < 1) return null;
-  return Math.max(1, Math.min(16, Math.floor((list.clientHeight + 1) / rowHeight)));
+  const heights = rows.map((row) => row.getBoundingClientRect().height).filter((height) => Number.isFinite(height) && height > 0);
+  if (!heights.length) return null;
+  const available = list.clientHeight + 1;
+  let used = 0;
+  let count = 0;
+  for (const height of heights) {
+    if (used + height > available) break;
+    used += height;
+    count += 1;
+  }
+  const typicalHeight = Math.min(...heights);
+  count += Math.floor(Math.max(0, available - used) / typicalHeight);
+  return Math.max(1, Math.min(16, count));
 }
 
 function agendaDayLabel(date, now, compact = false) {
