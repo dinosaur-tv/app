@@ -101,7 +101,7 @@ function paintMusic() {
   card.classList.toggle("is-playing", live && nowPlaying.isPlaying);
   toggle.textContent = nowPlaying.isPlaying ? "❚❚" : "▶";
   toggle.setAttribute("aria-label", nowPlaying.isPlaying ? "Пауза" : "Играть");
-  if (document.activeElement !== volume) {
+  if (document.activeElement !== volume && Date.now() - volumeTouchedAt > 2_500) {
     volume.value = String(nowPlaying.volumePercent ?? 50);
     lastSentVolume = Number(volume.value);
   }
@@ -492,22 +492,32 @@ document.querySelectorAll("[data-tv-launch]").forEach((button) => {
 });
 let volumeTimer;
 let lastSentVolume;
+let volumeTouchedAt = 0;
 function sendVolume(value) {
   const next = Math.max(0, Math.min(100, Math.round(Number(value))));
   if (!Number.isFinite(next) || lastSentVolume === next) return;
   lastSentVolume = next;
+  volumeTouchedAt = Date.now();
   nowPlaying.volumePercent = next;
   musicCommand("volume", { volume: next });
 }
 document.querySelector("#musicVolume").addEventListener("input", (event) => {
+  volumeTouchedAt = Date.now();
   nowPlaying.volumePercent = Number(event.target.value);
   clearTimeout(volumeTimer);
   volumeTimer = setTimeout(() => sendVolume(event.target.value), 320);
 });
 document.querySelector("#musicVolume").addEventListener("change", (event) => {
+  volumeTouchedAt = Date.now();
   clearTimeout(volumeTimer);
   sendVolume(event.target.value);
 });
+document.querySelector("#musicVolume").addEventListener("pointerdown", () => {
+  volumeTouchedAt = Date.now();
+});
+document.querySelector("#musicVolume").addEventListener("touchstart", () => {
+  volumeTouchedAt = Date.now();
+}, { passive: true });
 document.querySelector("#background").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
