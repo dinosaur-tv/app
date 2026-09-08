@@ -51,3 +51,31 @@ Create a soft Florentine dawn above ochre rooftops with distant Tuscan hills, qu
 ### `scene-venice.png`
 
 Create an elegant Venice blue-hour scene with still canal reflections, weathered rose plaster and a distant arched bridge. Editorial cinematic realism, muted teal, burgundy and warm window light, with generous readable areas and water designed for subtle ripple overlays. No gondolier, crowds, text, logos or souvenir-postcard styling.
+
+### `scene-gzhel.png`
+
+Create an elegant contemporary interpretation of authentic Russian Gzhel porcelain as a calm architectural wall panel: softly glazed warm-white porcelain panels with hand-painted cobalt-blue botanical scrolls, peonies, curling leaves and classic borders. Premium photorealistic material study with museum-quality craft, ornament concentrated at the far edges and lower border, and broad quiet space for TV UI. No interface, text, logos, people, watermark or souvenir kitsch.
+
+### `scene-autumn-forest.png`
+
+Create a refined photorealistic early-October forest in northwest Russia with mature birch, maple and oak, a quiet path, real damp bark and leaf litter, light mist and restrained amber/russet colour. Keep the sunlit path on the left and centre and a calmer darker right third for the agenda. Show only a few falling leaves because motion is added in CSS. No people, buildings, text, logos or watermark.
+
+### `scene-oranienbaum.png`
+
+Create a serene photorealistic architectural landscape inspired by the Grand Menshikov Palace and park at Oranienbaum: pale ochre baroque architecture, clipped greenery, still canal and early-autumn northern golden-hour light. Keep the palace across the centre and right and a calm shadowed lawn in the lower-left for the agenda. No interface, text, logos, people, fantasy alterations or postcard saturation.
+
+### `scene-peterhof.png`
+
+Create a photorealistic view inspired by the Grand Peterhof Palace and formal garden with golden-and-white architecture, cascade, fountains, clipped park and fine morning water mist. Keep palace and fountains centred, with calmer dark-green hedges at the lower sides for UI. No interface, text, logos, visible crowds, fantasy alterations, watermark or postcard saturation.
+
+### `scene-petersburg-streets.png`
+
+Create a beautiful lived-in historic street in central Saint Petersburg after light rain: restrained classical facades, granite pavement, a narrow canal, warm windows and blue-hour wet-stone reflections. Use a strong pedestrian-eye-level perspective while leaving calm areas for clock and agenda. No legible signs, logos, close people, focal cars, Venetian elements or watermark.
+
+### `scene-italy-sunset.png`
+
+Create an elegant photorealistic Italian sunset over a historic Tuscan hill town with warm stone roofs, a distant campanile, cypress trees, layered vineyards and a coral-to-blue-violet sky. Keep the town centre-right and a quieter shaded terrace on the left for UI. Romantic but restrained, with no interface, text, logos, close people, watermark or tourist-poster saturation.
+
+### `scene-soviet-carpet.png`
+
+Create a lovingly authentic late-Soviet wall carpet as a full-screen textile backdrop: classic symmetrical floral medallion, ornate border, dense wool pile, tiny natural wear and warm grazing light in burgundy, brown, beige, dusty rose and olive. Keep the medallion left of centre and a quieter woven field on the right for agenda UI. No furniture, people, text, logos, watermark, psychedelic colour or parody styling.

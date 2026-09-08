@@ -6,7 +6,7 @@
 - `/console/` — Telegram Mini App и телефон;
 - `/tv/` — экран в гостиной.
 
-Экран поддерживает самостоятельные интерьерные, природные, городские и орнаментальные сцены: `gallery`, `home-day`, `home-evening`, `palace`, `oak-study`, `night`, `play`, `forest`, `mountains`, `sea`, `space`, `petersburg`, `rome`, `florence`, `venice`, `rus`, `byzantium`, `india` и `italy`. У каждой своя композиция, типографика и фоновое движение; весь интерфейс дополнительно сдвигается на несколько пикселей каждые 90 секунд для защиты телевизора от статичного изображения.
+Экран поддерживает самостоятельные интерьерные, природные, городские и орнаментальные сцены: `gallery`, `home-day`, `home-evening`, `palace`, `oak-study`, `palace-study`, `night`, `play`, `forest`, `autumn-forest`, `mountains`, `sea`, `space`, `petersburg`, `petersburg-streets`, `oranienbaum`, `peterhof`, `rome`, `florence`, `venice`, `italy-sunset`, `rus`, `gzhel`, `soviet-carpet`, `byzantium`, `india` и `italy`. У каждой своя композиция, типографика и фоновое движение; весь интерфейс дополнительно сдвигается на несколько пикселей каждые 90 секунд для защиты телевизора от статичного изображения.
 
 Для локальной визуальной проверки сцен откройте, например, `http://localhost:4173/tv/?scene=sea` — параметр работает только на `localhost`.
 

@@ -1,7 +1,8 @@
 export const displayModes = ["TODAY", "TOMORROW", "WEEK"];
 export const displayThemes = [
-  "gallery", "home-day", "home-evening", "forest", "mountains", "sea", "space",
-  "petersburg", "rome", "florence", "venice", "palace", "oak-study", "rus", "byzantium", "india", "italy",
+  "gallery", "home-day", "home-evening", "forest", "autumn-forest", "mountains", "sea", "space",
+  "petersburg", "petersburg-streets", "oranienbaum", "peterhof", "rome", "florence", "venice", "italy-sunset",
+  "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy",
 ];
 export const displayMoods = ["home", "night", "play"];
 
@@ -11,16 +12,24 @@ export const themeNames = {
   "home-day": "Дом · День",
   "home-evening": "Дом · Вечер",
   forest: "Лес",
+  "autumn-forest": "Осенний лес",
   mountains: "Горы",
   sea: "Море",
   space: "Космос",
   petersburg: "Петербург",
+  "petersburg-streets": "Улицы Петербурга",
+  oranienbaum: "Ораниенбаум",
+  peterhof: "Петергоф",
   rome: "Рим",
   florence: "Флоренция",
   venice: "Венеция",
+  "italy-sunset": "Итальянский закат",
   palace: "Дворец",
   "oak-study": "Дубовый кабинет",
+  "palace-study": "Дворцовый кабинет",
   rus: "Русский узор",
+  gzhel: "Гжель",
+  "soviet-carpet": "Советский ковёр",
   byzantium: "Византия",
   india: "Индия",
   italy: "Итальянский узор",

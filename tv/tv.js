@@ -4,8 +4,9 @@ import { minutesPhrase, nextEventCue } from "../event-cue.js";
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["TODAY", "TOMORROW", "WEEK"];
 const sceneThemes = [
-  "gallery", "home-day", "home-evening", "night", "play", "forest", "mountains", "sea", "space",
-  "petersburg", "rome", "florence", "venice", "palace", "oak-study", "rus", "byzantium", "india", "italy",
+  "gallery", "home-day", "home-evening", "night", "play", "forest", "autumn-forest", "mountains", "sea", "space",
+  "petersburg", "petersburg-streets", "oranienbaum", "peterhof", "rome", "florence", "venice", "italy-sunset",
+  "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy",
 ];
 const russian = "ru-RU";
 
@@ -292,7 +293,7 @@ function scenePageSizeKey(scene) {
 function scenePageSize(scene) {
   const measured = scenePageSizes.get(scenePageSizeKey(scene));
   if (measured) return measured;
-  const compactVertical = ["night", "mountains", "florence", "byzantium", "palace", "oak-study"].includes(scene);
+  const compactVertical = ["night", "mountains", "florence", "byzantium", "palace", "oak-study", "palace-study"].includes(scene);
   if (mode === "TODAY" || mode === "TOMORROW") return compactVertical && window.innerHeight <= 800 ? 5 : window.innerHeight <= 800 ? 6 : 8;
   if (compactVertical) return window.innerHeight <= 800 ? 7 : 9;
   return window.innerHeight <= 800 ? 7 : 9;
@@ -302,7 +303,7 @@ function measuredScenePageSize(scene) {
   const list = screen.querySelector(".scene-list");
   const rows = [...screen.querySelectorAll(".scene-event")];
   if (!list || !rows.length || list.clientHeight < 1) return null;
-  if (["mountains", "florence", "byzantium"].includes(scene)) {
+  if (["byzantium"].includes(scene)) {
     const gap = Number.parseFloat(window.getComputedStyle(list).columnGap) || 0;
   return Math.max(1, Math.min(16, Math.floor((list.clientWidth + gap) / (190 + gap))));
   }
@@ -411,6 +412,7 @@ function readNativeNowPlaying() {
 function paintMedia() {
   const playing = pickNowPlaying(nativeNowPlaying, snapshot);
   const visible = Boolean(playing?.title);
+  document.body.classList.toggle("media-visible", visible);
   mediaBar.hidden = !visible;
   if (!visible) return;
   mediaBar.classList.toggle("is-playing", playing.isPlaying !== false);
@@ -613,7 +615,7 @@ setInterval(() => {
   if (!session || polling) return;
   polling = true;
   loadSnapshot().catch(() => {}).finally(() => { polling = false; });
-}, 500);
+}, 2_000);
 
 const pixelShifts = [[0, 0], [7, -4], [-5, 6], [4, 5], [-7, -3], [2, -6]];
 let pixelShiftIndex = 0;

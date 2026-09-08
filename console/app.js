@@ -272,16 +272,35 @@ async function musicCommand(action, extra = {}) {
   }
 }
 
-async function tvCommand(body) {
+async function tvCommand(body, button) {
+  bumpRemoteButton(button, "pressing");
   try {
+    navigator.vibrate?.(12);
+    telegram?.HapticFeedback?.impactOccurred?.("medium");
     const data = await request("/v1/miniapp/tv", { method: "POST", body: JSON.stringify(body) });
     applyState(data);
+    bumpRemoteButton(button, "sent");
     telegram?.HapticFeedback?.impactOccurred?.("light");
     setNotice("");
   } catch (error) {
+    bumpRemoteButton(button, "error");
+    navigator.vibrate?.([18, 40, 18]);
     telegram?.HapticFeedback?.notificationOccurred("error");
     setNotice(error.message, "error");
   }
+}
+
+function bumpRemoteButton(button, kind) {
+  if (!button) return;
+  button.classList.remove("is-pressing", "is-sent", "is-error");
+  if (kind === "pressing") {
+    button.classList.add("is-pressing");
+    return;
+  }
+  button.classList.remove("is-pressing");
+  const cls = kind === "error" ? "is-error" : "is-sent";
+  button.classList.add(cls);
+  window.setTimeout(() => button.classList.remove(cls), kind === "error" ? 420 : 380);
 }
 
 function readFile(file) {
@@ -438,12 +457,28 @@ document.querySelector("#reloadTv").addEventListener("click", async () => {
 document.querySelectorAll("[data-music]").forEach((button) => {
   button.addEventListener("click", () => musicCommand(button.dataset.music));
 });
-document.querySelector("#openKinopoisk")?.addEventListener("click", () => tvCommand({ action: "launch", app: "kinopoisk" }));
+document.querySelector("#openKinopoisk")?.addEventListener("click", (event) => {
+  tvCommand({ action: "launch", app: "kinopoisk" }, event.currentTarget);
+});
 document.querySelectorAll("[data-tv-key]").forEach((button) => {
-  button.addEventListener("click", () => tvCommand({ action: "key", key: button.dataset.tvKey }));
+  button.addEventListener("pointerdown", () => {
+    button.classList.add("is-pressing");
+    navigator.vibrate?.(8);
+  });
+  button.addEventListener("pointerup", () => button.classList.remove("is-pressing"));
+  button.addEventListener("pointercancel", () => button.classList.remove("is-pressing"));
+  button.addEventListener("pointerleave", () => button.classList.remove("is-pressing"));
+  button.addEventListener("click", () => tvCommand({ action: "key", key: button.dataset.tvKey }, button));
 });
 document.querySelectorAll("[data-tv-launch]").forEach((button) => {
-  button.addEventListener("click", () => tvCommand({ action: "launch", app: button.dataset.tvLaunch }));
+  button.addEventListener("pointerdown", () => {
+    button.classList.add("is-pressing");
+    navigator.vibrate?.(8);
+  });
+  button.addEventListener("pointerup", () => button.classList.remove("is-pressing"));
+  button.addEventListener("pointercancel", () => button.classList.remove("is-pressing"));
+  button.addEventListener("pointerleave", () => button.classList.remove("is-pressing"));
+  button.addEventListener("click", () => tvCommand({ action: "launch", app: button.dataset.tvLaunch }, button));
 });
 let volumeTimer;
 let lastSentVolume;

@@ -455,7 +455,7 @@ body.immersive #note {
   position: absolute;
   z-index: 5;
   left: 4.5%;
-  bottom: 4%;
+  bottom: 15%;
   width: min(46%, 34rem);
   max-width: 34rem;
   margin: 0;
@@ -470,7 +470,7 @@ body.immersive #note {
 @keyframes curtainSway { from { transform: translate3d(-1.2%,0,0) skewX(-.7deg); opacity: .12; } to { transform: translate3d(1.4%,0,0) skewX(.8deg); opacity: .25; } }
 @keyframes mistPass { from { transform: translate3d(-12%,0,0) scaleX(1.15); opacity: .05; } to { transform: translate3d(12%,0,0) scaleX(1.35); opacity: .22; } }
 @keyframes mountainPan { from { transform: scale(1.04) translate3d(-.7%,0,0); } to { transform: scale(1.09) translate3d(.8%,-.3%,0); } }
-@keyframes waveRoll { from { transform: translate3d(-4%,0,0) rotate(-1deg); } to { transform: translate3d(4%,.7rem,0) rotate(1deg); } }
+@keyframes waveRoll { 0% { transform: translate3d(-10%,0,0) rotate(-1.25deg) scaleX(1.08); } 48% { transform: translate3d(2%,1.25rem,0) rotate(.55deg) scaleX(.98); } 100% { transform: translate3d(10%,-.35rem,0) rotate(1.2deg) scaleX(1.06); } }
 @keyframes orbit { to { transform: rotate(360deg); } }
 @keyframes nebulaMove { from { transform: scale(1.03) translate3d(0,0,0); } to { transform: scale(1.09) translate3d(-1.2%,.4%,0); } }
 @keyframes cloudSail { from { transform: translate3d(-18vw,0,0) scale(1); opacity: 0; } 18%,76% { opacity: .22; } to { transform: translate3d(118vw,-1.2rem,0) scale(1.16); opacity: 0; } }
@@ -487,6 +487,12 @@ body.immersive #note {
 @keyframes palaceWallBreathe { from { transform: scale(1.018) translate3d(0, 0, 0); } to { transform: scale(1.038) translate3d(-.25%, -.15%, 0); } }
 @keyframes giltShimmer { 0%, 18% { opacity: 0; transform: translate3d(-28vw, 0, 0) skewX(-18deg); } 42% { opacity: .2; } 68%, 100% { opacity: 0; transform: translate3d(112vw, 0, 0) skewX(-18deg); } }
 @keyframes sconceBreath { 0%, 100% { opacity: .12; transform: scale(.88); } 48% { opacity: .34; transform: scale(1.08); } }
+@keyframes burgundyFlow { 0% { background-position: 0% 12%, 18% 80%, center; filter: saturate(.92); } 50% { background-position: 82% 44%, 66% 20%, center; filter: saturate(1.08); } 100% { background-position: 24% 90%, 100% 62%, center; filter: saturate(.98); } }
+@keyframes autumnLeafFall { 0% { transform: translate3d(-8vw,-18vh,0) rotate(0deg); opacity: 0; } 12%, 82% { opacity: .72; } 100% { transform: translate3d(28vw,112vh,0) rotate(620deg); opacity: 0; } }
+@keyframes waterRipple { 0% { transform: translate3d(-8%,0,0) scaleX(1.08); opacity: .12; } 50% { transform: translate3d(3%,.6rem,0) scaleX(.98); opacity: .34; } 100% { transform: translate3d(9%,-.2rem,0) scaleX(1.05); opacity: .16; } }
+@keyframes fountainMist { 0%,100% { transform: translate3d(-2%,.7rem,0) scale(.92); opacity: .08; } 48% { transform: translate3d(2%,-.8rem,0) scale(1.09); opacity: .26; } }
+@keyframes porcelainLight { 0% { transform: translate3d(-22vw,0,0) skewX(-14deg); opacity: 0; } 35% { opacity: .18; } 70%,100% { transform: translate3d(114vw,0,0) skewX(-14deg); opacity: 0; } }
+@keyframes carpetBreathe { from { transform: scale(1.018); filter: saturate(.94) brightness(.88); } to { transform: scale(1.045) translate3d(-.35%,.25%,0); filter: saturate(1.04) brightness(.96); } }
 
 /* Night — real lunar photography, natural stars and only the essential agenda. */
 body[data-theme="night"] {
@@ -534,7 +540,7 @@ body[data-theme="night"] #note { color: #f3eee6; border-color: rgba(212, 171, 11
 /* Play — an adult, private date mode: candlelight, velvet and soft movement. */
 body[data-theme="play"] { --bg: #140b0d; --ink: #f6ece4; --muted: #b9a5a0; --accent: #d6a15d; --panel: rgba(29,15,19,.62); --line: rgba(239,208,183,.18); --selected: rgba(128,43,54,.32); --glow: rgba(199,91,53,.24); }
 body[data-theme="play"] #sceneBackdrop { opacity: .98; background-image: url("../assets/scene-play.png"); animation: slowZoom 165s ease-in-out infinite alternate; }
-body[data-theme="play"] #wash { background: linear-gradient(90deg, rgba(8,4,5,.24), transparent 46%, rgba(16,5,8,.42)), linear-gradient(0deg, rgba(10,4,6,.58), transparent 60%); }
+body[data-theme="play"] #wash { background: radial-gradient(circle at 18% 72%, rgba(151,31,57,.36), transparent 37%), radial-gradient(circle at 76% 20%, rgba(89,13,35,.44), transparent 42%), linear-gradient(112deg, rgba(12,3,7,.72), rgba(92,15,39,.24) 48%, rgba(15,4,9,.62)); background-size: 170% 170%, 190% 190%, cover; animation: burgundyFlow 24s ease-in-out infinite alternate; }
 body[data-theme="play"] #grain { opacity: .07; mix-blend-mode: soft-light; }
 body[data-theme="play"] #orbs { display: none; }
 body[data-theme="play"] #top { position: absolute; z-index: 5; right: 4%; top: 4%; }
@@ -617,12 +623,12 @@ body[data-theme="sea"] #weatherLine { color: #d5e3e6; }
 body[data-theme="sea"] #screen { right: 4%; top: 28%; bottom: 5%; width: 50%; padding: 2rem 2.4rem; border: 1px solid rgba(205,232,237,.23); border-radius: 3rem; background: linear-gradient(145deg, rgba(20,67,86,.48), rgba(3,25,39,.58)); backdrop-filter: blur(20px); box-shadow: inset 0 1px rgba(255,255,255,.16), 0 2rem 6rem rgba(0,9,17,.28); }
 body[data-theme="sea"] .scene-event { padding: .65rem 0; border-color: rgba(200,226,231,.16); }
 body[data-theme="sea"] .scene-title { border-color: #82b4c0; }
-body[data-theme="sea"] #sceneDecor i:nth-child(-n+3) { display: block; left: -8%; bottom: 9%; width: 116%; height: 7rem; border-top: 1px solid rgba(205,230,235,.3); border-radius: 50%; animation: waveRoll 18s ease-in-out infinite alternate; }
-body[data-theme="sea"] #sceneDecor i:nth-child(2) { bottom: 13%; opacity: .55; animation-delay: -8s; animation-duration: 24s; }
-body[data-theme="sea"] #sceneDecor i:nth-child(3) { bottom: 18%; opacity: .32; animation-delay: -14s; animation-duration: 31s; }
-body[data-theme="sea"] #sceneDecor i:nth-child(n+4) { display: block; left: -10%; bottom: 30%; width: 120%; height: 2rem; border-top: 1px solid rgba(226,239,242,.22); border-radius: 50%; animation: waterSheen 26s ease-in-out infinite alternate; }
-body[data-theme="sea"] #sceneDecor i:nth-child(5) { bottom: 37%; opacity: .45; animation-delay: -11s; animation-duration: 38s; }
-body[data-theme="sea"] #sceneDecor i:nth-child(6) { bottom: 45%; opacity: .26; animation-delay: -21s; animation-duration: 49s; }
+body[data-theme="sea"] #sceneDecor i:nth-child(-n+3) { display: block; left: -8%; bottom: 9%; width: 116%; height: 7rem; border-top: 2px solid rgba(205,230,235,.38); border-radius: 50%; filter: drop-shadow(0 .55rem .7rem rgba(112,184,202,.13)); animation: waveRoll 8s cubic-bezier(.37,0,.63,1) infinite alternate; }
+body[data-theme="sea"] #sceneDecor i:nth-child(2) { bottom: 14%; opacity: .62; animation-delay: -3s; animation-duration: 11s; animation-direction: alternate-reverse; }
+body[data-theme="sea"] #sceneDecor i:nth-child(3) { bottom: 20%; opacity: .4; animation-delay: -7s; animation-duration: 14s; }
+body[data-theme="sea"] #sceneDecor i:nth-child(n+4) { display: block; left: -10%; bottom: 31%; width: 120%; height: 2.8rem; border-top: 1px solid rgba(226,239,242,.32); border-radius: 50%; animation: waterRipple 10s cubic-bezier(.37,0,.63,1) infinite alternate; }
+body[data-theme="sea"] #sceneDecor i:nth-child(5) { bottom: 38%; opacity: .52; animation-delay: -4s; animation-duration: 13s; }
+body[data-theme="sea"] #sceneDecor i:nth-child(6) { bottom: 46%; opacity: .34; animation-delay: -9s; animation-duration: 17s; }
 
 /* Space — event capsules arranged beside a slowly turning orbit. */
 body[data-theme="space"] { --bg: #02040b; --ink: #f0effa; --muted: #9ca5c3; --accent: #a98cff; --panel: rgba(14,17,38,.48); --line: rgba(157,170,219,.2); --selected: rgba(127,105,220,.22); --glow: rgba(92,74,189,.28); }
@@ -775,9 +781,9 @@ body[data-theme="venice"] #sceneDecor i:nth-child(n+4) { display: block; left: -
 body[data-theme="venice"] #sceneDecor i:nth-child(5) { bottom: 20%; opacity: .52; animation-delay: -12s; }
 body[data-theme="venice"] #sceneDecor i:nth-child(6) { bottom: 28%; opacity: .3; animation-delay: -22s; }
 
-/* Russian ornament — an oxblood textile rhythm with quiet constructivist geometry. */
+/* Russian ornament — broad classical floral rosettes, woven gold and oxblood. */
 body[data-theme="rus"] { --bg: #1a0d10; --ink: #f5e7cf; --muted: #c0a99d; --accent: #d2a25f; --panel: rgba(31,13,17,.72); --line: rgba(224,186,132,.23); --selected: rgba(123,34,46,.54); --glow: rgba(125,35,47,.24); }
-body[data-theme="rus"] #sceneBackdrop { opacity: 1; background-color: #1a0d10; background-image: repeating-linear-gradient(45deg, transparent 0 2.9rem, rgba(224,181,116,.09) 2.95rem 3rem), repeating-linear-gradient(-45deg, transparent 0 2.9rem, rgba(142,44,57,.14) 2.95rem 3rem), radial-gradient(circle at 42% 58%, #5b1e29, #1a0d10 46%, #0d0809); animation: patternDrift 80s linear infinite alternate; }
+body[data-theme="rus"] #sceneBackdrop { opacity: 1; background-color: #1a0d10; background-image: radial-gradient(ellipse at 50% 20%, transparent 0 20%, rgba(218,174,99,.2) 21% 25%, transparent 26%), radial-gradient(ellipse at 20% 50%, transparent 0 20%, rgba(162,47,61,.32) 21% 29%, transparent 30%), radial-gradient(circle at 50% 50%, #d7aa5f 0 .28rem, #8f2938 .32rem 1.05rem, #2a0d14 1.1rem 1.45rem, transparent 1.5rem), conic-gradient(from 45deg at 50% 50%, rgba(211,164,85,.18), transparent 12.5%, rgba(137,34,49,.28) 25%, transparent 37.5%, rgba(211,164,85,.18) 50%, transparent 62.5%, rgba(137,34,49,.28) 75%, transparent 87.5%), radial-gradient(circle at 42% 58%, #5b1e29, #1a0d10 48%, #0d0809); background-size: 12rem 12rem, 12rem 12rem, 12rem 12rem, 12rem 12rem, auto; animation: patternDrift 72s linear infinite alternate; }
 body[data-theme="rus"] #wash { background: linear-gradient(90deg, rgba(8,4,5,.18), transparent 46%, rgba(8,4,5,.34)); }
 body[data-theme="rus"] #orbs { display: none; }
 body[data-theme="rus"] #top { position: absolute; left: 4%; top: 4%; }
@@ -787,7 +793,7 @@ body[data-theme="rus"] .hero-copy { padding: 1.7rem 0 0 .6rem; }
 body[data-theme="rus"] #dateLine { font: 500 1rem var(--font); letter-spacing: .16em; text-transform: uppercase; }
 body[data-theme="rus"] #screen { right: 4%; top: 8%; bottom: 5%; width: 47%; padding: 1.9rem 2.3rem; border: 1px solid rgba(221,174,111,.32); border-radius: .35rem; background: rgba(25,11,15,.76); backdrop-filter: blur(18px); box-shadow: inset 0 0 0 .35rem rgba(119,37,48,.16), 0 2rem 5rem rgba(0,0,0,.28); }
 body[data-theme="rus"] .scene-title { border-color: #a83c4c; }
-body[data-theme="rus"] #sceneDecor i:nth-child(-n+3) { display: block; width: 7rem; height: 7rem; border: 1px solid rgba(220,177,112,.2); transform: rotate(45deg); animation: ornamentPulse 16s ease-in-out infinite; }
+body[data-theme="rus"] #sceneDecor i:nth-child(-n+3) { display: block; width: 8rem; height: 8rem; border: .55rem double rgba(220,177,112,.22); border-radius: 50% 12% 50% 12%; transform: rotate(45deg); animation: ornamentPulse 16s ease-in-out infinite; }
 body[data-theme="rus"] #sceneDecor i:nth-child(1) { left: 34%; top: 15%; }
 body[data-theme="rus"] #sceneDecor i:nth-child(2) { left: 26%; bottom: 21%; width: 4rem; height: 4rem; animation-delay: -6s; }
 body[data-theme="rus"] #sceneDecor i:nth-child(3) { right: 2%; bottom: 18%; width: 10rem; height: 10rem; animation-delay: -11s; }
@@ -831,9 +837,9 @@ body[data-theme="india"] #sceneDecor i:nth-child(-n+3) { display: block; right: 
 body[data-theme="india"] #sceneDecor i:nth-child(2) { right: 7%; bottom: 30%; width: 5rem; height: 5rem; animation-delay: -7s; }
 body[data-theme="india"] #sceneDecor i:nth-child(3) { right: 37%; top: 10%; width: 4rem; height: 4rem; animation-delay: -13s; }
 
-/* Italy — pale stone, verde lines and a contemporary classical border. */
+/* Italy — pale stone with broad verde and terracotta architectural bands. */
 body[data-theme="italy"] { --bg: #ddd3bf; --ink: #252822; --muted: #62675e; --accent: #9b654f; --panel: rgba(242,236,223,.78); --line: rgba(48,65,56,.19); --selected: rgba(255,251,242,.72); --glow: rgba(160,105,75,.2); color-scheme: light; }
-body[data-theme="italy"] #sceneBackdrop { opacity: 1; background-color: #ddd4c3; background-image: repeating-linear-gradient(90deg, transparent 0 5.9rem, rgba(48,78,64,.12) 5.95rem 6rem), repeating-linear-gradient(0deg, transparent 0 5.9rem, rgba(151,91,69,.08) 5.95rem 6rem), linear-gradient(135deg, #eee7d8, #cfc4af); animation: patternDrift 110s linear infinite alternate; }
+body[data-theme="italy"] #sceneBackdrop { opacity: 1; background-color: #ddd4c3; background-image: repeating-linear-gradient(90deg, transparent 0 8rem, rgba(48,78,64,.22) 8rem 8.72rem, rgba(244,237,222,.5) 8.72rem 9.08rem, rgba(151,91,69,.16) 9.08rem 9.68rem, transparent 9.68rem 16rem), repeating-linear-gradient(0deg, transparent 0 9rem, rgba(48,78,64,.14) 9rem 9.45rem, rgba(151,91,69,.12) 9.45rem 9.9rem, transparent 9.9rem 18rem), linear-gradient(135deg, #eee7d8, #cfc4af); animation: patternDrift 110s linear infinite alternate; }
 body[data-theme="italy"] #wash { background: radial-gradient(circle at 33% 44%, rgba(255,250,237,.72), transparent 24rem), linear-gradient(90deg, transparent 45%, rgba(99,78,61,.12)); }
 body[data-theme="italy"] #grain { opacity: .055; mix-blend-mode: multiply; }
 body[data-theme="italy"] #orbs { display: none; }
@@ -851,6 +857,132 @@ body[data-theme="italy"] .scene-time, body[data-theme="italy"] .scene-title smal
 body[data-theme="italy"] #sceneDecor i:nth-child(-n+3) { display: block; left: 31%; top: 18%; width: 10rem; height: 10rem; border: 1px solid rgba(61,91,75,.16); border-radius: 50%; box-shadow: inset 0 0 0 1.4rem rgba(161,99,76,.045); animation: ornamentPulse 24s ease-in-out infinite; }
 body[data-theme="italy"] #sceneDecor i:nth-child(2) { left: 20%; bottom: 18%; top: auto; width: 5rem; height: 5rem; animation-delay: -9s; }
 body[data-theme="italy"] #sceneDecor i:nth-child(3) { right: 2%; left: auto; bottom: 13%; top: auto; width: 13rem; height: 13rem; animation-delay: -16s; }
+
+/* Autumn forest — a warm path remains visible while leaves pass in the foreground. */
+body[data-theme="autumn-forest"] { --bg: #15150f; --ink: #f5eddf; --muted: #c1b4a1; --accent: #d5964e; --panel: rgba(25,25,18,.5); --line: rgba(235,209,165,.2); --selected: rgba(133,82,37,.36); --glow: rgba(200,119,48,.24); }
+body[data-theme="autumn-forest"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-autumn-forest.png"); animation: slowZoom 120s ease-in-out infinite alternate; }
+body[data-theme="autumn-forest"] #wash { background: linear-gradient(90deg, rgba(12,10,6,.18), transparent 46%, rgba(5,11,8,.52)), linear-gradient(0deg, rgba(8,7,4,.5), transparent 56%); }
+body[data-theme="autumn-forest"] #orbs { display: none; }
+body[data-theme="autumn-forest"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="autumn-forest"] #hero { position: absolute; left: 4.5%; top: 12%; display: block; }
+body[data-theme="autumn-forest"] #clock { font: 300 clamp(8.5rem, 13vw, 14rem)/.8 var(--serif); text-shadow: 0 1rem 4rem rgba(21,13,6,.48); }
+body[data-theme="autumn-forest"] .hero-copy { padding: 1.5rem 0 0 .6rem; }
+body[data-theme="autumn-forest"] #dateLine { font: 500 1rem var(--font); letter-spacing: .16em; text-transform: uppercase; }
+body[data-theme="autumn-forest"] #screen { right: 3.5%; top: 9%; bottom: 5%; width: 44%; padding: 1.7rem 2.1rem; border: 1px solid rgba(235,211,170,.2); border-radius: .55rem 2.7rem .55rem 2.7rem; background: linear-gradient(145deg, rgba(31,34,23,.67), rgba(8,16,11,.57)); backdrop-filter: blur(18px); box-shadow: 0 2rem 6rem rgba(7,8,4,.26); }
+body[data-theme="autumn-forest"] .scene-event { padding: .62rem 0; }
+body[data-theme="autumn-forest"] .scene-title { border-color: #c6813f; }
+body[data-theme="autumn-forest"] #sceneDecor i { display: block; left: 3%; top: -12%; width: .8rem; height: 1.25rem; border-radius: 80% 0 75% 0; background: #c87632; box-shadow: 18rem 4rem rgba(217,145,63,.82), 37rem -3rem rgba(147,75,31,.7), 62rem 9rem rgba(225,170,77,.62), 83rem -2rem rgba(118,57,27,.72); animation: autumnLeafFall 15s linear infinite; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(2) { left: 18%; animation-delay: -5s; animation-duration: 19s; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(3) { left: 42%; animation-delay: -13s; animation-duration: 24s; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(4) { left: 61%; animation-delay: -8s; animation-duration: 17s; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(5) { left: 78%; animation-delay: -17s; animation-duration: 27s; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(6) { left: 92%; animation-delay: -2s; animation-duration: 21s; }
+
+/* Oranienbaum — the UI rests on the shaded lawn, leaving the palace facade clear. */
+body[data-theme="oranienbaum"] { --bg: #1e2a22; --ink: #faf1df; --muted: #c6bea9; --accent: #d0a15d; --panel: rgba(24,38,28,.55); --line: rgba(241,221,181,.22); --selected: rgba(238,210,158,.17); --glow: rgba(191,137,66,.24); }
+body[data-theme="oranienbaum"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-oranienbaum.png"); animation: mountainPan 145s ease-in-out infinite alternate; }
+body[data-theme="oranienbaum"] #wash { background: linear-gradient(90deg, rgba(14,25,17,.42), transparent 47%), linear-gradient(0deg, rgba(11,20,14,.58), transparent 55%); }
+body[data-theme="oranienbaum"] #orbs { display: none; }
+body[data-theme="oranienbaum"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="oranienbaum"] #hero { position: absolute; left: 4.5%; top: 10%; display: block; }
+body[data-theme="oranienbaum"] #clock { font: 320 clamp(8rem, 12vw, 13rem)/.8 var(--serif); text-shadow: 0 .8rem 3rem rgba(17,25,17,.36); }
+body[data-theme="oranienbaum"] .hero-copy { padding: 1.35rem 0 0 .6rem; }
+body[data-theme="oranienbaum"] #screen { left: 4%; top: 41%; bottom: 5%; width: 41%; padding: 1.25rem 1.8rem; border: 1px solid rgba(231,210,169,.23); border-radius: 1.8rem; background: rgba(18,31,22,.59); backdrop-filter: blur(18px) saturate(.9); box-shadow: 0 1.8rem 5rem rgba(11,20,14,.25); }
+body[data-theme="oranienbaum"] .scene-event { padding: .42rem 0; }
+body[data-theme="oranienbaum"] #sceneDecor i:nth-child(-n+3) { display: block; left: -8%; bottom: 16%; width: 116%; height: 4.5rem; border-top: 1px solid rgba(246,213,150,.25); border-radius: 50%; animation: waterRipple 15s ease-in-out infinite alternate; }
+body[data-theme="oranienbaum"] #sceneDecor i:nth-child(2) { bottom: 22%; animation-delay: -6s; animation-duration: 19s; opacity: .45; }
+body[data-theme="oranienbaum"] #sceneDecor i:nth-child(3) { bottom: 29%; animation-delay: -11s; animation-duration: 23s; opacity: .28; }
+
+/* Peterhof — a narrow information rail keeps the cascade and palace visible. */
+body[data-theme="peterhof"] { --bg: #17302d; --ink: #fbf4e7; --muted: #c7c5b8; --accent: #e1b35d; --panel: rgba(10,33,31,.52); --line: rgba(235,226,198,.22); --selected: rgba(213,176,91,.18); --glow: rgba(211,166,82,.24); }
+body[data-theme="peterhof"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-peterhof.png"); animation: slowZoom 155s ease-in-out infinite alternate; }
+body[data-theme="peterhof"] #wash { background: linear-gradient(90deg, rgba(7,22,20,.33), transparent 36%, rgba(7,22,20,.16)), linear-gradient(0deg, rgba(5,19,20,.65), transparent 58%); }
+body[data-theme="peterhof"] #orbs { display: none; }
+body[data-theme="peterhof"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="peterhof"] #hero { position: absolute; left: 4%; top: 9%; display: block; }
+body[data-theme="peterhof"] #clock { font: 310 clamp(8rem, 12vw, 13rem)/.8 var(--serif); text-shadow: 0 .8rem 3rem rgba(5,25,25,.42); }
+body[data-theme="peterhof"] .hero-copy { padding: 1.4rem 0 0 .6rem; }
+body[data-theme="peterhof"] #screen { right: 3.5%; top: 41%; bottom: 5%; width: 38%; padding: 1.2rem 1.7rem; border: 1px solid rgba(239,225,185,.22); border-radius: 2.4rem .45rem 2.4rem .45rem; background: rgba(8,31,31,.58); backdrop-filter: blur(18px); box-shadow: 0 1.8rem 5rem rgba(4,21,22,.28); }
+body[data-theme="peterhof"] .scene-event { padding: .4rem 0; }
+body[data-theme="peterhof"] #sceneDecor i:nth-child(-n+3) { display: block; left: 38%; top: 28%; width: 24%; height: 38%; border-radius: 50%; background: rgba(237,244,238,.18); filter: blur(2.3rem); animation: fountainMist 9s ease-in-out infinite; }
+body[data-theme="peterhof"] #sceneDecor i:nth-child(2) { left: 24%; top: 42%; width: 18%; height: 27%; animation-delay: -4s; animation-duration: 12s; }
+body[data-theme="peterhof"] #sceneDecor i:nth-child(3) { left: 59%; top: 43%; width: 17%; height: 25%; animation-delay: -7s; animation-duration: 14s; }
+
+/* Petersburg streets — reflected lanterns move without hiding the street perspective. */
+body[data-theme="petersburg-streets"] { --bg: #10202d; --ink: #f5f1e9; --muted: #aebbc3; --accent: #e3ad69; --panel: rgba(12,30,42,.5); --line: rgba(215,229,235,.2); --selected: rgba(210,225,232,.15); --glow: rgba(122,160,184,.24); }
+body[data-theme="petersburg-streets"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-petersburg-streets.png"); animation: mountainPan 150s ease-in-out infinite alternate; }
+body[data-theme="petersburg-streets"] #wash { background: linear-gradient(90deg, rgba(5,16,25,.26), transparent 53%, rgba(5,16,25,.35)), linear-gradient(0deg, rgba(3,13,21,.58), transparent 61%); }
+body[data-theme="petersburg-streets"] #orbs { display: none; }
+body[data-theme="petersburg-streets"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="petersburg-streets"] #hero { position: absolute; left: 4%; top: 10%; display: block; }
+body[data-theme="petersburg-streets"] #clock { font: 260 clamp(8rem, 12vw, 13rem)/.8 var(--font); letter-spacing: -.075em; text-shadow: 0 1rem 4rem rgba(2,10,17,.5); }
+body[data-theme="petersburg-streets"] .hero-copy { padding: 1.4rem 0 0 .6rem; }
+body[data-theme="petersburg-streets"] #screen { right: 3.5%; top: 38%; bottom: 5%; width: 39%; padding: 1.25rem 1.8rem; border: 1px solid rgba(221,230,233,.2); border-radius: 2.2rem; background: rgba(9,26,37,.57); backdrop-filter: blur(19px); box-shadow: 0 2rem 5rem rgba(2,11,18,.28); }
+body[data-theme="petersburg-streets"] .scene-event { padding: .42rem 0; }
+body[data-theme="petersburg-streets"] #sceneDecor i:nth-child(-n+3) { display: block; left: -8%; bottom: 3%; width: 116%; height: 4rem; border-top: 1px solid rgba(235,188,119,.28); border-radius: 50%; animation: waterRipple 13s ease-in-out infinite alternate; }
+body[data-theme="petersburg-streets"] #sceneDecor i:nth-child(2) { bottom: 10%; animation-delay: -5s; animation-duration: 17s; opacity: .45; }
+body[data-theme="petersburg-streets"] #sceneDecor i:nth-child(3) { bottom: 17%; animation-delay: -11s; animation-duration: 21s; opacity: .28; }
+
+/* Italian sunset — time and agenda sit on the shaded terrace, away from the town. */
+body[data-theme="italy-sunset"] { --bg: #2d1b20; --ink: #fff2e7; --muted: #d1b9af; --accent: #efb36f; --panel: rgba(42,22,27,.5); --line: rgba(255,224,201,.2); --selected: rgba(189,89,71,.25); --glow: rgba(214,94,76,.26); }
+body[data-theme="italy-sunset"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-italy-sunset.png"); animation: mountainPan 155s ease-in-out infinite alternate; }
+body[data-theme="italy-sunset"] #wash { background: linear-gradient(90deg, rgba(18,9,13,.45), transparent 48%), linear-gradient(0deg, rgba(22,11,16,.6), transparent 60%); }
+body[data-theme="italy-sunset"] #orbs { display: none; }
+body[data-theme="italy-sunset"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="italy-sunset"] #hero { position: absolute; left: 4%; top: 9%; display: block; }
+body[data-theme="italy-sunset"] #clock { font: 300 clamp(8rem, 12vw, 13rem)/.8 var(--serif); text-shadow: 0 1rem 4rem rgba(25,10,14,.42); }
+body[data-theme="italy-sunset"] .hero-copy { padding: 1.4rem 0 0 .6rem; }
+body[data-theme="italy-sunset"] #screen { left: 4%; top: 41%; bottom: 5%; width: 39%; padding: 1.2rem 1.8rem; border: 1px solid rgba(248,218,192,.2); border-radius: .45rem 2.5rem .45rem 2.5rem; background: rgba(39,20,25,.58); backdrop-filter: blur(18px); box-shadow: 0 1.8rem 5rem rgba(19,8,12,.28); }
+body[data-theme="italy-sunset"] .scene-event { padding: .4rem 0; }
+body[data-theme="italy-sunset"] #sceneDecor i:nth-child(-n+3) { display: block; left: -16%; top: 8%; width: 26rem; height: 4rem; border-radius: 50%; background: rgba(251,213,210,.3); filter: blur(2.5rem); animation: cloudSail 72s linear infinite; }
+body[data-theme="italy-sunset"] #sceneDecor i:nth-child(2) { top: 21%; width: 35rem; animation-delay: -27s; animation-duration: 92s; opacity: .5; }
+body[data-theme="italy-sunset"] #sceneDecor i:nth-child(3) { top: 34%; animation-delay: -58s; animation-duration: 116s; opacity: .3; }
+
+/* Gzhel — luminous porcelain with a restrained blue glass panel. */
+body[data-theme="gzhel"] { --bg: #e9e7df; --ink: #102b55; --muted: #66758a; --accent: #2058a3; --panel: rgba(247,248,246,.72); --line: rgba(21,72,142,.2); --selected: rgba(28,82,158,.13); --glow: rgba(79,132,194,.2); color-scheme: light; }
+body[data-theme="gzhel"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-gzhel.png"); animation: palaceWallBreathe 110s ease-in-out infinite alternate; }
+body[data-theme="gzhel"] #wash { background: linear-gradient(90deg, rgba(255,255,255,.13), rgba(255,255,255,.03) 48%, rgba(14,49,99,.09)); }
+body[data-theme="gzhel"] #grain { opacity: .04; mix-blend-mode: multiply; }
+body[data-theme="gzhel"] #orbs { display: none; }
+body[data-theme="gzhel"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="gzhel"] #modes button { color: #27496f; background: rgba(252,252,249,.45); backdrop-filter: blur(12px); }
+body[data-theme="gzhel"] #modes button.active { color: #fff; background: #1d4f91; }
+body[data-theme="gzhel"] #hero { position: absolute; left: 7%; top: 12%; display: block; }
+body[data-theme="gzhel"] #clock { font: 350 clamp(8rem, 13vw, 14rem)/.8 var(--serif); color: #153f78; letter-spacing: -.06em; text-shadow: 0 1px rgba(255,255,255,.8); }
+body[data-theme="gzhel"] .hero-copy { padding: 1.5rem 0 0 .5rem; }
+body[data-theme="gzhel"] #dateLine { font: 600 1rem var(--serif); letter-spacing: .15em; text-transform: uppercase; }
+body[data-theme="gzhel"] #screen { right: 9%; top: 9%; bottom: 5%; width: 40%; padding: 1.7rem 2rem; border: 1px solid rgba(24,75,145,.22); outline: 1px solid rgba(255,255,255,.65); outline-offset: -.45rem; border-radius: .5rem 2.8rem .5rem 2.8rem; background: rgba(248,249,247,.73); backdrop-filter: blur(22px) saturate(.88); box-shadow: 0 2rem 6rem rgba(31,66,106,.14); }
+body[data-theme="gzhel"] .scene-event { padding: .62rem 0; border-color: rgba(33,75,129,.15); }
+body[data-theme="gzhel"] .scene-title { border-color: #2b64ad; }
+body[data-theme="gzhel"] .scene-time, body[data-theme="gzhel"] .scene-title small, body[data-theme="gzhel"] .scene-owner { color: #607087; }
+body[data-theme="gzhel"] #sceneDecor i:first-child { display: block; left: 0; top: 0; width: 11vw; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent); filter: blur(1.4rem); animation: porcelainLight 34s ease-in-out infinite; }
+
+/* Soviet carpet — the medallion remains on the left, the agenda sits in the quiet field. */
+body[data-theme="soviet-carpet"] { --bg: #1c0b0c; --ink: #f4e5d1; --muted: #c0a795; --accent: #d0a063; --panel: rgba(36,11,13,.6); --line: rgba(231,194,146,.2); --selected: rgba(120,32,37,.52); --glow: rgba(128,42,38,.24); }
+body[data-theme="soviet-carpet"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-soviet-carpet.png"); animation: carpetBreathe 95s ease-in-out infinite alternate; }
+body[data-theme="soviet-carpet"] #wash { background: linear-gradient(90deg, rgba(17,6,7,.08), transparent 47%, rgba(18,5,7,.45)), linear-gradient(0deg, rgba(12,4,5,.48), transparent 58%); }
+body[data-theme="soviet-carpet"] #orbs { display: none; }
+body[data-theme="soviet-carpet"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="soviet-carpet"] #hero { position: absolute; left: 5%; top: 14%; display: block; }
+body[data-theme="soviet-carpet"] #clock { font: 350 clamp(8rem, 13vw, 14rem)/.8 var(--serif); text-shadow: 0 .8rem 2.8rem rgba(30,7,8,.48); }
+body[data-theme="soviet-carpet"] .hero-copy { padding: 1.5rem 0 0 .5rem; }
+body[data-theme="soviet-carpet"] #screen { right: 3.5%; top: 8%; bottom: 5%; width: 45%; padding: 1.65rem 2rem; border: .45rem double rgba(214,171,111,.24); border-radius: .25rem; background: rgba(32,9,11,.69); backdrop-filter: blur(17px) saturate(.82); box-shadow: 0 2rem 6rem rgba(20,5,6,.32); }
+body[data-theme="soviet-carpet"] .scene-event { padding: .6rem 0; border-color: rgba(228,193,149,.14); }
+body[data-theme="soviet-carpet"] .scene-title { border-color: #b54c4d; }
+
+/* Palace study — a real photograph of Peter I's oak study, not a generated room. */
+body[data-theme="palace-study"] { --bg: #2a160d; --ink: #f5e6cf; --muted: #c0a98b; --accent: #d1a15f; --panel: rgba(30,16,10,.58); --line: rgba(230,190,132,.23); --selected: rgba(111,66,35,.54); --glow: rgba(190,119,56,.24); }
+body[data-theme="palace-study"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-palace-study.jpg"); background-position: center; animation: slowZoom 135s ease-in-out infinite alternate; }
+body[data-theme="palace-study"] #wash { background: linear-gradient(90deg, rgba(22,11,6,.48), transparent 48%, rgba(24,10,5,.13)), linear-gradient(0deg, rgba(17,8,4,.6), transparent 61%); }
+body[data-theme="palace-study"] #orbs { display: none; }
+body[data-theme="palace-study"] #top { position: absolute; right: 4%; top: 4%; }
+body[data-theme="palace-study"] #hero { position: absolute; left: 4%; top: 9%; display: block; }
+body[data-theme="palace-study"] #clock { font: 340 clamp(8rem, 12vw, 13rem)/.8 var(--serif); text-shadow: 0 1rem 4rem rgba(20,9,4,.55); }
+body[data-theme="palace-study"] .hero-copy { padding: 1.4rem 0 0 .5rem; }
+body[data-theme="palace-study"] #screen { left: 4%; top: 40%; bottom: 5%; width: 39%; padding: 1.2rem 1.8rem; border: 1px solid rgba(222,180,119,.3); outline: 1px solid rgba(82,48,25,.58); outline-offset: -.42rem; border-radius: .25rem; background: rgba(27,14,8,.66); backdrop-filter: blur(17px) saturate(.78); box-shadow: 0 1.8rem 5rem rgba(16,7,3,.34); }
+body[data-theme="palace-study"] .scene-event { padding: .4rem 0; }
+body[data-theme="palace-study"] .scene-title { border-color: #bc8349; }
+body[data-theme="palace-study"] #sceneDecor i:first-child { display: block; left: 0; top: 0; width: 12vw; height: 100%; background: linear-gradient(90deg, transparent, rgba(244,177,84,.3), transparent); filter: blur(1.8rem); animation: giltShimmer 38s ease-in-out infinite; }
 
 /* Palace — the dashboard is set directly into a restrained imperial boiserie wall. */
 body[data-theme="palace"] { --bg: #b9b2a1; --ink: #302a22; --muted: #756b5d; --accent: #8e6a32; --panel: rgba(239,234,218,.82); --line: rgba(115,84,39,.34); --selected: rgba(246,241,225,.72); --glow: rgba(212,169,91,.22); color-scheme: light; }
@@ -923,11 +1055,11 @@ body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantiu
   bottom: auto;
   max-width: 24%;
 }
-body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) #mediaBar {
+body[data-theme="byzantium"] #mediaBar {
   top: auto;
   bottom: 14%;
 }
-body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]):is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
+body[data-theme="byzantium"]:is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
 
 @media (max-height: 800px) {
   body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) #screen {
@@ -940,12 +1072,80 @@ body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantiu
   body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-agenda > .kicker { height: 2.05rem; }
   body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-event { min-height: 2.85rem; padding-block: .32rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) #screen { height: 40%; padding-block: 1.1rem; }
-  body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]):is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
+  body[data-theme="byzantium"]:is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-agenda > .kicker { height: 2.15rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-event { padding: .35rem .6rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-time { margin-bottom: .25rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-owner { margin-top: .25rem; font-size: .72rem; }
 }
+body.immersive #mediaBar { bottom: 4%; }
+
+/* Composition-aware rails: keep the dominant object in every photographic scene uncovered. */
+body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"], [data-theme="petersburg"], [data-theme="rome"]) #screen {
+  left: 4%;
+  right: auto;
+  top: 40%;
+  bottom: 5%;
+  width: 41%;
+  height: auto;
+  padding: 1.2rem 1.7rem;
+}
+body[data-theme="home-day"] #screen { background: rgba(244,239,231,.63); }
+body[data-theme="home-evening"] #screen { background: rgba(18,18,19,.49); }
+body[data-theme="play"] #screen { background: linear-gradient(145deg, rgba(58,20,34,.62), rgba(18,7,12,.58)); }
+body[data-theme="petersburg"] #screen { background: rgba(12,31,46,.52); }
+body[data-theme="rome"] #screen { background: rgba(248,238,219,.69); }
+body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="mountains"], [data-theme="florence"]) #note {
+  left: auto;
+  right: 4%;
+  width: min(39%, 30rem);
+}
+
+/* Keep temporary notes and now-playing details in the open rail, never over the agenda. */
+body:is(
+  [data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"], [data-theme="petersburg"],
+  [data-theme="rome"], [data-theme="mountains"], [data-theme="florence"], [data-theme="oranienbaum"],
+  [data-theme="italy-sunset"], [data-theme="palace-study"], [data-theme="india"]
+) #mediaBar {
+  left: auto;
+  right: 4%;
+}
+body:is(
+  [data-theme="oranienbaum"], [data-theme="italy-sunset"], [data-theme="palace-study"], [data-theme="india"]
+) #note {
+  left: auto;
+  right: 4%;
+}
+body[data-theme="byzantium"] #mediaBar { left: auto; right: 4%; bottom: 4%; }
+body[data-theme="byzantium"].media-visible #screen { bottom: 15%; height: auto; }
+
+body:is([data-theme="mountains"], [data-theme="florence"]) #screen {
+  left: 4%;
+  right: auto;
+  top: 41%;
+  bottom: 5%;
+  width: 40%;
+  height: auto;
+  padding: 1.15rem 1.65rem;
+  border: 1px solid var(--line);
+  border-radius: 1.8rem;
+}
+body[data-theme="mountains"] #screen { background: linear-gradient(145deg, rgba(20,28,35,.52), rgba(12,17,21,.64)); }
+body[data-theme="florence"] #screen { background: rgba(48,29,28,.52); }
+body:is([data-theme="mountains"], [data-theme="florence"]) .scene-list { display: block; }
+body:is([data-theme="mountains"], [data-theme="florence"]) .scene-event {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) 5.7rem;
+  align-items: start;
+  gap: .7rem;
+  min-height: 3rem;
+  padding: .42rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+}
+body:is([data-theme="mountains"], [data-theme="florence"]) .scene-time { margin: 0; }
+body:is([data-theme="mountains"], [data-theme="florence"]) .scene-title { padding-left: .75rem; border-left: 1px solid var(--accent); }
+body:is([data-theme="mountains"], [data-theme="florence"]) .scene-owner { margin-top: 0; }
 
 @media (max-width: 1100px) {
   .grid-now, .grid-today, .week { grid-template-columns: 1fr; }

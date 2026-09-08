@@ -1,4 +1,4 @@
-export const EVENT_CUE_LEAD_MINUTES = 5;
+export const EVENT_CUE_LEADS = [30, 5];
 
 export function minutesPhrase(minutes) {
   const n = Math.max(1, Number(minutes) || 1);
@@ -9,10 +9,17 @@ export function minutesPhrase(minutes) {
   return `Через ${n} минут`;
 }
 
+export function cueInBand(minutes, lead) {
+  const n = Math.max(1, Number(minutes) || 1);
+  if (lead === 30) return n >= 6 && n <= 30;
+  if (lead === 5) return n >= 1 && n <= 5;
+  return n >= 1 && n <= lead;
+}
+
 export function nextEventCue(events, {
   now = Date.now(),
   shownIds = [],
-  leadMinutes = EVENT_CUE_LEAD_MINUTES,
+  leads = EVENT_CUE_LEADS,
   privacy = false,
   showCalendar = true,
 } = {}) {
@@ -20,18 +27,21 @@ export function nextEventCue(events, {
   const shown = new Set(shownIds);
   const upcoming = (events || [])
     .filter((event) => event && !event.allDay && event.id && event.start && Date.parse(event.start) > now)
-    .sort((a, b) => String(a.start).localeCompare(String(b.start)));
+    .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
   for (const event of upcoming) {
-    if (shown.has(event.id)) continue;
     const minutes = Math.max(1, Math.round((Date.parse(event.start) - now) / 60_000));
-    if (minutes > leadMinutes) return null;
-    return {
-      id: event.id,
-      title: event.title || "Дело",
-      ownerName: event.ownerName || event.calendarName || "",
-      start: event.start,
-      minutes,
-    };
+    for (const lead of leads) {
+      if (!cueInBand(minutes, lead)) continue;
+      const id = `${event.id}@${lead}`;
+      if (shown.has(id)) continue;
+      return {
+        id,
+        title: event.title || "Дело",
+        ownerName: event.ownerName || event.calendarName || "",
+        start: event.start,
+        minutes,
+      };
+    }
   }
   return null;
 }

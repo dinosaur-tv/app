@@ -10,6 +10,7 @@ export default [
         document: "readonly",
         fetch: "readonly",
         localStorage: "readonly",
+        sessionStorage: "readonly",
         location: "readonly",
         history: "readonly",
         navigator: "readonly",
