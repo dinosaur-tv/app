@@ -384,8 +384,9 @@ body.immersive:not(.has-media) #note { bottom: 4%; }
 
 @keyframes eventArrive { from { opacity: 0; transform: translate3d(0, .8rem, 0); } to { opacity: 1; transform: none; } }
 @keyframes slowZoom { from { transform: scale(1.025); } to { transform: scale(1.085) translate3d(-.7%, -.4%, 0); } }
-@keyframes moonFloat { 0%,100% { transform: translate3d(0,0,0); box-shadow: 0 0 4rem rgba(217,224,228,.12); } 50% { transform: translate3d(-.8rem,.45rem,0); box-shadow: 0 0 7rem rgba(217,224,228,.22); } }
-@keyframes starBlink { 0%,100% { opacity: .2; transform: scale(.8); } 50% { opacity: .85; transform: scale(1.25); } }
+@keyframes nightSkyDrift { from { transform: scale(1.012) translate3d(0, 0, 0); } to { transform: scale(1.045) translate3d(-.35%, -.2%, 0); } }
+@keyframes starBlink { 0%,100% { opacity: .22; } 42% { opacity: .78; } 58% { opacity: .44; } }
+@keyframes atmosphericVeil { from { transform: translate3d(-3%, 0, 0) scaleX(1.05); opacity: .04; } to { transform: translate3d(4%, -.4%, 0) scaleX(1.16); opacity: .15; } }
 @keyframes candleFlicker { 0%,100% { transform: translate3d(0,0,0) scale(.92); opacity: .16; } 24% { transform: translate3d(.25rem,-.18rem,0) scale(1.04); opacity: .3; } 53% { transform: translate3d(-.18rem,.12rem,0) scale(.97); opacity: .22; } 76% { transform: translate3d(.12rem,-.08rem,0) scale(1.08); opacity: .34; } }
 @keyframes curtainSway { from { transform: translate3d(-1.2%,0,0) skewX(-.7deg); opacity: .12; } to { transform: translate3d(1.4%,0,0) skewX(.8deg); opacity: .25; } }
 @keyframes mistPass { from { transform: translate3d(-12%,0,0) scaleX(1.15); opacity: .05; } to { transform: translate3d(12%,0,0) scaleX(1.35); opacity: .22; } }
@@ -408,7 +409,7 @@ body.immersive:not(.has-media) #note { bottom: 4%; }
 @keyframes giltShimmer { 0%, 18% { opacity: 0; transform: translate3d(-28vw, 0, 0) skewX(-18deg); } 42% { opacity: .2; } 68%, 100% { opacity: 0; transform: translate3d(112vw, 0, 0) skewX(-18deg); } }
 @keyframes sconceBreath { 0%, 100% { opacity: .12; transform: scale(.88); } 48% { opacity: .34; transform: scale(1.08); } }
 
-/* Night — a nearly silent clock, a moon and only the essential agenda. */
+/* Night — real lunar photography, natural stars and only the essential agenda. */
 body[data-theme="night"] {
   --bg: #030406;
   --ink: #b9bdc0;
@@ -419,8 +420,8 @@ body[data-theme="night"] {
   --selected: #161616;
   --glow: rgba(139,155,166,.08);
 }
-body[data-theme="night"] #sceneBackdrop { opacity: 1; background: radial-gradient(circle at 72% 22%, #111820 0, #06080c 20rem, #020304 54rem); }
-body[data-theme="night"] #wash { background: linear-gradient(180deg, transparent 45%, #020304 100%); }
+body[data-theme="night"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-night-real.png"); animation: nightSkyDrift 150s ease-in-out infinite alternate; }
+body[data-theme="night"] #wash { background: radial-gradient(circle at 78% 19%, transparent 0 8rem, rgba(2,5,9,.04) 18rem, rgba(2,4,8,.16) 48rem), linear-gradient(180deg, rgba(1,4,8,.03) 40%, rgba(1,3,6,.42) 100%); }
 body[data-theme="night"] #orbs { opacity: .08; }
 body[data-theme="night"] #grain { opacity: .045; }
 body[data-theme="night"] #photo { filter: brightness(.28) saturate(.4); }
@@ -439,14 +440,13 @@ body[data-theme="night"] .scene-owner { display: flex; color: #68727a; font-size
 body[data-theme="night"] .scene-title { padding-left: .8rem; border-color: rgba(142,153,161,.2); }
 body[data-theme="night"] .scene-title strong { font-size: .92rem; font-weight: 400; }
 body[data-theme="night"] .scene-title small, body[data-theme="night"] .scene-time { color: #596168; font-size: .72rem; }
-body[data-theme="night"] #sceneDecor i { display: block; width: .18rem; height: .18rem; border-radius: 50%; background: #d8e1e7; animation: starBlink 7s ease-in-out infinite; }
-body[data-theme="night"] #sceneDecor i:nth-child(1) { width: 9.5rem; height: 9.5rem; right: 15%; top: 11%; background: radial-gradient(circle at 62% 34%, rgba(77,88,96,.65) 0 5%, transparent 6%), radial-gradient(circle at 34% 67%, rgba(64,75,84,.58) 0 8%, transparent 9%), radial-gradient(circle at 44% 42%, rgba(236,239,235,.95), #aeb7ba 44%, #53606a 72%, #111820 74%); box-shadow: 0 0 1.5rem rgba(210,223,228,.15), 0 0 8rem rgba(166,190,202,.2); animation: moonFloat 28s ease-in-out infinite; }
-body[data-theme="night"] #sceneDecor i:nth-child(1)::before { content: ""; position: absolute; inset: -1.5rem; border: 1px solid rgba(190,211,221,.12); border-radius: 50%; box-shadow: 0 0 0 2.8rem rgba(177,199,211,.025), 0 0 0 5.2rem rgba(177,199,211,.018); animation: orbit 70s linear infinite; }
-body[data-theme="night"] #sceneDecor i:nth-child(1)::after { content: ""; position: absolute; inset: 12% 8% 8% 28%; border-radius: 50%; background: linear-gradient(112deg, transparent 38%, rgba(239,245,245,.3)); filter: blur(.35rem); transform: rotate(-14deg); }
-body[data-theme="night"] #sceneDecor i:nth-child(2) { left: 12%; top: 22%; animation-delay: -2s; }
-body[data-theme="night"] #sceneDecor i:nth-child(3) { left: 28%; top: 16%; animation-delay: -4s; }
-body[data-theme="night"] #sceneDecor i:nth-child(4) { right: 32%; top: 38%; animation-delay: -1s; }
-body[data-theme="night"] #sceneDecor i:nth-child(5) { left: 64%; top: 12%; animation-delay: -5s; }
+body[data-theme="night"] #sceneDecor i { display: none; }
+body[data-theme="night"] #sceneDecor i:first-child { display: block; right: 5%; top: -5%; width: 35%; height: 44%; border-radius: 50%; background: radial-gradient(circle, rgba(183,207,226,.095), rgba(102,134,157,.026) 42%, transparent 70%); filter: blur(2rem); animation: atmosphericVeil 31s ease-in-out infinite alternate; }
+body[data-theme="night"] #sceneDecor i:nth-child(n+2):nth-child(-n+4) { display: block; width: .11rem; height: .11rem; border-radius: 50%; background: rgba(225,237,245,.82); box-shadow: 9rem 4rem rgba(225,237,245,.28), 21rem -5rem rgba(225,237,245,.42), 39rem 8rem rgba(225,237,245,.22); animation: starBlink 9s ease-in-out infinite; }
+body[data-theme="night"] #sceneDecor i:nth-child(2) { left: 9%; top: 17%; animation-delay: -2s; }
+body[data-theme="night"] #sceneDecor i:nth-child(3) { left: 34%; top: 29%; animation-delay: -6s; animation-duration: 13s; }
+body[data-theme="night"] #sceneDecor i:nth-child(4) { left: 59%; top: 8%; animation-delay: -9s; animation-duration: 17s; }
+body[data-theme="night"] #sceneDecor i:nth-child(5) { display: block; left: -8%; bottom: 5%; width: 116%; height: 16%; border-radius: 50%; background: rgba(120,149,169,.09); filter: blur(3.2rem); animation: atmosphericVeil 44s ease-in-out infinite alternate-reverse; }
 body[data-theme="night"] #sceneDecor i:nth-child(6) { display: block; left: 82%; top: 13%; width: 11rem; height: 1px; border-radius: 99px; background: linear-gradient(90deg, transparent, rgba(220,232,241,.92)); transform-origin: right center; animation: shootingStar 14s ease-in infinite; }
 body[data-theme="night"] #sceneDecor i:nth-child(6)::before, body[data-theme="night"] #sceneDecor i:nth-child(6)::after { content: ""; position: absolute; width: 7rem; height: 1px; border-radius: 99px; background: linear-gradient(90deg, transparent, rgba(220,232,241,.72)); animation: shootingStar 19s ease-in infinite; }
 body[data-theme="night"] #sceneDecor i:nth-child(6)::before { left: 18vw; top: 16vh; animation-delay: -6s; }

@@ -32,6 +32,10 @@ Create a kind northern forest clearing in late spring with birch and pine, fresh
 
 Create a friendly poetic night sky seen from an imaginary peaceful planet: a soft lavender-blue nebula, slim crescent planet, delicate stars and faint milky dust. Premium cinematic illustration with realistic light and elegant restraint, serene rather than cold. Keep deep calm space on the left for a clock and concentrate the nebula toward the upper right while retaining agenda readability.
 
+### `scene-night-real.png`
+
+Create a scientifically believable photorealistic Earth night sky for a 16:9 television dashboard. Show one optically photographed full moon in the upper-right quadrant with authentic lunar maria, craters and surface relief, a natural field of tiny stars, restrained atmospheric haze and a very low silhouette of Saint Petersburg rooftops. Keep broad dark negative space for the clock and agenda. Avoid illustration, cartoon shapes, fantasy planets, neon glow, colourful nebulae, icon-like stars and drawn constellations.
+
 ### `scene-petersburg.png`
 
 Create a quiet cinematic Saint Petersburg evening in rain: classical embankment silhouettes, pale northern sky, warm reflected windows and wet stone, painterly photographic realism in muted graphite, cream and brass. Wide dashboard-safe composition with atmospheric movement areas for rain and clouds, no people, signs, text or logos.
