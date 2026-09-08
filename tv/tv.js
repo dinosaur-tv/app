@@ -36,6 +36,7 @@ let appliedPowerAt = localStorage.getItem("dinoTvPowerAt") || "";
 let asleep = false;
 let agendaPage = 0;
 let agendaPageCount = 1;
+const scenePageSizes = new Map();
 
 function nativeBridge() {
   return window.DinoTV || null;
@@ -231,11 +232,31 @@ function sceneWeather(periods) {
   return `<div class="scene-weather">${periods.slice(0, 4).map((period) => `<div><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><span>${escapeHtml(period.description)}</span></div>`).join("")}</div>`;
 }
 
+function scenePageSizeKey(scene) {
+  const layers = screenLayers();
+  return [scene, mode, window.innerWidth, window.innerHeight, document.body.classList.contains("has-media"), layers.weather].join(":");
+}
+
 function scenePageSize(scene) {
+  const measured = scenePageSizes.get(scenePageSizeKey(scene));
+  if (measured) return measured;
   const compactVertical = ["night", "mountains", "florence", "byzantium", "palace", "oak-study"].includes(scene);
   if (mode === "TODAY" || mode === "TOMORROW") return compactVertical && window.innerHeight <= 800 ? 2 : window.innerHeight <= 800 ? 3 : 5;
   if (compactVertical) return window.innerHeight <= 800 ? 4 : 6;
   return window.innerHeight <= 800 ? 5 : 6;
+}
+
+function measuredScenePageSize(scene) {
+  const list = screen.querySelector(".scene-list");
+  const rows = [...screen.querySelectorAll(".scene-event")];
+  if (!list || !rows.length || list.clientHeight < 1) return null;
+  if (["mountains", "florence", "byzantium"].includes(scene)) {
+    const gap = Number.parseFloat(window.getComputedStyle(list).columnGap) || 0;
+    return Math.max(1, Math.min(12, Math.floor((list.clientWidth + gap) / (190 + gap))));
+  }
+  const rowHeight = Math.max(...rows.map((row) => row.getBoundingClientRect().height));
+  if (!Number.isFinite(rowHeight) || rowHeight < 1) return null;
+  return Math.max(1, Math.min(12, Math.floor((list.clientHeight + 1) / rowHeight)));
 }
 
 function agendaDayLabel(date, now, compact = false) {
@@ -388,9 +409,18 @@ function paint(force = false) {
   const key = `${viewSig()}|${now.getMinutes()}`;
   if (!force && key === paintedKey) return;
   paintedKey = key;
-  screen.innerHTML = sceneThemes.includes(activeTheme)
-    ? renderSceneAgenda(now, activeTheme)
-    : mode === "WEEK" ? renderWeek(now) : renderDay(now);
+  if (sceneThemes.includes(activeTheme)) {
+    const sizeKey = scenePageSizeKey(activeTheme);
+    const previousSize = scenePageSize(activeTheme);
+    screen.innerHTML = renderSceneAgenda(now, activeTheme);
+    const measuredSize = measuredScenePageSize(activeTheme);
+    if (measuredSize && measuredSize !== previousSize) {
+      scenePageSizes.set(sizeKey, measuredSize);
+      screen.innerHTML = renderSceneAgenda(now, activeTheme);
+    }
+  } else {
+    screen.innerHTML = mode === "WEEK" ? renderWeek(now) : renderDay(now);
+  }
 }
 
 async function request(path, options = {}) {
