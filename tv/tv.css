@@ -262,8 +262,8 @@ body.hide-weather #weatherLine { display: none; }
   position: absolute;
   z-index: 6;
   left: 5.5%;
-  top: 58%;
-  bottom: auto;
+  top: auto;
+  bottom: 8%;
   width: min(28rem, 42%);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -925,7 +925,7 @@ body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantiu
 }
 body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) #mediaBar {
   top: auto;
-  bottom: 36%;
+  bottom: 14%;
 }
 body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]):is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
 

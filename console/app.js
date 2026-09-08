@@ -196,13 +196,19 @@ function showInviteCode(code) {
 async function request(path, options = {}) {
   const allowUnauthedPair = path.includes("/pair/approve");
   if (!hasRemoteAuth() && !allowUnauthedPair) throw new Error("Введите код с телевизора во вкладке «Ещё»");
-  const headers = { "content-type": "application/json", ...(options.headers || {}) };
+  const method = (options.method || "GET").toUpperCase();
+  const headers = { ...(options.headers || {}) };
+  let body = options.body;
+  if (body === undefined && method !== "GET" && method !== "HEAD") body = "{}";
+  if (body !== undefined) headers["content-type"] = "application/json";
   if (initData) headers["x-telegram-init-data"] = initData;
   const token = homeToken();
   if (token) headers["x-dino-home-token"] = token;
   const response = await fetch(`${API}${path}`, {
     ...options,
+    method,
     headers,
+    body,
   });
   if (!response.ok) {
     const text = await response.text() || "Не удалось сохранить";
