@@ -124,26 +124,31 @@
       </section>
 
       <section id="pane-remote" class="pane" hidden>
-        <div class="pad" role="group" aria-label="Пульт">
-          <button type="button" data-tv-key="volume_up" aria-label="Громче">＋</button>
-          <button type="button" data-tv-key="up" aria-label="Вверх">▲</button>
-          <button type="button" data-tv-key="mute" aria-label="Без звука">∅</button>
-          <button type="button" data-tv-key="left" aria-label="Влево">◀</button>
-          <button type="button" class="primary" data-tv-key="ok" aria-label="OK">OK</button>
-          <button type="button" data-tv-key="right" aria-label="Вправо">▶</button>
-          <button type="button" data-tv-key="volume_down" aria-label="Тише">－</button>
-          <button type="button" data-tv-key="down" aria-label="Вниз">▼</button>
-          <button type="button" data-tv-key="play_pause" aria-label="Пауза">▶❚</button>
+        <div class="remote-system" role="group" aria-label="Системные кнопки">
+          <button type="button" class="remote-key" data-tv-key="back"><span aria-hidden="true">↩</span>Назад</button>
+          <button type="button" class="remote-key" data-tv-key="home"><span aria-hidden="true">⌂</span>Домой</button>
         </div>
-        <div class="remote-row">
-          <button type="button" class="action" data-tv-key="back">Назад</button>
-          <button type="button" class="action" data-tv-key="home">Домой</button>
+        <div class="dpad" role="group" aria-label="Навигационное кольцо">
+          <button type="button" class="dpad-up" data-tv-key="up" aria-label="Вверх">▲</button>
+          <button type="button" class="dpad-left" data-tv-key="left" aria-label="Влево">◀</button>
+          <button type="button" class="dpad-ok" data-tv-key="ok" aria-label="OK">OK</button>
+          <button type="button" class="dpad-right" data-tv-key="right" aria-label="Вправо">▶</button>
+          <button type="button" class="dpad-down" data-tv-key="down" aria-label="Вниз">▼</button>
         </div>
-        <div class="remote-row">
-          <button type="button" class="action" data-tv-launch="kinopoisk">Кинопоиск</button>
-          <button type="button" class="action" data-tv-launch="dino">Dino</button>
+        <div class="remote-lower">
+          <div class="volume-rocker" role="group" aria-label="Громкость">
+            <span>Громкость</span>
+            <button type="button" data-tv-key="volume_up" aria-label="Громче">＋</button>
+            <button type="button" data-tv-key="mute" aria-label="Без звука">⌁</button>
+            <button type="button" data-tv-key="volume_down" aria-label="Тише">−</button>
+          </div>
+          <div class="remote-actions">
+            <button type="button" class="remote-key media-key" data-tv-key="play_pause"><span aria-hidden="true">▶❚</span>Пауза</button>
+            <button type="button" class="remote-key" data-tv-launch="kinopoisk">Кинопоиск</button>
+            <button type="button" class="remote-key" data-tv-launch="dino">Dino TV</button>
+          </div>
         </div>
-        <p class="hint">Стрелки и OK работают, если на телевизоре включён доступ «Dino TV» для пульта.</p>
+        <p class="hint remote-hint">Нажатие срабатывает сразу. Удерживайте стрелку или громкость для повтора.</p>
       </section>
 
       <section id="pane-more" class="pane" hidden>

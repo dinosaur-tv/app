@@ -371,34 +371,32 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 .transport .primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .volume { display: grid; gap: .4rem; color: var(--muted); font-size: .78rem; }
 .volume input { width: 100%; accent-color: var(--ink); }
-.pad {
+#pane-remote { gap: .85rem; }
+.remote-system {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: .5rem;
-  padding: .55rem;
-  border: 1px solid var(--line);
-  border-radius: 1.35rem;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--fill) 88%, #000) 0%, var(--fill) 100%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .04);
+  grid-template-columns: 1fr 1fr;
+  gap: .55rem;
 }
-.pad button,
-#pane-remote .remote-row .action {
+.remote-key,
+.volume-rocker button {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  min-height: 3.25rem;
+  min-height: 3.15rem;
   border: 1px solid color-mix(in srgb, var(--line) 80%, var(--brass));
-  border-radius: 1.05rem;
+  border-radius: 999px;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--fill) 70%, #3a342d) 0%, var(--fill) 100%);
   color: var(--ink);
-  font-size: 1.08rem;
-  font-weight: 550;
+  font-size: .88rem;
+  font-weight: 600;
   letter-spacing: .02em;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / .06),
     0 1px 0 rgb(0 0 0 / .35);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   transition:
     transform .12s ease,
     background .12s ease,
@@ -406,43 +404,125 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
     box-shadow .12s ease,
     color .12s ease;
 }
-.pad button:active,
-#pane-remote .remote-row .action:active,
-.pad button.is-pressing,
-#pane-remote .remote-row .action.is-pressing {
+.remote-key span {
+  margin-right: .45rem;
+  color: var(--brass);
+  font-size: 1.12rem;
+}
+.remote-key:active,
+.remote-key.is-pressing,
+.volume-rocker button:active,
+.volume-rocker button.is-pressing,
+.dpad button:active,
+.dpad button.is-pressing {
   transform: scale(.92);
   background: color-mix(in srgb, var(--brass) 28%, var(--fill));
   border-color: color-mix(in srgb, var(--brass) 65%, var(--line));
   box-shadow: inset 0 2px 8px rgb(0 0 0 / .45);
   color: #fff6e8;
 }
-.pad button.is-sent,
-#pane-remote .remote-row .action.is-sent {
+.remote-key.is-sent,
+.volume-rocker button.is-sent,
+.dpad button.is-sent {
   animation: remotePulse .38s ease;
 }
-.pad button.is-error,
-#pane-remote .remote-row .action.is-error {
+.remote-key.is-error,
+.volume-rocker button.is-error,
+.dpad button.is-error {
   animation: remoteMiss .42s ease;
   border-color: #b35a4a;
 }
-.pad .primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 92%, #fff) 0%, var(--ink) 100%);
-  color: var(--bg);
-  border-color: var(--ink);
-  font-size: .95rem;
-  font-weight: 700;
-  letter-spacing: .08em;
+.dpad {
+  position: relative;
+  width: min(72vw, 18.5rem);
+  aspect-ratio: 1;
+  margin: .2rem auto .35rem;
+  border: 1px solid color-mix(in srgb, var(--line) 72%, var(--brass));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 44%, rgb(255 255 255 / .07), transparent 48%),
+    linear-gradient(145deg, color-mix(in srgb, var(--fill) 78%, #39332d), color-mix(in srgb, var(--fill) 88%, #070706));
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / .08),
+    inset 0 -8px 24px rgb(0 0 0 / .25),
+    0 1.2rem 2.4rem rgb(0 0 0 / .2);
 }
-.pad .primary:active,
-.pad .primary.is-pressing {
-  background: color-mix(in srgb, var(--brass) 55%, var(--ink));
-  color: #1a1612;
-  border-color: var(--brass);
+.dpad::after {
+  content: "";
+  position: absolute;
+  inset: 33%;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, var(--brass));
+  border-radius: 50%;
+  box-shadow: 0 0 0 .38rem rgb(0 0 0 / .08), inset 0 1px 0 rgb(255 255 255 / .05);
+  pointer-events: none;
 }
-.remote-row {
+.dpad button {
+  position: absolute;
+  z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: .45rem;
+  place-items: center;
+  width: 34%;
+  height: 34%;
+  border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--ink) 86%, var(--brass));
+  font-size: 1.15rem;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform .1s ease, color .1s ease, background .1s ease;
+}
+.dpad-up { top: 0; left: 33%; border-radius: 50% 50% 22% 22%; }
+.dpad-down { bottom: 0; left: 33%; border-radius: 22% 22% 50% 50%; }
+.dpad-left { left: 0; top: 33%; border-radius: 50% 22% 22% 50%; }
+.dpad-right { right: 0; top: 33%; border-radius: 22% 50% 50% 22%; }
+.dpad .dpad-ok {
+  z-index: 2;
+  inset: 34%;
+  width: 32%;
+  height: 32%;
+  border: 1px solid color-mix(in srgb, var(--brass) 56%, var(--line));
+  border-radius: 50%;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--ink) 90%, #fff), var(--ink));
+  color: var(--bg);
+  font-size: .92rem;
+  font-weight: 750;
+  letter-spacing: .08em;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), 0 .35rem .9rem rgb(0 0 0 / .34);
+}
+.remote-lower {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, .72fr) 1fr;
+  gap: .7rem;
+  align-items: stretch;
+}
+.volume-rocker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto 3.15rem;
+  gap: .35rem;
+  padding: .65rem;
+  border: 1px solid var(--line);
+  border-radius: 1.3rem;
+  background: color-mix(in srgb, var(--fill) 88%, #000);
+}
+.volume-rocker > span {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: .68rem;
+  letter-spacing: .08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.volume-rocker button { min-width: 0; min-height: 0; padding: 0; font-size: 1.15rem; }
+.remote-actions { display: grid; gap: .4rem; }
+.remote-actions .remote-key { min-height: 2.75rem; }
+.media-key span { font-size: .9rem; letter-spacing: -.12em; }
+.remote-hint { padding-inline: .35rem; text-align: center; }
+@media (max-width: 360px) {
+  .dpad { width: min(68vw, 15.5rem); }
+  .remote-lower { grid-template-columns: 1fr; }
+  .volume-rocker { grid-template-rows: auto 2.9rem; }
 }
 @keyframes remotePulse {
   0% { box-shadow: inset 0 0 0 0 transparent, 0 0 0 0 rgb(196 160 106 / 0); }

@@ -1,5 +1,6 @@
 import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 import { shouldLoadTelegramSdk } from "./telegram.js";
+import { createRemotePressController } from "./remote-press.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 let telegram = window.Telegram?.WebApp;
@@ -282,15 +283,19 @@ async function musicCommand(action, extra = {}) {
   }
 }
 
-async function tvCommand(body, button) {
-  bumpRemoteButton(button, "pressing");
+async function tvCommand(body, button, { repeat = false } = {}) {
+  if (!repeat) bumpRemoteButton(button, "pressing");
   try {
-    navigator.vibrate?.(12);
-    telegram?.HapticFeedback?.impactOccurred?.("medium");
+    if (!repeat) {
+      navigator.vibrate?.(12);
+      telegram?.HapticFeedback?.impactOccurred?.("medium");
+    }
     const data = await request("/v1/miniapp/tv", { method: "POST", body: JSON.stringify(body) });
     applyState(data);
-    bumpRemoteButton(button, "sent");
-    telegram?.HapticFeedback?.impactOccurred?.("light");
+    if (!repeat) {
+      bumpRemoteButton(button, "sent");
+      telegram?.HapticFeedback?.impactOccurred?.("light");
+    }
     setNotice("");
   } catch (error) {
     bumpRemoteButton(button, "error");
@@ -470,15 +475,16 @@ document.querySelectorAll("[data-music]").forEach((button) => {
 document.querySelector("#openKinopoisk")?.addEventListener("click", (event) => {
   tvCommand({ action: "launch", app: "kinopoisk" }, event.currentTarget);
 });
+const remotePress = createRemotePressController({
+  send: (key, button, options) => tvCommand({ action: "key", key }, button, options),
+  feedback: () => navigator.vibrate?.(8),
+});
 document.querySelectorAll("[data-tv-key]").forEach((button) => {
-  button.addEventListener("pointerdown", () => {
-    button.classList.add("is-pressing");
-    navigator.vibrate?.(8);
-  });
-  button.addEventListener("pointerup", () => button.classList.remove("is-pressing"));
-  button.addEventListener("pointercancel", () => button.classList.remove("is-pressing"));
-  button.addEventListener("pointerleave", () => button.classList.remove("is-pressing"));
-  button.addEventListener("click", () => tvCommand({ action: "key", key: button.dataset.tvKey }, button));
+  button.addEventListener("pointerdown", (event) => remotePress.pointerDown(button, event));
+  button.addEventListener("pointerup", (event) => remotePress.pointerEnd(button, event));
+  button.addEventListener("pointercancel", (event) => remotePress.pointerEnd(button, event));
+  button.addEventListener("lostpointercapture", (event) => remotePress.pointerEnd(button, event));
+  button.addEventListener("click", (event) => remotePress.click(button, event));
 });
 document.querySelectorAll("[data-tv-launch]").forEach((button) => {
   button.addEventListener("pointerdown", () => {
