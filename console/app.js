@@ -26,6 +26,10 @@ function rememberHomeToken(token) {
   try { localStorage.setItem("dinoHomeToken", token); } catch { /* ignore */ }
 }
 
+function forgetHomeToken() {
+  try { localStorage.removeItem("dinoHomeToken"); } catch { /* ignore */ }
+}
+
 function hasRemoteAuth() {
   return Boolean(initData || homeToken());
 }
@@ -212,13 +216,19 @@ async function request(path, options = {}) {
   });
   if (!response.ok) {
     const text = await response.text() || "Не удалось сохранить";
+    let message = text;
     try {
       const parsed = JSON.parse(text);
-      throw new Error(parsed.error || parsed.message || text);
+      message = parsed.error || parsed.message || text;
     } catch (error) {
-      if (error instanceof SyntaxError) throw new Error(text);
-      throw error;
+      if (!(error instanceof SyntaxError)) throw error;
     }
+    if (response.status === 401 && /устарела|Нет доступа к пульту/i.test(message)) {
+      forgetHomeToken();
+      showTab("more");
+      message = "Связь устарела. Введите свежий код с телевизора во вкладке «Ещё».";
+    }
+    throw new Error(message);
   }
   return response.status === 204 ? null : response.json();
 }
