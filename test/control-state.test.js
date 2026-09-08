@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, normalizeRotation, noteDurations, screenTheme, shouldApplyTvReload } from "../control-state.js";
+import { displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, normalizeRotation, noteDurations, pickNowPlaying, screenTheme, shouldApplyTvReload, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 
 const idleDisplay = { mode: "TODAY", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, today: 30, tomorrow: 30, week: 30 } };
 
@@ -52,6 +52,22 @@ test("keeps a living note and drops an expired one", () => {
 test("keeps now-playing values safe for the remote and the living-room bar", () => {
   assert.deepEqual(normalizeNowPlaying(), { title: "", artist: "", source: "Яндекс Музыка", isPlaying: false, volumePercent: 50, artworkUrl: "", deviceName: "" });
   assert.equal(normalizeNowPlaying({ title: "Ночь", isPlaying: true, volumePercent: 140 }).volumePercent, 100);
+});
+
+test("prefers the track the television can hear over the server stub", () => {
+  assert.equal(pickNowPlaying({ title: "The Unforgiven", artist: "Metallica" }, { nowPlaying: { title: "Тихо" } }).title, "The Unforgiven");
+  assert.equal(pickNowPlaying({ title: "  " }, { nowPlaying: { title: "Chica" } }).title, "Chica");
+  assert.equal(pickNowPlaying(null, {}), null);
+});
+
+test("labels the power button for overlaying Dino over living-room music", () => {
+  assert.deepEqual(tvRemoteStatus({ tvOnline: true }), { state: "на экране", power: "Выкл" });
+  assert.deepEqual(tvRemoteStatus({ tvOnline: true, nowPlaying: { title: "GANG", isPlaying: true } }), { state: "поверх музыки", power: "Выкл" });
+  assert.deepEqual(tvRemoteStatus({ tvOnline: false, nowPlaying: { title: "GANG", isPlaying: true } }), { state: "музыка", power: "Поверх" });
+  assert.deepEqual(tvRemoteStatus({ tvOnline: false, nowPlaying: { title: "GANG", isPlaying: false } }), { state: "на паузе", power: "Поверх" });
+  assert.deepEqual(tvRemoteStatus({ tvOnline: false, tvPower: "off" }), { state: "выключен", power: "Вкл" });
+  assert.equal(musicRemoteCopy({ nowPlaying: { title: "GANG" } }).toTv, "Поверх музыки");
+  assert.equal(musicRemoteCopy({ tvOnline: true, nowPlaying: { title: "GANG" } }).toTv, "Уже на экране");
 });
 
 test("keeps tab rotation on by default and clamps how long each view stays", () => {

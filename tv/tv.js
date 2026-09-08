@@ -1,4 +1,4 @@
-import { normalizeDisplay, normalizeRotation, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
+import { normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 import { minutesPhrase, nextEventCue } from "../event-cue.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
@@ -21,12 +21,9 @@ const pairTitle = document.querySelector("#pairTitle");
 const pairNote = document.querySelector("#pairNote");
 const photo = document.querySelector("#photo");
 const mediaBar = document.querySelector("#mediaBar");
-const mediaArt = document.querySelector("#mediaArt");
 const mediaTitle = document.querySelector("#mediaTitle");
 const mediaArtist = document.querySelector("#mediaArtist");
-const mediaState = document.querySelector("#mediaState");
-const mediaVolume = document.querySelector("#mediaVolume");
-const volumeFill = document.querySelector("#volumeFill");
+const mediaSource = document.querySelector("#mediaSource");
 
 let snapshot = null;
 let mode = "TODAY";
@@ -40,12 +37,23 @@ let paintedKey = "";
 let appliedReloadAt = localStorage.getItem("dinoTvReloadAt") || "";
 let appliedPowerAt = localStorage.getItem("dinoTvPowerAt") || "";
 let asleep = false;
+let nativeNowPlaying = null;
 let agendaPage = 0;
 let agendaPageCount = 1;
 const scenePageSizes = new Map();
 
 function nativeBridge() {
   return window.DinoTV || null;
+}
+
+function nativeForeground() {
+  const bridge = nativeBridge();
+  if (!bridge || typeof bridge.isForeground !== "function") return true;
+  try {
+    return bridge.isForeground() !== "0";
+  } catch {
+    return true;
+  }
 }
 
 function flushTvApp(reloadAt) {
@@ -278,16 +286,16 @@ function sceneWeather(periods) {
 
 function scenePageSizeKey(scene) {
   const layers = screenLayers();
-  return [scene, mode, window.innerWidth, window.innerHeight, document.body.classList.contains("has-media"), layers.weather].join(":");
+  return [scene, mode, window.innerWidth, window.innerHeight, layers.weather].join(":");
 }
 
 function scenePageSize(scene) {
   const measured = scenePageSizes.get(scenePageSizeKey(scene));
   if (measured) return measured;
   const compactVertical = ["night", "mountains", "florence", "byzantium", "palace", "oak-study"].includes(scene);
-  if (mode === "TODAY" || mode === "TOMORROW") return compactVertical && window.innerHeight <= 800 ? 2 : window.innerHeight <= 800 ? 3 : 5;
-  if (compactVertical) return window.innerHeight <= 800 ? 4 : 6;
-  return window.innerHeight <= 800 ? 5 : 6;
+  if (mode === "TODAY" || mode === "TOMORROW") return compactVertical && window.innerHeight <= 800 ? 5 : window.innerHeight <= 800 ? 6 : 8;
+  if (compactVertical) return window.innerHeight <= 800 ? 7 : 9;
+  return window.innerHeight <= 800 ? 7 : 9;
 }
 
 function measuredScenePageSize(scene) {
@@ -296,11 +304,11 @@ function measuredScenePageSize(scene) {
   if (!list || !rows.length || list.clientHeight < 1) return null;
   if (["mountains", "florence", "byzantium"].includes(scene)) {
     const gap = Number.parseFloat(window.getComputedStyle(list).columnGap) || 0;
-    return Math.max(1, Math.min(12, Math.floor((list.clientWidth + gap) / (190 + gap))));
+  return Math.max(1, Math.min(16, Math.floor((list.clientWidth + gap) / (190 + gap))));
   }
   const rowHeight = Math.max(...rows.map((row) => row.getBoundingClientRect().height));
   if (!Number.isFinite(rowHeight) || rowHeight < 1) return null;
-  return Math.max(1, Math.min(12, Math.floor((list.clientHeight + 1) / rowHeight)));
+  return Math.max(1, Math.min(16, Math.floor((list.clientHeight + 1) / rowHeight)));
 }
 
 function agendaDayLabel(date, now, compact = false) {
@@ -389,20 +397,28 @@ function paintClock(now = new Date()) {
   }
 }
 
+function readNativeNowPlaying() {
+  const bridge = nativeBridge();
+  if (!bridge || typeof bridge.nowPlaying !== "function") return;
+  try {
+    const raw = bridge.nowPlaying();
+    nativeNowPlaying = raw ? JSON.parse(raw) : null;
+  } catch {
+    nativeNowPlaying = null;
+  }
+}
+
 function paintMedia() {
-  const playing = snapshot?.nowPlaying;
+  const playing = pickNowPlaying(nativeNowPlaying, snapshot);
   const visible = Boolean(playing?.title);
   mediaBar.hidden = !visible;
-  document.body.classList.toggle("has-media", visible);
   if (!visible) return;
+  mediaBar.classList.toggle("is-playing", playing.isPlaying !== false);
   mediaTitle.textContent = playing.title;
-  mediaArtist.textContent = [playing.artist, playing.source].filter(Boolean).join(" · ");
-  mediaState.textContent = playing.isPlaying ? "││" : "▶";
-  const volume = Math.max(0, Math.min(100, Number(playing.volumePercent) || 0));
-  mediaVolume.textContent = String(volume);
-  volumeFill.style.width = `${volume}%`;
-  mediaArt.style.backgroundImage = playing.artworkUrl ? `url("${playing.artworkUrl}")` : "";
-  mediaArt.style.backgroundSize = playing.artworkUrl ? "cover" : "auto";
+  mediaArtist.textContent = playing.artist || "";
+  mediaArtist.hidden = !playing.artist;
+  mediaSource.textContent = playing.source || "";
+  mediaSource.hidden = !playing.source;
 }
 
 function viewSig() {
@@ -420,6 +436,8 @@ function viewSig() {
     snapshot.weather?.temperature,
     snapshot.nowPlaying?.title || "",
     snapshot.nowPlaying?.isPlaying || false,
+    nativeNowPlaying?.title || "",
+    nativeNowPlaying?.isPlaying || false,
     events.length,
     events[0]?.id || "",
     events[events.length - 1]?.id || "",
@@ -470,7 +488,7 @@ function paint(force = false) {
 async function request(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (session) headers.authorization = `Bearer ${session}`;
-  headers["x-dino-visible"] = asleep ? "0" : "1";
+  headers["x-dino-visible"] = asleep || !nativeForeground() ? "0" : "1";
   const response = await fetch(`${API}${path}`, { ...options, headers });
   if (response.status === 401) {
     session = "";
@@ -585,6 +603,8 @@ setInterval(() => {
   const now = new Date();
   paintClock(now);
   maybeEventCue(now);
+  readNativeNowPlaying();
+  paintMedia();
   if (!snapshot) return;
   if (now.getSeconds() === 0) paint();
 }, 1000);

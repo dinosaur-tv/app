@@ -95,7 +95,9 @@
 
       <section id="pane-music" class="pane" hidden>
         <div class="now-playing">
-          <div id="musicArt" class="art" aria-hidden="true"></div>
+          <div id="musicArt" class="art" aria-hidden="true">
+            <div class="media-wave"><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
           <strong id="musicTitle">Тихо</strong>
           <span id="musicArtist">Яндекс Музыка</span>
         </div>
@@ -108,8 +110,8 @@
           <span>Громкость</span>
           <input id="musicVolume" type="range" min="0" max="100" value="50" />
         </label>
-        <button type="button" class="action" data-music="toTv">На телевизор</button>
-        <p class="hint" id="musicHint">Кнопка «На телевизор» не переносит трек. В Яндекс Музыке на телефоне нажмите колонку и выберите Кинопоиск. «Вкл» справа вверху открывает сам Dino TV.</p>
+        <button type="button" class="action" data-music="toTv">Поверх музыки</button>
+        <p class="hint" id="musicHint">Запустите Яндекс Музыку в Кинопоиске. Пульт покажет трек, а кнопка откроет Dino поверх.</p>
       </section>
 
       <section id="pane-more" class="pane" hidden>

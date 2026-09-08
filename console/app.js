@@ -1,4 +1,4 @@
-import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme } from "../control-state.js";
+import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 import { shouldLoadTelegramSdk } from "./telegram.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
@@ -7,7 +7,6 @@ let display = normalizeDisplay();
 let currentNote = null;
 let noteMinutes = 60;
 let nowPlaying = normalizeNowPlaying();
-let musicConnected = false;
 let tvLinked = false;
 let tvOnline = false;
 let tvPower = "on";
@@ -79,23 +78,36 @@ function showTab(tab) {
 }
 
 function paintMusic() {
+  const card = document.querySelector(".now-playing");
   const art = document.querySelector("#musicArt");
   const title = document.querySelector("#musicTitle");
   const artist = document.querySelector("#musicArtist");
   const toggle = document.querySelector("#musicToggle");
   const volume = document.querySelector("#musicVolume");
   const hint = document.querySelector("#musicHint");
+  const toTv = document.querySelector("[data-music=toTv]");
+  const live = Boolean(nowPlaying.title);
+  const copy = musicRemoteCopy({ tvOnline, nowPlaying });
   title.textContent = nowPlaying.title || "Тихо";
-  artist.textContent = [nowPlaying.artist, nowPlaying.deviceName || nowPlaying.source].filter(Boolean).join(" · ") || "Яндекс Музыка";
+  artist.textContent = live
+    ? (nowPlaying.artist || nowPlaying.source || "Яндекс Музыка")
+    : "На телевизоре сейчас ничего не играет";
+  art.classList.toggle("has-art", Boolean(nowPlaying.artworkUrl));
   art.style.backgroundImage = nowPlaying.artworkUrl ? `url("${nowPlaying.artworkUrl}")` : "";
+  card.classList.toggle("is-playing", live && nowPlaying.isPlaying);
   toggle.textContent = nowPlaying.isPlaying ? "❚❚" : "▶";
   toggle.setAttribute("aria-label", nowPlaying.isPlaying ? "Пауза" : "Играть");
-  volume.value = String(nowPlaying.volumePercent ?? 50);
-  document.querySelectorAll("[data-music]").forEach((button) => { button.disabled = !musicConnected && button.dataset.music !== "toTv"; });
-  volume.disabled = !musicConnected;
-  hint.textContent = musicConnected
-    ? (nowPlaying.deviceName ? `Играет: ${nowPlaying.deviceName}` : "Управляется через Яндекс Музыку")
-    : "Кнопка «На телевизор» не переносит трек. В Яндекс Музыке на телефоне нажмите колонку и выберите Кинопоиск. «Вкл» справа вверху открывает сам Dino TV.";
+  if (document.activeElement !== volume) {
+    volume.value = String(nowPlaying.volumePercent ?? 50);
+    lastSentVolume = Number(volume.value);
+  }
+  document.querySelectorAll("[data-music]").forEach((button) => {
+    if (button.dataset.music === "toTv") button.disabled = tvOnline;
+    else button.disabled = !live;
+  });
+  volume.disabled = !live;
+  toTv.textContent = copy.toTv;
+  hint.textContent = copy.hint;
 }
 
 function rotationInputs() {
@@ -153,9 +165,11 @@ function paint() {
   const status = document.querySelector("#tvStatus");
   const state = document.querySelector("#tvState");
   const power = document.querySelector("#tvPower");
+  const remote = tvRemoteStatus({ tvOnline, tvPower, nowPlaying });
   status.classList.toggle("online", tvOnline);
-  state.textContent = tvOnline ? "на экране" : tvPower === "off" ? "выключен" : "не на связи";
-  power.textContent = tvOnline ? "Выкл" : "Вкл";
+  status.classList.toggle("music", Boolean(nowPlaying.title) && !tvOnline);
+  state.textContent = remote.state;
+  power.textContent = remote.power;
   paintMusic();
   paintRotation();
   paintPairingUi();
@@ -208,8 +222,7 @@ function applyState(data) {
     display = normalizeDisplay({ ...data.display, backgroundUrl: data.display.backgroundUrl || display.backgroundUrl });
     currentNote = normalizeNote(data.display.note);
   }
-  if ("nowPlaying" in data) nowPlaying = normalizeNowPlaying(data.nowPlaying);
-  if (data.music) musicConnected = data.music.connected === true;
+  if ("nowPlaying" in data) nowPlaying = normalizeNowPlaying(data.nowPlaying || {});
   if (data.tvLinked !== undefined) tvLinked = Boolean(data.tvLinked);
   if ("tvOnline" in data) tvOnline = data.tvOnline === true;
   if (data.tvPower === "on" || data.tvPower === "off") tvPower = data.tvPower;
@@ -408,9 +421,22 @@ document.querySelectorAll("[data-music]").forEach((button) => {
   button.addEventListener("click", () => musicCommand(button.dataset.music));
 });
 let volumeTimer;
+let lastSentVolume;
+function sendVolume(value) {
+  const next = Math.max(0, Math.min(100, Math.round(Number(value))));
+  if (!Number.isFinite(next) || lastSentVolume === next) return;
+  lastSentVolume = next;
+  nowPlaying.volumePercent = next;
+  musicCommand("volume", { volume: next });
+}
 document.querySelector("#musicVolume").addEventListener("input", (event) => {
+  nowPlaying.volumePercent = Number(event.target.value);
   clearTimeout(volumeTimer);
-  volumeTimer = setTimeout(() => musicCommand("volume", { volume: Number(event.target.value) }), 180);
+  volumeTimer = setTimeout(() => sendVolume(event.target.value), 320);
+});
+document.querySelector("#musicVolume").addEventListener("change", (event) => {
+  clearTimeout(volumeTimer);
+  sendVolume(event.target.value);
 });
 document.querySelector("#background").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];

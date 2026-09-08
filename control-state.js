@@ -108,6 +108,44 @@ export function normalizeNowPlaying(value = {}) {
   };
 }
 
+export function pickNowPlaying(native, snapshot) {
+  if (native && typeof native.title === "string" && native.title.trim()) return native;
+  const remote = snapshot?.nowPlaying;
+  if (remote && typeof remote.title === "string" && remote.title.trim()) return remote;
+  return null;
+}
+
+export function tvRemoteStatus({ tvOnline = false, tvPower = "on", nowPlaying = {} } = {}) {
+  const title = typeof nowPlaying.title === "string" ? nowPlaying.title.trim() : "";
+  if (tvOnline) {
+    return { state: title ? "поверх музыки" : "на экране", power: "Выкл" };
+  }
+  if (title) {
+    return { state: nowPlaying.isPlaying === false ? "на паузе" : "музыка", power: "Поверх" };
+  }
+  return { state: tvPower === "off" ? "выключен" : "не на связи", power: "Вкл" };
+}
+
+export function musicRemoteCopy({ tvOnline = false, nowPlaying = {} } = {}) {
+  const title = typeof nowPlaying.title === "string" ? nowPlaying.title.trim() : "";
+  if (tvOnline && title) {
+    return {
+      toTv: "Уже на экране",
+      hint: "Dino поверх музыки. «Выкл» в шапке спрячет его, трек останется.",
+    };
+  }
+  if (title) {
+    return {
+      toTv: "Поверх музыки",
+      hint: "Играет на телевизоре. Кнопка откроет Dino поверх, не останавливая трек.",
+    };
+  }
+  return {
+    toTv: "Поверх музыки",
+    hint: "Запустите Яндекс Музыку в Кинопоиске. Пульт покажет трек, а кнопка откроет Dino поверх.",
+  };
+}
+
 export function normalizeDisplay(value = {}) {
   const legacyMood = value.theme === "night" || value.theme === "play" ? value.theme : "";
   const requestedMode = value.mode === "NOW" ? "TODAY" : value.mode;
