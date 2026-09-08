@@ -141,6 +141,8 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 .gallery i { background-image: linear-gradient(90deg, transparent, rgb(10 9 8 / .72)), url("../assets/gallery-room.png"); }
 .home-day i { background-image: linear-gradient(90deg, rgb(255 249 238 / .08), rgb(36 30 24 / .36)), url("../assets/scene-home-day.png"); }
 .home-evening i { background-image: linear-gradient(90deg, rgb(10 12 17 / .12), rgb(10 12 17 / .48)), url("../assets/scene-home-evening.png"); }
+.palace i { background-image: linear-gradient(90deg, rgb(13 10 8 / .08), rgb(13 10 8 / .48)), url("../assets/scene-palace.png"); }
+.oak-study i { background-image: linear-gradient(90deg, rgb(11 7 4 / .08), rgb(11 7 4 / .4)), url("../assets/scene-oak-study.png"); }
 .night i { background: radial-gradient(circle at 66% 32%, #d7cfc0 0 8%, #111 9% 44%, #030304 72%); }
 .play i { background-image: linear-gradient(rgba(15,5,8,.12), rgba(15,5,8,.3)), url("../assets/scene-play.png"); }
 .forest i { background-image: linear-gradient(90deg, rgb(3 15 11 / .18), rgb(3 15 11 / .62)), url("../assets/scene-forest.png"); }

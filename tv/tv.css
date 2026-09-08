@@ -404,6 +404,9 @@ body.immersive:not(.has-media) #note { bottom: 4%; }
 @keyframes patternDrift { from { background-position: 0 0, 0 0, center; } to { background-position: 4rem 2rem, -3rem 3rem, center; } }
 @keyframes ornamentPulse { 0%,100% { opacity: .14; transform: scale(.96) rotate(0); } 50% { opacity: .28; transform: scale(1.04) rotate(2deg); } }
 @keyframes latticeBreathe { from { background-size: 5.8rem 5.8rem, 5.8rem 5.8rem, auto; } to { background-size: 6.15rem 6.15rem, 6.15rem 6.15rem, auto; } }
+@keyframes palaceWallBreathe { from { transform: scale(1.018) translate3d(0, 0, 0); } to { transform: scale(1.038) translate3d(-.25%, -.15%, 0); } }
+@keyframes giltShimmer { 0%, 18% { opacity: 0; transform: translate3d(-28vw, 0, 0) skewX(-18deg); } 42% { opacity: .2; } 68%, 100% { opacity: 0; transform: translate3d(112vw, 0, 0) skewX(-18deg); } }
+@keyframes sconceBreath { 0%, 100% { opacity: .12; transform: scale(.88); } 48% { opacity: .34; transform: scale(1.08); } }
 
 /* Night — a nearly silent clock, a moon and only the essential agenda. */
 body[data-theme="night"] {
@@ -801,6 +804,74 @@ body[data-theme="italy"] #sceneDecor i:nth-child(-n+3) { display: block; left: 3
 body[data-theme="italy"] #sceneDecor i:nth-child(2) { left: 20%; bottom: 18%; top: auto; width: 5rem; height: 5rem; animation-delay: -9s; }
 body[data-theme="italy"] #sceneDecor i:nth-child(3) { right: 2%; left: auto; bottom: 13%; top: auto; width: 13rem; height: 13rem; animation-delay: -16s; }
 body[data-theme="italy"] #mediaBar { --ink: #282b25; --muted: #62685f; --line: rgba(48,65,56,.2); background: rgba(235,228,214,.94); }
+
+/* Palace — the dashboard is set directly into a restrained imperial boiserie wall. */
+body[data-theme="palace"] { --bg: #b9b2a1; --ink: #302a22; --muted: #756b5d; --accent: #8e6a32; --panel: rgba(239,234,218,.82); --line: rgba(115,84,39,.34); --selected: rgba(246,241,225,.72); --glow: rgba(212,169,91,.22); color-scheme: light; }
+body[data-theme="palace"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-palace.png"); animation: palaceWallBreathe 90s ease-in-out infinite alternate; }
+body[data-theme="palace"] #wash { background: linear-gradient(90deg, rgba(233,227,211,.14), rgba(227,220,202,.04) 46%, rgba(63,57,48,.16)), linear-gradient(0deg, rgba(44,34,24,.16), transparent 22%); }
+body[data-theme="palace"] #grain { opacity: .045; mix-blend-mode: multiply; }
+body[data-theme="palace"] #orbs { display: none; }
+body[data-theme="palace"] #top { position: absolute; left: 50%; top: 3.2%; transform: translateX(-50%); }
+body[data-theme="palace"] #modes { padding: .25rem; border: 1px solid rgba(111,82,43,.22); border-radius: 999px; background: rgba(235,229,211,.56); backdrop-filter: blur(14px); box-shadow: inset 0 1px rgba(255,255,255,.42); }
+body[data-theme="palace"] #modes button { color: #695d4c; font-family: var(--serif); font-size: .78rem; font-weight: 600; }
+body[data-theme="palace"] #modes button.active { color: #f8f1dd; background: #65513a; }
+body[data-theme="palace"] #hero { position: absolute; left: 6.5%; top: 14%; width: 39%; display: block; text-align: center; }
+body[data-theme="palace"] #clock { color: #31291f; font: 370 clamp(8rem, 13vw, 14rem)/.78 var(--serif); letter-spacing: -.075em; text-shadow: 0 1px rgba(255,255,255,.42), 0 1.2rem 3rem rgba(78,57,29,.12); }
+body[data-theme="palace"] .hero-copy { padding: 1.6rem 0 0; }
+body[data-theme="palace"] #dateLine { color: #4f4435; font: 600 1.05rem var(--serif); letter-spacing: .17em; text-transform: uppercase; }
+body[data-theme="palace"] #weatherLine { color: #756958; font-family: var(--serif); }
+body[data-theme="palace"] #screen { right: 4%; top: 10%; bottom: 9rem; width: 45%; padding: 1.65rem 2rem; border: 1px solid rgba(121,88,39,.52); outline: 1px solid rgba(255,250,232,.52); outline-offset: -.5rem; border-radius: .35rem; background: rgba(239,234,218,.79); backdrop-filter: blur(18px) saturate(.78); box-shadow: inset 0 0 0 .18rem rgba(128,94,44,.08), 0 1.5rem 5rem rgba(62,45,24,.16); }
+body[data-theme="palace"]:not(.has-media) #screen { bottom: 4%; }
+body[data-theme="palace"] .scene-agenda > .kicker { height: 2.7rem; color: #7a592d; font: 600 .88rem var(--serif); letter-spacing: .15em; }
+body[data-theme="palace"] .scene-day-label { color: #776b5b; font-family: var(--serif); font-weight: 500; }
+body[data-theme="palace"] .scene-event { grid-template-columns: 4.5rem minmax(0,1fr) 6.5rem; min-height: 4rem; padding: .7rem .3rem; border-color: rgba(107,78,39,.18); }
+body[data-theme="palace"] .scene-title { border-color: #9f7a42; }
+body[data-theme="palace"] .scene-title strong { font-family: var(--serif); font-size: 1.12rem; font-weight: 600; }
+body[data-theme="palace"] .scene-time, body[data-theme="palace"] .scene-title small, body[data-theme="palace"] .scene-owner { color: #776c5d; font-family: var(--serif); }
+body[data-theme="palace"] .scene-weather > div { border-radius: .2rem; background: rgba(251,247,233,.46); }
+body[data-theme="palace"] #note { left: 4%; width: min(39%, 31rem); color: #f6edd8; border-color: rgba(194,155,91,.56); border-radius: .25rem; background: rgba(42,53,45,.91); box-shadow: inset 0 0 0 .3rem rgba(231,210,164,.07); }
+body[data-theme="palace"] #mediaBar { --ink: #2f2921; --muted: #756b5c; --line: rgba(110,81,40,.28); background: rgba(235,228,210,.95); backdrop-filter: blur(22px); }
+body[data-theme="palace"] #sceneDecor i:nth-child(-n+2) { display: block; top: 18%; width: 15rem; height: 15rem; border-radius: 50%; background: radial-gradient(circle, rgba(255,211,126,.42), rgba(217,165,76,.12) 35%, transparent 70%); filter: blur(1.6rem); animation: sconceBreath 7s ease-in-out infinite; }
+body[data-theme="palace"] #sceneDecor i:nth-child(1) { left: -3%; }
+body[data-theme="palace"] #sceneDecor i:nth-child(2) { right: -3%; animation-delay: -3.4s; }
+body[data-theme="palace"] #sceneDecor i:nth-child(3) { display: block; left: 0; top: 0; width: 13vw; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,241,203,.55), transparent); filter: blur(1.6rem); animation: giltShimmer 34s ease-in-out infinite; }
+body[data-theme="palace"] #sceneDecor i:nth-child(n+4) { display: block; left: 23%; top: 37%; width: .14rem; height: .14rem; border-radius: 50%; background: #fff2c9; box-shadow: 16rem -9rem rgba(255,236,187,.45), 34rem 8rem rgba(255,236,187,.34), 55rem -3rem rgba(255,236,187,.3); animation: dustFloat 17s ease-in-out infinite alternate; }
+body[data-theme="palace"] #sceneDecor i:nth-child(5) { left: 57%; top: 22%; animation-delay: -8s; animation-duration: 23s; }
+body[data-theme="palace"] #sceneDecor i:nth-child(6) { left: 76%; top: 58%; animation-delay: -14s; animation-duration: 29s; }
+
+/* Oak study — a warm dashboard inset into hand-crafted cabinet panelling. */
+body[data-theme="oak-study"] { --bg: #160d08; --ink: #f0e4cf; --muted: #b6a48b; --accent: #c39755; --panel: rgba(24,14,9,.78); --line: rgba(194,146,80,.29); --selected: rgba(82,57,32,.76); --glow: rgba(204,135,59,.24); }
+body[data-theme="oak-study"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-oak-study.png"); animation: palaceWallBreathe 105s ease-in-out infinite alternate-reverse; }
+body[data-theme="oak-study"] #wash { background: radial-gradient(circle at 8% 22%, rgba(224,152,62,.16), transparent 20rem), radial-gradient(circle at 92% 22%, rgba(224,152,62,.14), transparent 20rem), linear-gradient(0deg, rgba(8,4,2,.38), transparent 28%); }
+body[data-theme="oak-study"] #grain { opacity: .11; }
+body[data-theme="oak-study"] #orbs { display: none; }
+body[data-theme="oak-study"] #top { position: absolute; left: 50%; top: 3.2%; transform: translateX(-50%); }
+body[data-theme="oak-study"] #modes { padding: .25rem; border: 1px solid rgba(197,151,88,.18); border-radius: 999px; background: rgba(20,11,7,.54); backdrop-filter: blur(16px); }
+body[data-theme="oak-study"] #modes button { color: #baa88e; font-family: var(--serif); font-size: .78rem; }
+body[data-theme="oak-study"] #modes button.active { color: #f6ead3; background: #3d563f; box-shadow: inset 0 0 0 1px rgba(213,178,118,.2); }
+body[data-theme="oak-study"] #hero { position: absolute; left: 6%; top: 14%; width: 40%; display: block; text-align: center; }
+body[data-theme="oak-study"] #clock { color: #f1e2c7; font: 340 clamp(8rem, 13vw, 14rem)/.78 var(--serif); letter-spacing: -.075em; text-shadow: 0 .35rem 1.8rem rgba(0,0,0,.56), 0 0 2.6rem rgba(206,151,79,.08); }
+body[data-theme="oak-study"] .hero-copy { padding: 1.6rem 0 0; }
+body[data-theme="oak-study"] #dateLine { color: #d3c1a5; font: 600 1rem var(--serif); letter-spacing: .17em; text-transform: uppercase; }
+body[data-theme="oak-study"] #weatherLine { color: #ad9a80; font-family: var(--serif); }
+body[data-theme="oak-study"] #screen { right: 4%; top: 9%; bottom: 9rem; width: 47%; padding: 1.7rem 2rem; border: 1px solid rgba(203,158,94,.42); outline: 1px solid rgba(105,72,38,.72); outline-offset: -.48rem; border-radius: .35rem; background: linear-gradient(145deg, rgba(20,12,8,.82), rgba(28,17,10,.74)); backdrop-filter: blur(17px); box-shadow: inset 0 0 0 .2rem rgba(205,161,96,.055), 0 1.6rem 5rem rgba(0,0,0,.32); }
+body[data-theme="oak-study"]:not(.has-media) #screen { bottom: 4%; }
+body[data-theme="oak-study"] .scene-agenda > .kicker { height: 2.7rem; color: #d2a766; font: 600 .88rem var(--serif); letter-spacing: .15em; }
+body[data-theme="oak-study"] .scene-day-label { color: #b8a58a; font-family: var(--serif); font-weight: 500; }
+body[data-theme="oak-study"] .scene-event { grid-template-columns: 4.5rem minmax(0,1fr) 6.5rem; min-height: 4rem; padding: .7rem .3rem; border-color: rgba(202,158,98,.16); }
+body[data-theme="oak-study"] .scene-title { border-color: #637b59; }
+body[data-theme="oak-study"] .scene-title strong { font-family: var(--serif); font-size: 1.12rem; font-weight: 600; }
+body[data-theme="oak-study"] .scene-time, body[data-theme="oak-study"] .scene-title small, body[data-theme="oak-study"] .scene-owner { color: #b8a58c; font-family: var(--serif); }
+body[data-theme="oak-study"] .scene-weather > div { border-color: rgba(197,151,89,.2); border-radius: .2rem; background: rgba(21,48,36,.34); }
+body[data-theme="oak-study"] #note { left: 4%; width: min(40%, 32rem); color: #f4e7ce; border-color: rgba(204,160,96,.48); border-radius: .25rem; background: rgba(22,50,36,.91); box-shadow: inset 0 0 0 .3rem rgba(229,196,139,.06); }
+body[data-theme="oak-study"] #mediaBar { --ink: #eee0c8; --muted: #ad9c83; --line: rgba(191,145,83,.24); background: rgba(18,10,6,.95); backdrop-filter: blur(22px); }
+body[data-theme="oak-study"] #sceneDecor i:nth-child(-n+2) { display: block; top: 15%; width: 14rem; height: 14rem; border-radius: 50%; background: radial-gradient(circle, rgba(241,168,70,.34), rgba(178,100,35,.1) 36%, transparent 70%); filter: blur(1.6rem); animation: sconceBreath 6.3s ease-in-out infinite; }
+body[data-theme="oak-study"] #sceneDecor i:nth-child(1) { left: -2%; }
+body[data-theme="oak-study"] #sceneDecor i:nth-child(2) { right: -2%; animation-delay: -3.1s; }
+body[data-theme="oak-study"] #sceneDecor i:nth-child(3) { display: block; left: 0; top: 0; width: 11vw; height: 100%; background: linear-gradient(90deg, transparent, rgba(235,176,94,.3), transparent); filter: blur(1.8rem); animation: giltShimmer 42s ease-in-out infinite; }
+body[data-theme="oak-study"] #sceneDecor i:nth-child(n+4) { display: block; left: 19%; top: 28%; width: .15rem; height: .15rem; border-radius: 50%; background: #eac38b; box-shadow: 17rem 5rem rgba(234,195,139,.36), 37rem -4rem rgba(234,195,139,.28), 61rem 11rem rgba(234,195,139,.22); animation: dustFloat 19s ease-in-out infinite alternate; }
+body[data-theme="oak-study"] #sceneDecor i:nth-child(5) { left: 54%; top: 18%; animation-delay: -9s; animation-duration: 27s; }
+body[data-theme="oak-study"] #sceneDecor i:nth-child(6) { left: 74%; top: 62%; animation-delay: -15s; animation-duration: 31s; }
 
 /* Panoramic scenes reserve the upper-left corner for notes, away from the centered clock. */
 body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) #note,

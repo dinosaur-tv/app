@@ -1,7 +1,7 @@
 export const displayModes = ["NOW", "TODAY", "WEEK"];
 export const displayThemes = [
   "gallery", "home-day", "home-evening", "forest", "mountains", "sea", "space",
-  "petersburg", "rome", "florence", "venice", "rus", "byzantium", "india", "italy",
+  "petersburg", "rome", "florence", "venice", "palace", "oak-study", "rus", "byzantium", "india", "italy",
 ];
 export const displayMoods = ["home", "night", "play"];
 
@@ -18,6 +18,8 @@ export const themeNames = {
   rome: "Рим",
   florence: "Флоренция",
   venice: "Венеция",
+  palace: "Дворец",
+  "oak-study": "Дубовый кабинет",
   rus: "Русский узор",
   byzantium: "Византия",
   india: "Индия",

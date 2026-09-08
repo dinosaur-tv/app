@@ -4,7 +4,7 @@ const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["NOW", "TODAY", "WEEK"];
 const sceneThemes = [
   "gallery", "home-day", "home-evening", "night", "play", "forest", "mountains", "sea", "space",
-  "petersburg", "rome", "florence", "venice", "rus", "byzantium", "india", "italy",
+  "petersburg", "rome", "florence", "venice", "palace", "oak-study", "rus", "byzantium", "india", "italy",
 ];
 const russian = "ru-RU";
 
@@ -265,7 +265,7 @@ function sceneWeather(periods) {
 }
 
 function scenePageSize(scene) {
-  const compactVertical = ["night", "mountains", "florence", "byzantium"].includes(scene);
+  const compactVertical = ["night", "mountains", "florence", "byzantium", "palace", "oak-study"].includes(scene);
   if (mode === "TODAY") return compactVertical && window.innerHeight <= 800 ? 2 : window.innerHeight <= 800 ? 3 : 5;
   if (compactVertical) return window.innerHeight <= 800 ? 4 : 6;
   return window.innerHeight <= 800 ? 5 : 6;

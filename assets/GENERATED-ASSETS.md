@@ -16,6 +16,14 @@ Create an original nocturnal gallery artwork that complements the reference apar
 
 Create a sophisticated adult romantic-date background with no people: deep burgundy velvet curtains, rumpled dark silk at the edge of a daybed, elegant candles in smoked glass and brass, a sculptural vase, perfume-like haze and soft shadows. Cinematic editorial interior photography, sensual and private but never explicit or kitschy. Keep the left dark for a clock and the right quiet for an agenda. No hearts, pink cartoons, party props or Valentine's clichés.
 
+### `scene-palace.png`
+
+Create a perfectly frontal, symmetrical late-18th-century palace wall inspired by Saint Petersburg imperial residences and Versailles without copying a real room. Use large quiet rectangular ivory-and-pale-celadon boiserie panels, slim fluted columns only at the far edges, aged-gold mouldings, a restrained cornice and a narrow dark parquet band. Straight-on wall elevation with no room depth, furniture, windows, doors or chandelier; the dashboard must feel physically integrated into the architecture.
+
+### `scene-oak-study.png`
+
+Create a perfectly frontal wall of an old European private study in dark quarter-sawn oak. Large calm raised-and-fielded panels fill the center, while narrow pilasters and shallow book niches remain only at the far edges; add slim bottle-green leather insets and restrained aged-brass sconces. Straight-on architectural elevation with no room depth, desk, chair, window or central clutter; the dashboard must feel built into the cabinetry.
+
 ### `scene-forest.png`
 
 Create a kind northern forest clearing in late spring with birch and pine, fresh fern, soft moss, tiny warm fireflies and sunlight through leaves. High-end nature photography with gentle storybook warmth and restrained Apple-like art direction. Calm shaded grove on the left for a clock; airy depth on the right for an agenda; branches suitable for subtle wind animation. No people, buildings or ominous atmosphere.
