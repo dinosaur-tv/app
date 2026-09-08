@@ -111,7 +111,31 @@
           <input id="musicVolume" type="range" min="0" max="100" value="50" />
         </label>
         <button type="button" class="action" data-music="toTv">Поверх музыки</button>
+        <button type="button" class="action" id="openKinopoisk">Кинопоиск</button>
         <p class="hint" id="musicHint">Запустите Яндекс Музыку в Кинопоиске. Пульт покажет трек, а кнопка откроет Dino поверх.</p>
+      </section>
+
+      <section id="pane-remote" class="pane" hidden>
+        <div class="pad" role="group" aria-label="Пульт">
+          <button type="button" data-tv-key="volume_up" aria-label="Громче">＋</button>
+          <button type="button" data-tv-key="up" aria-label="Вверх">▲</button>
+          <button type="button" data-tv-key="mute" aria-label="Без звука">∅</button>
+          <button type="button" data-tv-key="left" aria-label="Влево">◀</button>
+          <button type="button" class="primary" data-tv-key="ok" aria-label="OK">OK</button>
+          <button type="button" data-tv-key="right" aria-label="Вправо">▶</button>
+          <button type="button" data-tv-key="volume_down" aria-label="Тише">－</button>
+          <button type="button" data-tv-key="down" aria-label="Вниз">▼</button>
+          <button type="button" data-tv-key="play_pause" aria-label="Пауза">▶❚</button>
+        </div>
+        <div class="remote-row">
+          <button type="button" class="action" data-tv-key="back">Назад</button>
+          <button type="button" class="action" data-tv-key="home">Домой</button>
+        </div>
+        <div class="remote-row">
+          <button type="button" class="action" data-tv-launch="kinopoisk">Кинопоиск</button>
+          <button type="button" class="action" data-tv-launch="dino">Dino</button>
+        </div>
+        <p class="hint">Стрелки и OK работают, если на телевизоре включён доступ «Dino TV» для пульта.</p>
       </section>
 
       <section id="pane-more" class="pane" hidden>
@@ -169,6 +193,7 @@
     <nav class="dock" role="tablist" aria-label="Разделы">
       <button type="button" data-tab="screen" class="active">Экран</button>
       <button type="button" data-tab="music">Музыка</button>
+      <button type="button" data-tab="remote">Пульт</button>
       <button type="button" data-tab="more">Ещё</button>
     </nav>
     <script type="module" src="./app.js"></script>

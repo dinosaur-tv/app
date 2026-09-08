@@ -363,6 +363,30 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 .transport .primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .volume { display: grid; gap: .4rem; color: var(--muted); font-size: .78rem; }
 .volume input { width: 100%; accent-color: var(--ink); }
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .45rem;
+}
+.pad button {
+  min-height: 3.1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--fill);
+  font-size: 1.05rem;
+}
+.pad .primary {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+  font-size: .92rem;
+  font-weight: 600;
+}
+.remote-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .45rem;
+}
 .hint { margin: 0; color: var(--muted); font-size: .85rem; line-height: 1.4; }
 .note-card { display: grid; gap: .55rem; }
 .note-card[hidden], #addNote[hidden] { display: none; }
@@ -452,7 +476,7 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
   width: min(22rem, 100%);
   margin-inline: auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: .2rem;
   padding: .45rem max(1rem, env(safe-area-inset-right)) calc(.55rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
   border-top: 1px solid var(--line);

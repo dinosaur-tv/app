@@ -272,6 +272,18 @@ async function musicCommand(action, extra = {}) {
   }
 }
 
+async function tvCommand(body) {
+  try {
+    const data = await request("/v1/miniapp/tv", { method: "POST", body: JSON.stringify(body) });
+    applyState(data);
+    telegram?.HapticFeedback?.impactOccurred?.("light");
+    setNotice("");
+  } catch (error) {
+    telegram?.HapticFeedback?.notificationOccurred("error");
+    setNotice(error.message, "error");
+  }
+}
+
 function readFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -425,6 +437,13 @@ document.querySelector("#reloadTv").addEventListener("click", async () => {
 });
 document.querySelectorAll("[data-music]").forEach((button) => {
   button.addEventListener("click", () => musicCommand(button.dataset.music));
+});
+document.querySelector("#openKinopoisk")?.addEventListener("click", () => tvCommand({ action: "launch", app: "kinopoisk" }));
+document.querySelectorAll("[data-tv-key]").forEach((button) => {
+  button.addEventListener("click", () => tvCommand({ action: "key", key: button.dataset.tvKey }));
+});
+document.querySelectorAll("[data-tv-launch]").forEach((button) => {
+  button.addEventListener("click", () => tvCommand({ action: "launch", app: button.dataset.tvLaunch }));
 });
 let volumeTimer;
 let lastSentVolume;
