@@ -3,6 +3,7 @@
 .env
 node_modules
 test
+.playwright-cli
 README.md
 .pre-commit-config.yaml
 eslint.config.mjs

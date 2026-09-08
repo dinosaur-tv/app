@@ -242,6 +242,15 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 .compose input:focus { border-color: var(--brass); }
 #pairCode { font-variant-numeric: tabular-nums; }
 #pairCode:not(:placeholder-shown) { letter-spacing: .18em; text-align: center; }
+.invite-code {
+  margin: 0;
+  font-family: ui-serif, Georgia, serif;
+  font-size: 2.6rem;
+  letter-spacing: .18em;
+  text-align: center;
+  color: var(--brass);
+}
+.invite-code[hidden] { display: none; }
 #pane-more .compose { grid-template-columns: minmax(0, 1fr) auto; }
 .compose button[type="submit"] {
   height: 2.5rem;

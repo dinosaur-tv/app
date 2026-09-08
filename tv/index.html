@@ -45,11 +45,16 @@
       <div class="media-volume"><span aria-hidden="true">◖</span><i><b id="volumeFill"></b></i><small id="mediaVolume"></small></div>
     </section>
     <section id="pair" hidden>
-      <p class="eyebrow">Подключение экрана</p>
-      <h1>Откройте Dino TV в телефоне и введите код</h1>
+      <p class="eyebrow" id="pairEyebrow">Подключение экрана</p>
+      <h1 id="pairTitle">Откройте Dino TV в телефоне и введите код</h1>
       <p id="pairCode">••••••</p>
-      <small>Код живёт десять минут. После этого телевизор запомнит дом сам.</small>
+      <small id="pairNote">Код живёт десять минут. После этого телевизор запомнит дом сам.</small>
     </section>
+    <aside id="eventCue" hidden>
+      <p class="eyebrow" id="eventCueWhen">Через 5 минут</p>
+      <strong id="eventCueTitle">Дело</strong>
+      <span id="eventCueMeta"></span>
+    </aside>
     <script type="module" src="./tv.js"></script>
   </body>
 </html>

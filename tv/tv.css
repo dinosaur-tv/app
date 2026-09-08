@@ -25,7 +25,8 @@ body.asleep #grain,
 body.asleep #sceneBackdrop,
 body.asleep #sceneDecor,
 body.asleep #mediaBar,
-body.asleep #pair {
+body.asleep #pair,
+body.asleep #eventCue {
   visibility: hidden;
   opacity: 0;
 }
@@ -221,6 +222,42 @@ body.hide-weather #weatherLine { display: none; }
 #pair[hidden], #note[hidden] { display: none; }
 #pair h1 { margin: .6rem auto 0; max-width: 16ch; font-family: var(--serif); font-size: 3.4rem; font-weight: 400; line-height: 1; }
 #pairCode { margin: 1.4rem 0 .6rem; font-family: var(--serif); font-size: 6rem; letter-spacing: .18em; color: var(--accent); }
+#eventCue {
+  position: absolute;
+  z-index: 6;
+  top: 4.2rem;
+  right: 3.4rem;
+  width: min(28rem, calc(100% - 6rem));
+  display: grid;
+  gap: .45rem;
+  padding: 1.15rem 1.35rem 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 1.15rem;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(22px);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .35);
+  animation: cueIn .45s ease;
+}
+#eventCue[hidden] { display: none; }
+#eventCue .eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+#eventCue strong {
+  font-family: var(--serif);
+  font-size: 2.15rem;
+  font-weight: 400;
+  line-height: 1.05;
+}
+#eventCue span { color: var(--muted); font-size: .92rem; }
+@keyframes cueIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 #mediaBar {
   position: absolute;
   z-index: 4;

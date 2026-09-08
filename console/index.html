@@ -9,7 +9,6 @@
     <link rel="apple-touch-icon" href="/assets/dino-icon-512.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <title>Dino TV</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -141,11 +140,13 @@
             <label>Неделя<input id="rotateWeek" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
           </div>
         </div>
-        <p class="hint">Если телевизор забыл дом, введите код с экрана.</p>
+        <p class="hint" id="pairHint">Код на телевизоре. Если экран уже дома, на другом телефоне откройте Ещё и нажмите «Показать код».</p>
         <form id="pairForm" class="compose">
           <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />
           <button type="submit">Связать</button>
         </form>
+        <button type="button" class="action" id="invitePhone" hidden>Показать код</button>
+        <p id="inviteCode" class="invite-code" hidden></p>
         <button type="button" class="action" id="reloadTv">Залить обновления</button>
         <p class="people" id="calendarWarning" hidden></p>
       </section>

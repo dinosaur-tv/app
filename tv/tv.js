@@ -1,4 +1,5 @@
 import { normalizeDisplay, normalizeRotation, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
+import { minutesPhrase, nextEventCue } from "../event-cue.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
 const modes = ["TODAY", "TOMORROW", "WEEK"];
@@ -15,6 +16,9 @@ const dateLine = document.querySelector("#dateLine");
 const weatherLine = document.querySelector("#weatherLine");
 const pairEl = document.querySelector("#pair");
 const pairCode = document.querySelector("#pairCode");
+const pairEyebrow = document.querySelector("#pairEyebrow");
+const pairTitle = document.querySelector("#pairTitle");
+const pairNote = document.querySelector("#pairNote");
 const photo = document.querySelector("#photo");
 const mediaBar = document.querySelector("#mediaBar");
 const mediaArt = document.querySelector("#mediaArt");
@@ -28,6 +32,8 @@ let snapshot = null;
 let mode = "TODAY";
 let session = readSession();
 let rotateTimer;
+let eventCueTimer;
+const shownCues = readShownCues();
 let lastForcedMode = "";
 let lastRotationKey = "";
 let paintedKey = "";
@@ -71,6 +77,44 @@ function applyPower(power, powerAt) {
 function syncNativeSession() {
   const bridge = nativeBridge();
   if (session && bridge) bridge.saveSession(session);
+}
+
+function readShownCues() {
+  try {
+    return new Set(JSON.parse(sessionStorage.getItem("dinoTvCues") || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function rememberCue(id) {
+  shownCues.add(id);
+  try { sessionStorage.setItem("dinoTvCues", JSON.stringify([...shownCues])); } catch { /* ignore */ }
+}
+
+function showEventCue(cue) {
+  const el = document.querySelector("#eventCue");
+  document.querySelector("#eventCueWhen").textContent = minutesPhrase(cue.minutes);
+  document.querySelector("#eventCueTitle").textContent = cue.title;
+  document.querySelector("#eventCueMeta").textContent = [cue.ownerName, timeOf(cue.start)].filter(Boolean).join(" · ");
+  el.hidden = false;
+  clearTimeout(eventCueTimer);
+  eventCueTimer = setTimeout(() => { el.hidden = true; }, 12_000);
+}
+
+function maybeEventCue(now = new Date()) {
+  if (!snapshot || asleep) return;
+  const display = normalizeDisplay(snapshot.display);
+  const events = (snapshot.days || []).flatMap((day) => day.events || []);
+  const cue = nextEventCue(events, {
+    now: now.getTime(),
+    shownIds: [...shownCues],
+    privacy: display.privacy,
+    showCalendar: display.showCalendar,
+  });
+  if (!cue) return;
+  rememberCue(cue.id);
+  showEventCue(cue);
 }
 
 function readSession() {
@@ -437,12 +481,25 @@ async function request(path, options = {}) {
   return response.json();
 }
 
+function showGuestPair(code) {
+  if (!session || !code) {
+    if (session) pairEl.hidden = true;
+    return;
+  }
+  pairEyebrow.textContent = "Другой телефон";
+  pairTitle.textContent = "Введите код на втором пульте";
+  pairNote.textContent = "Код живёт десять минут";
+  pairCode.textContent = code;
+  pairEl.hidden = false;
+}
+
 async function loadSnapshot() {
   const data = await request("/v1/display/snapshot");
   if (flushTvApp(data.reloadAt)) return;
   applyPower(data.power, data.powerAt);
   syncNativeSession();
   snapshot = data;
+  showGuestPair(data.inviteCode);
   if (asleep) return;
   const rotation = normalizeRotation(data.display?.rotation);
   if (!rotation.enabled && modes.includes(data.display?.mode)) {
@@ -464,6 +521,9 @@ async function loadSnapshot() {
 
 async function startPairing() {
   pairEl.hidden = false;
+  pairEyebrow.textContent = "Подключение экрана";
+  pairTitle.textContent = "Откройте Dino TV в телефоне и введите код";
+  pairNote.textContent = "Код живёт десять минут. После этого телевизор запомнит дом сам.";
   const started = await fetch(`${API}/v1/display/pair/start`, { method: "POST" }).then((response) => response.json());
   pairCode.textContent = started.code;
   const wait = async () => {
@@ -524,6 +584,7 @@ paintClock();
 setInterval(() => {
   const now = new Date();
   paintClock(now);
+  maybeEventCue(now);
   if (!snapshot) return;
   if (now.getSeconds() === 0) paint();
 }, 1000);

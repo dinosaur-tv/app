@@ -1,7 +1,8 @@
 import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme } from "../control-state.js";
+import { shouldLoadTelegramSdk } from "./telegram.js";
 
 const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
-const telegram = window.Telegram?.WebApp;
+let telegram = window.Telegram?.WebApp;
 let display = normalizeDisplay();
 let currentNote = null;
 let noteMinutes = 60;
@@ -11,7 +12,7 @@ let tvLinked = false;
 let tvOnline = false;
 let tvPower = "on";
 const notice = document.querySelector("#notice");
-const initData = telegram?.initData || "";
+let initData = telegram?.initData || "";
 
 function homeToken() {
   try {
@@ -30,11 +31,41 @@ function hasRemoteAuth() {
   return Boolean(initData || homeToken());
 }
 
-if (telegram) {
+function isNativeIos() {
+  return Boolean(window.__DINO_NATIVE_IOS__) || /DinoHome\//i.test(navigator.userAgent);
+}
+
+function applyTelegram() {
+  if (!telegram) return;
   telegram.ready();
   telegram.expand();
   telegram.setHeaderColor?.("#171614");
   telegram.setBackgroundColor?.("#171614");
+}
+
+async function bootTelegram() {
+  if (telegram) {
+    applyTelegram();
+    return;
+  }
+  if (!shouldLoadTelegramSdk({
+    hasTelegram: Boolean(window.Telegram?.WebApp),
+    isNative: isNativeIos(),
+    userAgent: navigator.userAgent,
+    hasTelegramProxy: Boolean(window.TelegramWebviewProxy),
+  })) {
+    return;
+  }
+  await new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://telegram.org/js/telegram-web-app.js";
+    script.onload = resolve;
+    script.onerror = resolve;
+    document.head.appendChild(script);
+  });
+  telegram = window.Telegram?.WebApp;
+  initData = telegram?.initData || "";
+  applyTelegram();
 }
 
 function setNotice(text, type = "") {
@@ -127,6 +158,25 @@ function paint() {
   power.textContent = tvOnline ? "Выкл" : "Вкл";
   paintMusic();
   paintRotation();
+  paintPairingUi();
+}
+
+function paintPairingUi() {
+  const authed = hasRemoteAuth();
+  const inviteButton = document.querySelector("#invitePhone");
+  const inviteCode = document.querySelector("#inviteCode");
+  const hint = document.querySelector("#pairHint");
+  inviteButton.hidden = !authed;
+  hint.textContent = authed
+    ? "Чтобы подключить второй пульт, покажите код. Он появится и на телевизоре."
+    : "Код на телевизоре. Если экран уже дома, на другом телефоне откройте Ещё и нажмите «Показать код».";
+  if (!authed) inviteCode.hidden = true;
+}
+
+function showInviteCode(code) {
+  const el = document.querySelector("#inviteCode");
+  el.textContent = code;
+  el.hidden = !code;
 }
 
 async function request(path, options = {}) {
@@ -390,9 +440,10 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
     rememberHomeToken(data.homeToken);
     document.querySelector("#pairCode").value = "";
     tvLinked = true;
-    showTab("screen");
+    showInviteCode(code);
+    showTab("more");
     telegram?.HapticFeedback?.notificationOccurred("success");
-    setNotice("Телевизор связан", "online");
+    setNotice("Этот код ещё можно ввести на втором телефоне", "online");
     const state = await request("/v1/miniapp/state");
     applyState(state);
   } catch (error) {
@@ -400,8 +451,25 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
     setNotice(error.message, "error");
   }
 });
-load();
-setInterval(() => {
-  if (!hasRemoteAuth()) return;
-  request("/v1/miniapp/state").then(applyState).catch(() => {});
-}, 2000);
+document.querySelector("#invitePhone").addEventListener("click", async () => {
+  try {
+    const data = await request("/v1/miniapp/pair/invite", { method: "POST" });
+    showInviteCode(data.code);
+    telegram?.HapticFeedback?.impactOccurred?.("light");
+    setNotice("Введите этот код на втором телефоне", "online");
+  } catch (error) {
+    telegram?.HapticFeedback?.notificationOccurred("error");
+    setNotice(error.message, "error");
+  }
+});
+
+async function boot() {
+  await bootTelegram();
+  await load();
+  setInterval(() => {
+    if (!hasRemoteAuth()) return;
+    request("/v1/miniapp/state").then(applyState).catch(() => {});
+  }, 2000);
+}
+
+boot();
