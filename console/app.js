@@ -182,8 +182,8 @@ function paintPairingUi() {
   const hint = document.querySelector("#pairHint");
   inviteButton.hidden = !authed;
   hint.textContent = authed
-    ? "Чтобы подключить второй пульт, покажите код. Он появится и на телевизоре."
-    : "Код на телевизоре. Если экран уже дома, на другом телефоне откройте Ещё и нажмите «Показать код».";
+    ? "Второй пульт — когда удобно: нажмите «Показать код». Цифры появятся здесь и на телевизоре."
+    : "Код на телевизоре. Если экран уже дома, на другом телефоне откройте «Ещё» и нажмите «Показать код».";
   if (!authed) inviteCode.hidden = true;
 }
 
@@ -526,10 +526,10 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
     rememberHomeToken(data.homeToken);
     document.querySelector("#pairCode").value = "";
     tvLinked = true;
-    showInviteCode(code);
-    showTab("more");
+    showInviteCode("");
+    showTab("screen");
     telegram?.HapticFeedback?.notificationOccurred("success");
-    setNotice("Этот код ещё можно ввести на втором телефоне", "online");
+    setNotice("Пульт связан с домом. Второй телефон можно добавить позже в «Ещё» → «Показать код».", "online");
     const state = await request("/v1/miniapp/state");
     applyState(state);
   } catch (error) {
