@@ -781,22 +781,36 @@ body[data-theme="venice"] #sceneDecor i:nth-child(n+4) { display: block; left: -
 body[data-theme="venice"] #sceneDecor i:nth-child(5) { bottom: 20%; opacity: .52; animation-delay: -12s; }
 body[data-theme="venice"] #sceneDecor i:nth-child(6) { bottom: 28%; opacity: .3; animation-delay: -22s; }
 
-/* Russian ornament — broad classical floral rosettes, woven gold and oxblood. */
-body[data-theme="rus"] { --bg: #1a0d10; --ink: #f5e7cf; --muted: #c0a99d; --accent: #d2a25f; --panel: rgba(31,13,17,.72); --line: rgba(224,186,132,.23); --selected: rgba(123,34,46,.54); --glow: rgba(125,35,47,.24); }
-body[data-theme="rus"] #sceneBackdrop { opacity: 1; background-color: #1a0d10; background-image: radial-gradient(ellipse at 50% 20%, transparent 0 20%, rgba(218,174,99,.2) 21% 25%, transparent 26%), radial-gradient(ellipse at 20% 50%, transparent 0 20%, rgba(162,47,61,.32) 21% 29%, transparent 30%), radial-gradient(circle at 50% 50%, #d7aa5f 0 .28rem, #8f2938 .32rem 1.05rem, #2a0d14 1.1rem 1.45rem, transparent 1.5rem), conic-gradient(from 45deg at 50% 50%, rgba(211,164,85,.18), transparent 12.5%, rgba(137,34,49,.28) 25%, transparent 37.5%, rgba(211,164,85,.18) 50%, transparent 62.5%, rgba(137,34,49,.28) 75%, transparent 87.5%), radial-gradient(circle at 42% 58%, #5b1e29, #1a0d10 48%, #0d0809); background-size: 12rem 12rem, 12rem 12rem, 12rem 12rem, 12rem 12rem, auto; animation: patternDrift 72s linear infinite alternate; }
-body[data-theme="rus"] #wash { background: linear-gradient(90deg, rgba(8,4,5,.18), transparent 46%, rgba(8,4,5,.34)); }
+/* Russian ornament — bold scarlet folk flowers on warm hand-made paper. */
+body[data-theme="rus"] { --bg: #f3eadb; --ink: #581314; --muted: #7d5350; --accent: #ca2027; --panel: rgba(255,250,239,.82); --line: rgba(159,30,34,.2); --selected: rgba(196,31,37,.1); --glow: rgba(191,35,37,.17); color-scheme: light; }
+body[data-theme="rus"] #sceneBackdrop { opacity: 1; background-color: #f4ecdd; background-image: url("../assets/scene-rus-folk.png"); background-position: center; background-size: cover; animation: slowZoom 105s ease-in-out infinite alternate; }
+body[data-theme="rus"] #wash { background: linear-gradient(90deg, rgba(255,250,239,.16), rgba(255,250,239,.04) 45%, rgba(112,19,20,.07)); }
+body[data-theme="rus"] #grain { opacity: .045; mix-blend-mode: multiply; }
 body[data-theme="rus"] #orbs { display: none; }
 body[data-theme="rus"] #top { position: absolute; left: 4%; top: 4%; }
+body[data-theme="rus"] #modes button { color: #6e2827; background: rgba(255,250,239,.56); backdrop-filter: blur(13px); }
+body[data-theme="rus"] #modes button.active { color: #fff8eb; background: #bd2027; }
 body[data-theme="rus"] #hero { position: absolute; left: 5%; top: 14%; display: block; }
-body[data-theme="rus"] #clock { font: 350 clamp(8.5rem, 14vw, 15rem)/.8 var(--serif); letter-spacing: -.06em; }
+body[data-theme="rus"] #clock { color: #721416; font: 350 clamp(8.5rem, 14vw, 15rem)/.8 var(--serif); letter-spacing: -.06em; text-shadow: 0 .15rem rgba(255,255,255,.58); }
 body[data-theme="rus"] .hero-copy { padding: 1.7rem 0 0 .6rem; }
-body[data-theme="rus"] #dateLine { font: 500 1rem var(--font); letter-spacing: .16em; text-transform: uppercase; }
-body[data-theme="rus"] #screen { right: 4%; top: 8%; bottom: 5%; width: 47%; padding: 1.9rem 2.3rem; border: 1px solid rgba(221,174,111,.32); border-radius: .35rem; background: rgba(25,11,15,.76); backdrop-filter: blur(18px); box-shadow: inset 0 0 0 .35rem rgba(119,37,48,.16), 0 2rem 5rem rgba(0,0,0,.28); }
-body[data-theme="rus"] .scene-title { border-color: #a83c4c; }
-body[data-theme="rus"] #sceneDecor i:nth-child(-n+3) { display: block; width: 8rem; height: 8rem; border: .55rem double rgba(220,177,112,.22); border-radius: 50% 12% 50% 12%; transform: rotate(45deg); animation: ornamentPulse 16s ease-in-out infinite; }
-body[data-theme="rus"] #sceneDecor i:nth-child(1) { left: 34%; top: 15%; }
-body[data-theme="rus"] #sceneDecor i:nth-child(2) { left: 26%; bottom: 21%; width: 4rem; height: 4rem; animation-delay: -6s; }
-body[data-theme="rus"] #sceneDecor i:nth-child(3) { right: 2%; bottom: 18%; width: 10rem; height: 10rem; animation-delay: -11s; }
+body[data-theme="rus"] #dateLine { font: 650 1rem var(--font); letter-spacing: .16em; text-transform: uppercase; }
+body[data-theme="rus"] #screen { right: 4%; top: 8%; bottom: 5%; width: 47%; padding: 1.9rem 2.3rem; border: .42rem double rgba(175,27,32,.32); border-radius: .55rem 2.5rem .55rem 2.5rem; background: rgba(255,251,242,.84); backdrop-filter: blur(20px) saturate(.88); box-shadow: 0 2rem 5rem rgba(97,28,25,.17), inset 0 0 0 1px rgba(255,255,255,.72); }
+body[data-theme="rus"] .scene-event { border-color: rgba(143,38,37,.14); }
+body[data-theme="rus"] .scene-title { border-color: #c82027; }
+body[data-theme="rus"] .scene-time, body[data-theme="rus"] .scene-title small, body[data-theme="rus"] .scene-owner { color: #7c514d; }
+body[data-theme="rus"] #mediaBar {
+  padding: .85rem 1.05rem;
+  border: 1px solid rgba(174,29,34,.2);
+  border-radius: .9rem 1.8rem .9rem 1.8rem;
+  background: rgba(255,250,240,.82);
+  box-shadow: 0 1rem 2.8rem rgba(100,24,24,.12), inset 0 0 0 1px rgba(255,255,255,.72);
+  backdrop-filter: blur(16px) saturate(.9);
+}
+body[data-theme="rus"] #mediaBar strong,
+body[data-theme="rus"] #mediaBar span,
+body[data-theme="rus"] #mediaBar em { text-shadow: none; }
+body[data-theme="rus"] #note { bottom: 19%; }
+body[data-theme="rus"] #sceneDecor i:first-child { display: block; left: -8%; top: 0; width: 15vw; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.58), transparent); filter: blur(1.5rem); animation: porcelainLight 38s ease-in-out infinite; }
 
 /* Byzantium — blue mosaic, gold tesserae and a calm ceremonial lower panel. */
 body[data-theme="byzantium"] { --bg: #071826; --ink: #f4ead5; --muted: #b9b3a4; --accent: #d7b767; --panel: rgba(8,28,44,.67); --line: rgba(226,198,124,.25); --selected: rgba(198,158,73,.2); --glow: rgba(51,92,126,.28); }

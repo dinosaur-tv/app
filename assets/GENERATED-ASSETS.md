@@ -79,3 +79,7 @@ Create an elegant photorealistic Italian sunset over a historic Tuscan hill town
 ### `scene-soviet-carpet.png`
 
 Create a lovingly authentic late-Soviet wall carpet as a full-screen textile backdrop: classic symmetrical floral medallion, ornate border, dense wool pile, tiny natural wear and warm grazing light in burgundy, brown, beige, dusty rose and olive. Keep the medallion left of centre and a quieter woven field on the right for agenda UI. No furniture, people, text, logos, watermark, psychedelic colour or parody styling.
+
+### `scene-rus-folk.png`
+
+Using the supplied red Russian floral ornament only as a style reference, create an original wide 16:9 folk-art wallpaper with large scarlet flowers, curling stems, fan-shaped petals and broad leaves on warm ivory. Concentrate the ornament around the borders and corners, leaving calmer space through the centre-right for an agenda and a quieter upper-left area for a large clock. Use crisp hand-painted flat colour with subtly imperfect brush edges and light handmade-paper grain. Elegant rather than childish; no text, people, logos, watermark, black background, blue, generic paisley or exact copying of the reference.

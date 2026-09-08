@@ -161,7 +161,7 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 .florence i { background-image: linear-gradient(0deg, rgb(44 25 19 / .5), transparent), url("../assets/scene-florence.png"); }
 .venice i { background-image: linear-gradient(90deg, rgb(5 20 28 / .2), transparent), url("../assets/scene-venice.png"); }
 .italy-sunset i { background-image: linear-gradient(90deg, rgb(22 11 13 / .28), transparent), url("../assets/scene-italy-sunset.png"); }
-.rus i { background-color: #4a1d22; background-image: repeating-conic-gradient(from 45deg, #6b2a32 0 12deg, #c4a06a 0 16deg), linear-gradient(180deg, rgb(20 8 10 / .35), rgb(20 8 10 / .55)), url("../assets/scene-rus.png"); background-size: 1.6rem 1.6rem, cover, cover; }
+.rus i { background-color: #f4ecdd; background-image: linear-gradient(90deg, rgb(255 250 239 / .04), rgb(112 19 20 / .08)), url("../assets/scene-rus-folk.png"); background-position: center; background-size: cover; }
 .gzhel i { background-image: linear-gradient(90deg, rgb(255 255 255 / .05), rgb(11 49 115 / .12)), url("../assets/scene-gzhel.png"); }
 .soviet-carpet i { background-image: linear-gradient(90deg, transparent, rgb(28 8 8 / .26)), url("../assets/scene-soviet-carpet.png"); }
 .byzantium i { background-color: #1a1630; background-image: radial-gradient(circle at 50% 50%, #d4b46a 0 .18rem, transparent .2rem), linear-gradient(180deg, rgb(12 8 28 / .2), rgb(12 8 28 / .55)), url("../assets/scene-byzantium.png"); background-size: 1.15rem 1.15rem, cover, cover; }
@@ -229,7 +229,7 @@ header strong { font-weight: 500; letter-spacing: .04em; font-size: .82rem; }
 .rotation-times input:focus { border-color: var(--brass); }
 .rotation-times input:disabled { opacity: .45; }
 .rotation-times span { font-size: .72rem; }
-.rus i { background: radial-gradient(ellipse at center, #d5ae68 0 5%, #8d2939 6% 13%, transparent 14%), conic-gradient(from 45deg, #4f141d, #8e2938, #1b0c10, #8e2938, #4f141d); background-size: 42px 42px, cover; }
+.rus i { background-image: linear-gradient(90deg, rgb(255 250 239 / .04), rgb(112 19 20 / .08)), url("../assets/scene-rus-folk.png"); background-position: center; background-size: cover; }
 .byzantium i { background: radial-gradient(circle at 50% 50%, #d3ad62 0 6%, transparent 7%), conic-gradient(from 22.5deg, #193c57, #0c2032, #8b6a36, #193c57); }
 .india i { background: radial-gradient(circle at 25% 25%, transparent 0 18%, #d7a255 19% 21%, transparent 22%), #203f43; background-size: 30px 30px; }
 .italy i { background: repeating-linear-gradient(90deg, #e7ddc9 0 28px, #5b7568 28px 36px, #b46e56 36px 43px, #e7ddc9 43px 72px); }
