@@ -9,6 +9,6 @@
     "quality": "npm run lint && npm test"
   },
   "devDependencies": {
-    "eslint": "^9.36.0"
+    "eslint": "^10.10.0"
   }
 }
