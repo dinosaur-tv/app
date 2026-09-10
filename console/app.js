@@ -198,8 +198,8 @@ function paintPairingUi() {
   inviteButton.hidden = !authed || !householdScope.id;
   document.querySelector("#revokeDevices").hidden = !authed || !canManageHome;
   hint.textContent = authed
-    ? "Код с ТВ привяжет его к выбранному дому. Для своего телефона нажмите «Код для моего телефона». Для другого человека используйте приглашение участника выше."
-    : "Первый телевизор подключает владелец из Telegram-бота. Для этого телефона получите одноразовый код: на авторизованном телефоне откройте «Ещё» → «Показать код».";
+    ? "Код с телевизора привяжет его к этому дому. Свой телефон — кнопкой ниже, чужой человек — приглашением участника."
+    : "Первый телевизор подключает владелец из бота. Для этого телефона возьмите код на авторизованном: «Код для моего телефона».";
   if (!authed) inviteCode.hidden = true;
 }
 
@@ -254,6 +254,7 @@ function applyState(data) {
     canManageHome = data.permissions.manageHome === true;
     calendarPermissions = data.permissions.manageCalendars || {};
     document.querySelector("#householdOwner").hidden = !canManageHome;
+    document.querySelector("#householdDanger").hidden = !canManageHome;
     document.querySelector("#calendarSettings").hidden = false;
   }
   if (data.household) {
@@ -660,9 +661,12 @@ function resetHousehold(id) {
   document.querySelector("#calendarAccounts").replaceChildren();
   document.querySelector("#householdAccess").replaceChildren();
   document.querySelector("#householdOwner").hidden = true;
+  document.querySelector("#householdDanger").hidden = true;
   document.querySelector("#calendarSettings").hidden = true;
   document.querySelector("#householdRole").textContent = "";
   document.querySelector("#calendarWarning").hidden = true;
+  // The header names the home even when the switch happens outside loadHouseholds.
+  document.querySelector("#homeName").textContent = houseList.find((home) => home.id === id)?.name || "Dino TV";
   showInviteCode(""); paint();
 }
 
@@ -680,15 +684,24 @@ async function loadHouseholds(preferred) {
   const select = document.querySelector("#householdSelect");
   select.replaceChildren();
   for (const home of houseList) { const option = document.createElement("option"); option.value = home.id; option.textContent = home.name; select.append(option); }
-  select.hidden = !selected; select.disabled = !data.telegram || houseList.length < 2;
+  // The header shows the home; the invisible select over it only earns its place with a choice to make.
+  select.hidden = !data.telegram || houseList.length < 2;
+  document.querySelector("#homeName").textContent = selected?.name || "Dino TV";
+  document.querySelector(".home").classList.toggle("switchable", !select.hidden);
   document.querySelector("#createHousehold").hidden = !data.telegram || !data.registrationOpen;
   document.querySelector("#joinHousehold").hidden = !data.telegram;
+  const fold = document.querySelector("#otherHomes");
+  fold.hidden = !data.telegram;
+  fold.classList.toggle("bare", !selected);
+  fold.open = !selected;
+  document.querySelector("#pane-more").classList.toggle("no-home", !selected);
   const empty = document.querySelector("#householdEmpty");
   empty.hidden = Boolean(selected);
   empty.textContent = houseStartHint(data);
   if ((selected?.id || "") !== householdScope.id) resetHousehold(selected?.id || "");
   if (selected) select.value = selected.id;
-  else { showTab("more"); setNotice(empty.textContent); }
+  // The card already spells out the next step; a notice would only repeat it.
+  else showTab("more");
 }
 
 document.querySelector("#householdSelect").addEventListener("change", async (event) => {

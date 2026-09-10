@@ -15,14 +15,16 @@
   <body>
     <main class="remote">
       <header>
-        <strong>Dino TV</strong>
+        <div class="home">
+          <span class="brand">Dino TV</span>
+          <strong id="homeName">Дом</strong>
+          <select id="householdSelect" aria-label="Выбранный дом" hidden></select>
+        </div>
         <div class="tv-status" id="tvStatus">
           <span><i></i><span id="tvState">не на связи</span></span>
           <button type="button" id="tvPower">Вкл</button>
         </div>
       </header>
-      <label class="household-picker">Ваш дом<select id="householdSelect" aria-label="Выбранный дом" hidden></select></label>
-      <p class="hint" id="householdRole"></p>
 
       <section id="pane-screen" class="pane">
         <div class="modes" role="group" aria-label="Экран">
@@ -155,20 +157,43 @@
       </section>
 
       <section id="pane-more" class="pane" hidden>
-        <div class="settings-block">
-          <h2>Дом и участники</h2>
+        <div class="settings-block" id="homeCard">
+          <h2>Дом</h2>
+          <p class="hint" id="householdRole"></p>
           <p class="hint" id="householdEmpty">Откройте бота, чтобы создать свой дом или принять приглашение.</p>
-          <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
-          <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
-          <div id="householdOwner" hidden>
+          <div id="householdOwner" class="stack" hidden>
             <button type="button" class="action" id="inviteMember">Пригласить участника</button>
-            <p class="hint">Участник видит общее расписание, управляет экраном и подключает свой календарь. Доступ настраивает владелец дома.</p>
-            <form id="householdLabels" class="household-labels"><label>Первый календарь<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Второй календарь<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить подписи</button></form>
+            <p class="hint">Участник видит расписание дома, управляет экраном и подключает свой календарь.</p>
+            <form id="householdLabels" class="household-labels"><label>Календарь 1<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Календарь 2<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить подписи</button></form>
             <button type="button" class="action" id="showHouseholdAccess">Участники и устройства</button>
             <div id="householdAccess"></div>
-            <button type="button" class="action danger" id="deleteHousehold">Удалить этот дом</button>
           </div>
+          <details class="fold" id="otherHomes">
+            <summary>Ещё один дом</summary>
+            <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
+            <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
+          </details>
         </div>
+
+        <div class="settings-block">
+          <h2>Устройства</h2>
+          <p class="hint" id="pairHint">Код с телевизора привяжет его к этому дому. Для нового телефона — «Код для моего телефона» ниже.</p>
+          <form id="pairForm" class="compose">
+            <input id="pairCode" inputmode="numeric" maxlength="10" placeholder="Код ТВ или телефона" aria-label="Код подключения" autocomplete="one-time-code" />
+            <button type="submit">Связать</button>
+          </form>
+          <p id="inviteCode" class="invite-code" hidden></p>
+          <button type="button" class="action" id="invitePhone" hidden>Код для моего телефона</button>
+          <button type="button" class="action" id="reloadTv">Залить обновления</button>
+        </div>
+
+        <div class="settings-block" id="calendarSettings">
+          <h2>Календари</h2>
+          <p class="hint">Только свои аккаунты или с согласия владельца: выбранные события видит весь дом.</p>
+          <div id="calendarAccounts"></div>
+          <p class="people" id="calendarWarning" hidden></p>
+        </div>
+
         <div class="settings-block">
           <h2>На экране</h2>
           <button type="button" class="switch-row" data-layer="showWeather" role="switch" aria-checked="true">
@@ -180,6 +205,7 @@
             <i class="switch" aria-hidden="true"></i>
           </button>
         </div>
+
         <div class="settings-block">
           <h2>Смена вкладок</h2>
           <p class="hint">Телевизор сам листает Сегодня, Завтра и Неделю.</p>
@@ -196,21 +222,12 @@
             <label>Неделя<input id="rotateWeek" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
           </div>
         </div>
-        <p class="hint" id="pairHint">Код с телевизора привяжет его к выбранному дому. Для нового телефона получите код на авторизованном: «Ещё → Код для моего телефона».</p>
-        <form id="pairForm" class="compose">
-          <input id="pairCode" inputmode="numeric" maxlength="10" placeholder="Код ТВ или телефона" aria-label="Код подключения" autocomplete="one-time-code" />
-          <button type="submit">Связать</button>
-        </form>
-        <button type="button" class="action" id="invitePhone" hidden>Код для моего телефона</button>
-        <p id="inviteCode" class="invite-code" hidden></p>
-        <button type="button" class="action" id="reloadTv">Залить обновления</button>
-        <div class="settings-block" id="calendarSettings">
-          <h2>Календари</h2>
-          <p class="hint">Подключайте только свои аккаунты или аккаунты с согласия их владельцев. Все участники этого дома видят выбранные события.</p>
-          <div id="calendarAccounts"></div>
+
+        <div class="settings-block danger-zone" id="householdDanger" hidden>
+          <h2>Осторожно</h2>
+          <button type="button" class="action danger" id="revokeDevices" hidden>Отключить все устройства</button>
+          <button type="button" class="action danger" id="deleteHousehold">Удалить этот дом</button>
         </div>
-        <p class="people" id="calendarWarning" hidden></p>
-        <button type="button" class="action" id="revokeDevices" hidden>Отключить все устройства</button>
       </section>
 
       <p class="status" id="notice" role="status"></p>
