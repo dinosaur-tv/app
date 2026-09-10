@@ -1,7 +1,7 @@
 import eslint from "@eslint/js";
 
 export default [
-  { ignores: ["node_modules/**"] },
+  { ignores: ["node_modules/**", "output/**", ".playwright-cli/**"] },
   eslint.configs.recommended,
   {
     languageOptions: {
@@ -19,6 +19,7 @@ export default [
         setTimeout: "readonly",
         clearTimeout: "readonly",
         FileReader: "readonly",
+        FormData: "readonly",
         URL: "readonly",
         URLSearchParams: "readonly",
         innerHeight: "readonly",

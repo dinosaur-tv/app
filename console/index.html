@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" href="/assets/dino-icon-512.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <title>Dino TV</title>
+    <script src="/config.js"></script>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -20,6 +21,8 @@
           <button type="button" id="tvPower">Вкл</button>
         </div>
       </header>
+      <label class="household-picker">Ваш дом<select id="householdSelect" aria-label="Выбранный дом" hidden></select></label>
+      <p class="hint" id="householdRole"></p>
 
       <section id="pane-screen" class="pane">
         <div class="modes" role="group" aria-label="Экран">
@@ -153,6 +156,20 @@
 
       <section id="pane-more" class="pane" hidden>
         <div class="settings-block">
+          <h2>Дом и участники</h2>
+          <p class="hint" id="householdEmpty">Откройте бота, чтобы создать свой дом или принять приглашение.</p>
+          <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
+          <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
+          <div id="householdOwner" hidden>
+            <button type="button" class="action" id="inviteMember">Пригласить участника</button>
+            <p class="hint">Участник видит общее расписание, управляет экраном и подключает свой календарь. Доступ настраивает владелец дома.</p>
+            <form id="householdLabels" class="household-labels"><label>Первый календарь<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Второй календарь<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить подписи</button></form>
+            <button type="button" class="action" id="showHouseholdAccess">Участники и устройства</button>
+            <div id="householdAccess"></div>
+            <button type="button" class="action danger" id="deleteHousehold">Удалить этот дом</button>
+          </div>
+        </div>
+        <div class="settings-block">
           <h2>На экране</h2>
           <button type="button" class="switch-row" data-layer="showWeather" role="switch" aria-checked="true">
             <span>Погода</span>
@@ -179,15 +196,21 @@
             <label>Неделя<input id="rotateWeek" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
           </div>
         </div>
-        <p class="hint" id="pairHint">Код на телевизоре. Если экран уже дома, на другом телефоне откройте Ещё и нажмите «Показать код».</p>
+        <p class="hint" id="pairHint">Код с телевизора привяжет его к выбранному дому. Для нового телефона получите код на авторизованном: «Ещё → Код для моего телефона».</p>
         <form id="pairForm" class="compose">
-          <input id="pairCode" inputmode="numeric" maxlength="6" placeholder="Код ТВ" autocomplete="one-time-code" />
+          <input id="pairCode" inputmode="numeric" maxlength="10" placeholder="Код ТВ или телефона" aria-label="Код подключения" autocomplete="one-time-code" />
           <button type="submit">Связать</button>
         </form>
-        <button type="button" class="action" id="invitePhone" hidden>Показать код</button>
+        <button type="button" class="action" id="invitePhone" hidden>Код для моего телефона</button>
         <p id="inviteCode" class="invite-code" hidden></p>
         <button type="button" class="action" id="reloadTv">Залить обновления</button>
+        <div class="settings-block" id="calendarSettings">
+          <h2>Календари</h2>
+          <p class="hint">Подключайте только свои аккаунты или аккаунты с согласия их владельцев. Все участники этого дома видят выбранные события.</p>
+          <div id="calendarAccounts"></div>
+        </div>
         <p class="people" id="calendarWarning" hidden></p>
+        <button type="button" class="action" id="revokeDevices" hidden>Отключить все устройства</button>
       </section>
 
       <p class="status" id="notice" role="status"></p>
@@ -206,7 +229,7 @@
     <nav class="dock" role="tablist" aria-label="Разделы">
       <button type="button" data-tab="screen" class="active">Экран</button>
       <button type="button" data-tab="music">Музыка</button>
-      <button type="button" data-tab="remote">Пульт</button>
+      <button type="button" data-tab="remote" hidden>Пульт</button>
       <button type="button" data-tab="more">Ещё</button>
     </nav>
     <script type="module" src="./app.js"></script>

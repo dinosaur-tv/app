@@ -1,7 +1,7 @@
 import { normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 import { minutesPhrase, nextEventCue } from "../event-cue.js";
 
-const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
+const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 const modes = ["TODAY", "TOMORROW", "WEEK"];
 const sceneThemes = [
   "gallery", "home-day", "home-evening", "night", "play", "forest", "autumn-forest", "mountains", "sea", "space",
@@ -30,6 +30,9 @@ let snapshot = null;
 let mode = "TODAY";
 let session = readSession();
 let rotateTimer;
+// Long enough to read twice, short enough not to sit on the screen.
+const EVENT_CUE_DWELL_MS = 20_000;
+const EVENT_CUE_LEAVE_MS = 320;
 let eventCueTimer;
 const shownCues = readShownCues();
 let lastForcedMode = "";
@@ -106,9 +109,18 @@ function showEventCue(cue) {
   document.querySelector("#eventCueWhen").textContent = minutesPhrase(cue.minutes);
   document.querySelector("#eventCueTitle").textContent = cue.title;
   document.querySelector("#eventCueMeta").textContent = [cue.ownerName, timeOf(cue.start)].filter(Boolean).join(" · ");
+  el.classList.remove("leaving");
   el.hidden = false;
+  const bar = document.querySelector("#eventCueProgress");
+  // Restart the drain even when one cue replaces another mid-flight.
+  bar.style.animation = "none";
+  void bar.offsetWidth;
+  bar.style.animation = `cueDrain ${EVENT_CUE_DWELL_MS}ms linear forwards`;
   clearTimeout(eventCueTimer);
-  eventCueTimer = setTimeout(() => { el.hidden = true; }, 12_000);
+  eventCueTimer = setTimeout(() => {
+    el.classList.add("leaving");
+    eventCueTimer = setTimeout(() => { el.hidden = true; el.classList.remove("leaving"); }, EVENT_CUE_LEAVE_MS);
+  }, EVENT_CUE_DWELL_MS);
 }
 
 function maybeEventCue(now = new Date()) {
@@ -553,7 +565,7 @@ async function loadSnapshot() {
 async function startPairing() {
   pairEl.hidden = false;
   pairEyebrow.textContent = "Подключение экрана";
-  pairTitle.textContent = "Откройте Dino TV в телефоне и введите код";
+  pairTitle.textContent = "Владелец: откройте консоль из Telegram-бота и введите код";
   pairNote.textContent = "Код живёт десять минут. После этого телевизор запомнит дом сам.";
   const started = await fetch(`${API}/v1/display/pair/start`, { method: "POST" }).then((response) => response.json());
   pairCode.textContent = started.code;

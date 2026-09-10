@@ -254,9 +254,36 @@ body.hide-weather #weatherLine { display: none; }
   line-height: 1.05;
 }
 #eventCue span { color: var(--muted); font-size: .92rem; }
+#eventCue .eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: .42rem;
+  height: .42rem;
+  margin-right: .55rem;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: .08em;
+}
+/* Drains over the card's dwell so the remaining time is visible at a glance. */
+#eventCue .cue-progress {
+  height: 2px;
+  margin-top: .5rem;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  transform-origin: left center;
+}
+#eventCue.leaving { animation: cueOut .32s ease forwards; }
 @keyframes cueIn {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-12px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cueOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+@keyframes cueDrain {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
 }
 #mediaBar {
   position: absolute;

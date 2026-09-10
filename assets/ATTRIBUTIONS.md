@@ -1,9 +1,13 @@
-# Third-party visual assets
+# Лицензии изображений
 
-## `scene-palace-study.jpg`
+## scene-palace-study.jpg
 
-- Subject: Oak study of Peter I in the Grand Peterhof Palace, Saint Petersburg.
-- Author: GAlexandrova.
-- Source: <https://commons.wikimedia.org/wiki/File:8792._Петергофский_дворец._Дубовый_кабинет_Петра_I.jpg>
-- License: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
-- Change: displayed with a responsive 16:9 `background-size: cover` crop plus non-destructive colour/lighting overlays in CSS; the source pixels were not AI-edited.
+- Дубовый кабинет Петра I, Большой Петергофский дворец.
+- Автор: GAlexandrova.
+- [Источник](https://commons.wikimedia.org/wiki/File:8792._Петергофский_дворец._Дубовый_кабинет_Петра_I.jpg).
+- [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), не MIT.
+- На экране применяется кадрирование 16:9 и цветовой слой CSS. Исходное фото не изменялось через ИИ.
+
+## Остальные материалы
+
+Сведения о генерации — [GENERATED-ASSETS.md](GENERATED-ASSETS.md). Перед публичной публикацией владелец должен подтвердить права на логотип и все исходные материалы; лицензия кода не заменяет эту проверку.

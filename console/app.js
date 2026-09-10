@@ -1,8 +1,16 @@
 import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 import { shouldLoadTelegramSdk } from "./telegram.js";
 import { createRemotePressController } from "./remote-press.js";
+import { createHouseholdScope } from "./household-scope.js";
 
-const API = window.DINO_API_BASE_URL || "https://api.dym-dino.ru";
+const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
+let remoteEnabled = false;
+let calendarUiKey = "";
+const householdScope = createHouseholdScope();
+let canManageHome = false;
+let calendarPermissions = {};
+let houseList = [];
+let personLabels = { misha: "Участник 1", natasha: "Участник 2" };
 let telegram = window.Telegram?.WebApp;
 let display = normalizeDisplay();
 let currentNote = null;
@@ -28,6 +36,7 @@ function rememberHomeToken(token) {
 }
 
 function forgetHomeToken() {
+  window.DINO_HOME_TOKEN = "";
   try { localStorage.removeItem("dinoHomeToken"); } catch { /* ignore */ }
 }
 
@@ -78,6 +87,7 @@ function setNotice(text, type = "") {
 }
 
 function showTab(tab) {
+  if (tab === "remote" && !remoteEnabled) tab = "screen";
   document.querySelectorAll(".pane").forEach((pane) => { pane.hidden = pane.id !== `pane-${tab}`; });
   document.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
 }
@@ -185,10 +195,11 @@ function paintPairingUi() {
   const inviteButton = document.querySelector("#invitePhone");
   const inviteCode = document.querySelector("#inviteCode");
   const hint = document.querySelector("#pairHint");
-  inviteButton.hidden = !authed;
+  inviteButton.hidden = !authed || !householdScope.id;
+  document.querySelector("#revokeDevices").hidden = !authed || !canManageHome;
   hint.textContent = authed
-    ? "Второй пульт — когда удобно: нажмите «Показать код». Цифры появятся здесь и на телевизоре."
-    : "Код на телевизоре. Если экран уже дома, на другом телефоне откройте «Ещё» и нажмите «Показать код».";
+    ? "Код с ТВ привяжет его к выбранному дому. Для своего телефона нажмите «Код для моего телефона». Для другого человека используйте приглашение участника выше."
+    : "Первый телевизор подключает владелец из Telegram-бота. Для этого телефона получите одноразовый код: на авторизованном телефоне откройте «Ещё» → «Показать код».";
   if (!authed) inviteCode.hidden = true;
 }
 
@@ -199,8 +210,10 @@ function showInviteCode(code) {
 }
 
 async function request(path, options = {}) {
+  const scope = householdScope.capture();
   const allowUnauthedPair = path.includes("/pair/approve");
-  if (!hasRemoteAuth() && !allowUnauthedPair) throw new Error("Введите код с телевизора во вкладке «Ещё»");
+  if (!scope.id && !allowUnauthedPair && !path.startsWith("/v1/miniapp/households")) throw new Error("Сначала выберите или создайте дом");
+  if (!hasRemoteAuth() && !allowUnauthedPair) throw new Error("Откройте консоль из бота или введите код приглашения во вкладке «Ещё»");
   const method = (options.method || "GET").toUpperCase();
   const headers = { ...(options.headers || {}) };
   let body = options.body;
@@ -209,12 +222,14 @@ async function request(path, options = {}) {
   if (initData) headers["x-telegram-init-data"] = initData;
   const token = homeToken();
   if (token) headers["x-dino-home-token"] = token;
+  if (scope.id) headers["x-dino-home-id"] = scope.id;
   const response = await fetch(`${API}${path}`, {
     ...options,
     method,
     headers,
     body,
   });
+  scope.assertCurrent();
   if (!response.ok) {
     const text = await response.text() || "Не удалось сохранить";
     let message = text;
@@ -227,7 +242,7 @@ async function request(path, options = {}) {
     if (response.status === 401 && /устарела|Нет доступа к пульту/i.test(message)) {
       forgetHomeToken();
       showTab("more");
-      message = "Связь устарела. Введите свежий код с телевизора во вкладке «Ещё».";
+      message = "Связь устарела. Откройте консоль из бота или получите новое приглашение у участника дома.";
     }
     throw new Error(message);
   }
@@ -235,8 +250,31 @@ async function request(path, options = {}) {
 }
 
 function applyState(data) {
+  if (data.permissions) {
+    canManageHome = data.permissions.manageHome === true;
+    calendarPermissions = data.permissions.manageCalendars || {};
+    document.querySelector("#householdOwner").hidden = !canManageHome;
+    document.querySelector("#calendarSettings").hidden = false;
+  }
+  if (data.household) {
+    document.querySelector("#householdRole").textContent = data.household.role === "owner" ? "Владелец · только ваши участники и устройства" : "Участник · общее расписание этого дома";
+  }
+  if (data.features) {
+    remoteEnabled = data.features.tvRemote === true;
+    document.querySelector('[data-tab="remote"]').hidden = !remoteEnabled;
+    document.querySelector(".dock").style.gridTemplateColumns = `repeat(${remoteEnabled ? 4 : 3}, minmax(0, 1fr))`;
+    if (!remoteEnabled && !document.querySelector("#pane-remote").hidden) showTab("screen");
+  }
+  if (data.personLabels) {
+    personLabels = data.personLabels;
+    for (const person of ["misha", "natasha"]) {
+      const field = document.querySelector(`#householdLabels [name="${person}"]`);
+      if (document.activeElement !== field) field.value = personLabels[person];
+    }
+  }
+  if (data.connectedCalendars) paintCalendars(data.connectedCalendars, data.googleConfigured);
   if (data.display) {
-    display = normalizeDisplay({ ...data.display, backgroundUrl: data.display.backgroundUrl || display.backgroundUrl });
+    display = normalizeDisplay({ ...data.display, backgroundUrl: data.display.backgroundUrl || "" });
     currentNote = normalizeNote(data.display.note);
   }
   if ("nowPlaying" in data) nowPlaying = normalizeNowPlaying(data.nowPlaying || {});
@@ -284,6 +322,7 @@ async function musicCommand(action, extra = {}) {
 }
 
 async function tvCommand(body, button, { repeat = false } = {}) {
+  if (!remoteEnabled) return;
   if (!repeat) bumpRemoteButton(button, "pressing");
   try {
     if (!repeat) {
@@ -329,8 +368,8 @@ function readFile(file) {
 
 function showCalendarWarning(connected = {}) {
   const missing = [];
-  if (!connected.misha) missing.push("Миша");
-  if (!connected.natasha) missing.push("Наташа");
+  if (!connected.misha) missing.push(personLabels.misha);
+  if (!connected.natasha) missing.push(personLabels.natasha);
   const warning = document.querySelector("#calendarWarning");
   if (!missing.length) {
     warning.hidden = true;
@@ -338,17 +377,21 @@ function showCalendarWarning(connected = {}) {
     return;
   }
   warning.hidden = false;
-  warning.textContent = missing.length === 2 ? "Календари отвалились" : `Календарь ${missing[0]} отвалился`;
+  warning.textContent = `Ещё не подключены: ${missing.join(", ")}.`;
 }
 
 async function load() {
   paint();
   if (!hasRemoteAuth()) {
     showTab("more");
-    setNotice("Введите код с телевизора, чтобы пульт запомнил дом");
+    setNotice("Откройте консоль из бота или введите код приглашения, чтобы подключиться к дому");
     return;
   }
   try {
+    if (!householdScope.id) {
+      await loadHouseholds();
+      if (!householdScope.id) return;
+    }
     const data = await request("/v1/miniapp/state");
     applyState(data);
     if (!tvLinked) showTab("more");
@@ -525,10 +568,12 @@ document.querySelector("#musicVolume").addEventListener("touchstart", () => {
   volumeTouchedAt = Date.now();
 }, { passive: true });
 document.querySelector("#background").addEventListener("change", async (event) => {
+  const scope = householdScope.capture();
   const file = event.target.files?.[0];
   if (!file) return;
   try {
     const image = await readFile(file);
+    scope.assertCurrent();
     const data = await request("/v1/miniapp/background", { method: "POST", body: JSON.stringify({ image }) });
     applyState(data);
     telegram?.HapticFeedback?.notificationOccurred("success");
@@ -543,19 +588,20 @@ document.querySelector("#background").addEventListener("change", async (event) =
 document.querySelector("#pairForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const code = document.querySelector("#pairCode").value.replace(/\D/g, "");
-  if (code.length !== 6) {
-    setNotice("Шесть цифр с телевизора", "error");
+  if (![6, 10].includes(code.length)) {
+    setNotice("Код ТВ — 6 цифр, приглашение телефона — 10", "error");
     return;
   }
   try {
     const data = await request("/v1/miniapp/pair/approve", { method: "POST", body: JSON.stringify({ code }) });
     rememberHomeToken(data.homeToken);
+    if (!householdScope.id) { await loadHouseholds(); }
     document.querySelector("#pairCode").value = "";
     tvLinked = true;
     showInviteCode("");
     showTab("screen");
     telegram?.HapticFeedback?.notificationOccurred("success");
-    setNotice("Пульт связан с домом. Второй телефон можно добавить позже в «Ещё» → «Показать код».", "online");
+    setNotice("Устройство связано с выбранным домом.", "online");
     const state = await request("/v1/miniapp/state");
     applyState(state);
   } catch (error) {
@@ -568,10 +614,29 @@ document.querySelector("#invitePhone").addEventListener("click", async () => {
     const data = await request("/v1/miniapp/pair/invite", { method: "POST" });
     showInviteCode(data.code);
     telegram?.HapticFeedback?.impactOccurred?.("light");
-    setNotice("Введите этот код на втором телефоне", "online");
+    setNotice("Код на 10 минут. Даёт телефону ваш доступ — не передавайте другим людям.", "online");
   } catch (error) {
     telegram?.HapticFeedback?.notificationOccurred("error");
     setNotice(error.message, "error");
+  }
+});
+
+document.querySelector("#revokeDevices").addEventListener("click", async (event) => {
+  if (!window.confirm("Отключить все связанные телевизоры и телефоны, включая этот? Календари сохранятся. Владельцы в Telegram сохранят доступ.")) return;
+  event.currentTarget.disabled = true;
+  try {
+    await request("/v1/miniapp/access/revoke", { method: "POST" });
+    forgetHomeToken();
+    tvLinked = false;
+    tvOnline = false;
+    showInviteCode("");
+    await load();
+    showTab("more");
+    setNotice("Устройства отключены. Для повторного подключения начните с консоли в Telegram.", "online");
+  } catch (error) {
+    setNotice(error.message, "error");
+  } finally {
+    document.querySelector("#revokeDevices").disabled = false;
   }
 });
 
@@ -579,9 +644,187 @@ async function boot() {
   await bootTelegram();
   await load();
   setInterval(() => {
-    if (!hasRemoteAuth()) return;
+    if (!hasRemoteAuth() || !householdScope.id || document.hidden) return;
     request("/v1/miniapp/state").then(applyState).catch(() => {});
   }, 2000);
 }
 
 boot();
+
+function resetHousehold(id) {
+  householdScope.select(id);
+  remotePress.stop(); clearTimeout(volumeTimer); closeNoteSheet();
+  display = normalizeDisplay(); currentNote = null; nowPlaying = normalizeNowPlaying();
+  tvLinked = false; tvOnline = false; tvPower = "on"; calendarUiKey = ""; canManageHome = false;
+  personLabels = { misha: "Участник 1", natasha: "Участник 2" }; calendarPermissions = {};
+  document.querySelector("#calendarAccounts").replaceChildren();
+  document.querySelector("#householdAccess").replaceChildren();
+  document.querySelector("#householdOwner").hidden = true;
+  document.querySelector("#calendarSettings").hidden = true;
+  document.querySelector("#householdRole").textContent = "";
+  document.querySelector("#calendarWarning").hidden = true;
+  showInviteCode(""); paint();
+}
+
+/** The empty state names the step the person can actually take here. */
+function houseStartHint(data) {
+  if (!data.telegram) return "Откройте консоль из бота или получите код приглашения у участника дома.";
+  if (data.registrationOpen) return "Создайте свой дом или введите код приглашения от владельца.";
+  return "Новые дома сейчас не создаются. Введите код приглашения от владельца дома.";
+}
+
+async function loadHouseholds(preferred) {
+  const data = await request("/v1/miniapp/households");
+  houseList = data.households || [];
+  const selected = houseList.find((h) => h.id === (preferred || householdScope.id || data.activeHomeId)) || houseList[0];
+  const select = document.querySelector("#householdSelect");
+  select.replaceChildren();
+  for (const home of houseList) { const option = document.createElement("option"); option.value = home.id; option.textContent = home.name; select.append(option); }
+  select.hidden = !selected; select.disabled = !data.telegram || houseList.length < 2;
+  document.querySelector("#createHousehold").hidden = !data.telegram || !data.registrationOpen;
+  document.querySelector("#joinHousehold").hidden = !data.telegram;
+  const empty = document.querySelector("#householdEmpty");
+  empty.hidden = Boolean(selected);
+  empty.textContent = houseStartHint(data);
+  if ((selected?.id || "") !== householdScope.id) resetHousehold(selected?.id || "");
+  if (selected) select.value = selected.id;
+  else { showTab("more"); setNotice(empty.textContent); }
+}
+
+document.querySelector("#householdSelect").addEventListener("change", async (event) => {
+  const id = event.target.value;
+  if (!houseList.some((home) => home.id === id)) return;
+  resetHousehold(id);
+  try {
+    await request("/v1/miniapp/households/select", { method: "POST", body: JSON.stringify({ id }) });
+    await load();
+  } catch (error) { resetHousehold(""); setNotice(error.message, "error"); }
+});
+
+for (const [formId, path, field] of [["createHousehold", "/v1/miniapp/households", "name"], ["joinHousehold", "/v1/miniapp/households/join", "code"]]) {
+  document.querySelector(`#${formId}`).addEventListener("submit", async (event) => {
+    event.preventDefault(); const form = event.currentTarget, button = form.querySelector("button");
+    button.disabled = true;
+    try {
+      const value = new FormData(form).get(field).trim();
+      const data = await request(path, { method: "POST", body: JSON.stringify({ [field]: value }) });
+      await loadHouseholds(data.household?.id || data.homeId); await load(); form.reset();
+    } catch (error) { setNotice(error.message, "error"); } finally { button.disabled = false; }
+  });
+}
+
+document.querySelector("#inviteMember").addEventListener("click", async () => {
+  try {
+    const data = await request("/v1/miniapp/households/invite", { method: "POST" });
+    showInviteCode(data.code); setNotice("На 10 минут: участник открывает бота и вводит код в поле «Приглашение участника». Он увидит расписание этого дома.");
+  } catch (error) { setNotice(error.message, "error"); }
+});
+
+document.querySelector("#householdLabels").addEventListener("submit", async (event) => {
+  event.preventDefault(); const fields = new FormData(event.currentTarget);
+  try {
+    await request("/v1/miniapp/households/labels", { method: "PATCH", body: JSON.stringify(Object.fromEntries(fields)) });
+    await load(); setNotice("Подписи календарей сохранены", "online");
+  } catch (error) { setNotice(error.message, "error"); }
+});
+
+async function loadAccessList() {
+  const [members, devices] = await Promise.all([request("/v1/miniapp/households/members"), request("/v1/miniapp/households/devices")]);
+  const root = document.querySelector("#householdAccess"); root.replaceChildren();
+  const row = (text, url) => {
+    const item = document.createElement("div"), label = document.createElement("span");
+    item.className = "household-access-row"; label.textContent = text; item.append(label);
+    if (url) { const button = document.createElement("button"); button.type = "button"; button.textContent = "Отключить";
+      button.addEventListener("click", async () => {
+        if (!window.confirm("Отключить доступ к этому дому?")) return;
+        try { await request(url, { method: "DELETE" }); await loadAccessList(); } catch (error) { setNotice(error.message, "error"); }
+      }); item.append(button); }
+    root.append(item);
+  };
+  for (const member of members.members) row(`Telegram ${member.userId} · ${member.role === "owner" ? "владелец" : "участник"}`, member.role === "owner" ? null : `/v1/miniapp/households/members/${member.userId}`);
+  for (const device of devices.devices) row(`${device.label} · ${new Date(device.created).toLocaleDateString("ru-RU")} · ${device.id.slice(0, 6)}`, `/v1/miniapp/households/devices/${device.id}`);
+}
+document.querySelector("#showHouseholdAccess").addEventListener("click", () => loadAccessList().catch((error) => setNotice(error.message, "error")));
+document.querySelector("#deleteHousehold").addEventListener("click", async () => {
+  if (!window.confirm("Удалить выбранный дом, календари, фон и доступ всех его устройств? Это нельзя отменить.")) return;
+  try { await request("/v1/miniapp/households/current", { method: "DELETE" }); resetHousehold(""); if (!initData) forgetHomeToken(); else await loadHouseholds(); await load(); }
+  catch (error) { setNotice(error.message, "error"); }
+});
+
+function paintCalendars(connected, configured) {
+  const key = JSON.stringify([connected, configured, personLabels, calendarPermissions]);
+  if (key === calendarUiKey) return;
+  calendarUiKey = key;
+  const root = document.querySelector("#calendarAccounts");
+  root.replaceChildren();
+  if (configured === false) {
+    const hint = document.createElement("p");
+    hint.className = "hint";
+    hint.textContent = "Владелец сервера должен заполнить GOOGLE_CLIENT_ID и GOOGLE_CLIENT_SECRET в .env.";
+    root.append(hint);
+    return;
+  }
+  for (const person of ["misha", "natasha"]) {
+    const card = document.createElement("div");
+    card.className = "calendar-account";
+    const title = document.createElement("strong");
+    title.textContent = `${personLabels[person]} · ${connected[person] ? "подключён" : "не подключён"}`;
+    card.append(title);
+    if (calendarPermissions[person] === false) {
+      const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = "Настраивает владелец этого календаря или дома."; card.append(hint); root.append(card); continue;
+    }
+    const button = (text, action) => {
+      const el = document.createElement("button");
+      el.type = "button";
+      el.textContent = text;
+      el.addEventListener("click", async () => {
+        el.disabled = true;
+        try { await action(); } catch (error) { setNotice(error.message, "error"); }
+        finally { el.disabled = false; }
+      });
+      card.append(el);
+    };
+    button(connected[person] ? "Подключить заново" : "Подключить Google", async () => {
+      const result = await request("/v1/miniapp/calendars/connect", { method: "POST", body: JSON.stringify({ person }) });
+      // Native wrappers open this HTTPS navigation in the system browser, not an embedded Google login.
+      const target = new URL(result.url);
+      if (target.protocol !== "https:" || target.hostname !== "accounts.google.com") throw new Error("Некорректная ссылка Google");
+      if (telegram?.openLink) telegram.openLink(target.href);
+      else window.location.assign(target.href);
+    });
+    if (connected[person]) {
+      button("Выбрать календари", async () => {
+        const result = await request(`/v1/miniapp/calendars/${person}`);
+        card.querySelector("form")?.remove();
+        const form = document.createElement("form");
+        for (const item of result.calendars) {
+          const label = document.createElement("label");
+          const check = document.createElement("input");
+          check.type = "checkbox"; check.value = item.id; check.checked = item.selected;
+          label.append(check, document.createTextNode(item.name));
+          form.append(label);
+        }
+        const save = document.createElement("button");
+        save.textContent = "Сохранить выбор"; save.type = "submit";
+        form.append(save);
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault(); save.disabled = true;
+          try {
+            const calendarIds = [...form.querySelectorAll("input:checked")].map((el) => el.value);
+            if (!calendarIds.length) throw new Error("Выберите хотя бы один календарь или отключите аккаунт.");
+            await request(`/v1/miniapp/calendars/${person}`, { method: "PATCH", body: JSON.stringify({ calendarIds }) });
+            setNotice("Календари сохранены", "online"); form.remove();
+          } catch (error) { setNotice(error.message, "error"); }
+          finally { save.disabled = false; }
+        });
+        card.append(form);
+      });
+      button("Отключить", async () => {
+        if (!window.confirm(`Убрать календарь «${personLabels[person]}» из этого дома?`)) return;
+        await request("/v1/miniapp/calendars/disconnect", { method: "POST", body: JSON.stringify({ person }) });
+        await load();
+      });
+    }
+    root.append(card);
+  }
+}

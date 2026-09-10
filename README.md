@@ -1,31 +1,43 @@
-# Dino TV Home
+# Dino TV · веб-интерфейс
 
-На `https://home.dym-dino.ru` живут три поверхности:
+Экран телевизора и консоль телефона/Telegram. HTML, CSS, JavaScript.
 
-- `/` — публичный лендинг для случайного гостя;
-- `/console/` — Telegram Mini App и телефон;
-- `/tv/` — экран в гостиной.
+| Адрес | Назначение |
+| --- | --- |
+| `/` | Главная |
+| `/tv/` | Телевизор |
+| `/console/` | Телефон и Telegram Mini App |
 
-Экран поддерживает самостоятельные интерьерные, природные, городские и орнаментальные сцены: `gallery`, `home-day`, `home-evening`, `palace`, `oak-study`, `palace-study`, `night`, `play`, `forest`, `autumn-forest`, `mountains`, `sea`, `space`, `petersburg`, `petersburg-streets`, `oranienbaum`, `peterhof`, `rome`, `florence`, `venice`, `italy-sunset`, `rus`, `gzhel`, `soviet-carpet`, `byzantium`, `india` и `italy`. У каждой своя композиция, типографика и фоновое движение; весь интерфейс дополнительно сдвигается на несколько пикселей каждые 90 секунд для защиты телевизора от статичного изображения.
+## Запуск
 
-Для локальной визуальной проверки сцен откройте, например, `http://localhost:4173/tv/?scene=sea` — параметр работает только на `localhost`.
+Разместите рядом с `backend` и используйте его fullstack Compose. Для существующего Traefik — `docker-compose.traefik.yml` в обоих репозиториях с одной сетью.
 
-В BotFather в поле Mini App вставляйте только:
+`.env.example` содержит домен и сеть. Nginx проксирует `/api/` к `dino-backend:3000`; сервер автора не используется.
 
-```text
-https://home.dym-dino.ru/console/
-```
+При другой схеме размещения задайте публичный URL API в `config.js`. **Секреты в этот файл не добавлять.**
 
-## Запуск на VPS
+BotFather → Mini App/menu URL: `https://home.example.com/console/`.
+
+## Использование
+
+- Один сервер обслуживает несколько домов; дом выбирается селектором вверху консоли.
+- Свой дом создаётся в мини-приложении, участники приходят по коду приглашения от владельца.
+- Первый ТВ подтверждает владелец дома: код с экрана вводится в «Ещё».
+- Телефоны подключаются по одноразовому приглашению существующего участника.
+- Google Calendar: Ещё → Календари.
+- Пульт появляется только при `TV_REMOTE_ENABLED=true` на backend.
+- Анимации не гарантируют защиту от выгорания экрана.
+
+## Проверки
 
 ```bash
-cp .env.example .env
-docker compose -f docker-compose.traefik.yml up -d --build
+npm ci
+npm run quality
+npm audit
+pre-commit install
+pre-commit run --all-files
 ```
 
-В backend `.env`:
+Для локальной проверки нужен HTTP-сервер и настроенный API/прокси. Тестовый `tv/_preview.json` не коммитится; режим сцены: `/tv/?scene=sea` на localhost.
 
-```dotenv
-MINI_APP_ORIGIN=https://home.dym-dino.ru
-TELEGRAM_WEB_APP_URL=https://home.dym-dino.ru/console/
-```
+[Изображения](assets/ATTRIBUTIONS.md) · [Безопасность](SECURITY.md) · [MIT](LICENSE)
