@@ -87,6 +87,22 @@ function setNotice(text, type = "") {
   notice.className = `status ${type}`;
 }
 
+// Only the group holding the current scene is worth having open; the rest stay folded.
+function paintSceneGroups() {
+  let opened = false;
+  for (const group of document.querySelectorAll(".theme-row")) {
+    const chosen = group.querySelector("[data-scene].active");
+    group.querySelector(".row-value").textContent = chosen ? chosen.querySelector("span").textContent : "";
+    if (chosen && !opened) { group.open = true; opened = true; }
+    else if (!chosen && !group.dataset.touched) group.open = false;
+  }
+}
+
+// Once someone opens a group by hand, stop closing it for them.
+for (const group of document.querySelectorAll(".theme-row")) {
+  group.addEventListener("toggle", () => { if (group.open) group.dataset.touched = "1"; });
+}
+
 function showTab(tab) {
   if (tab === "remote" && !remoteEnabled) tab = "screen";
   document.querySelectorAll(".pane").forEach((pane) => { pane.hidden = pane.id !== `pane-${tab}`; });
@@ -156,7 +172,10 @@ function paint() {
   document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === display.mode));
   const activeScene = screenTheme(display);
   document.querySelectorAll("[data-scene]").forEach((button) => button.classList.toggle("active", button.dataset.scene === activeScene));
+  paintSceneGroups();
   document.querySelectorAll("[data-privacy]").forEach((button) => button.classList.toggle("active", String(display.privacy) === button.dataset.privacy));
+  document.querySelector("#guestsValue").textContent = display.privacy ? "скрыты названия" : "выключен";
+  document.querySelector("#wallpaperValue").textContent = display.backgroundUrl ? "свои" : "по теме";
   document.querySelectorAll("[data-layer]").forEach((button) => {
     const layer = button.dataset.layer;
     const on = layer === "showWeather" ? display.showWeather : layer === "showCalendar" ? display.showCalendar : false;
@@ -178,6 +197,7 @@ function paint() {
   document.querySelector("#addNote").hidden = hasNote;
   document.querySelector("#noteCard").hidden = !hasNote;
   document.querySelector("#notePreview").textContent = currentNote?.text || "";
+  document.querySelector("#noteValue").textContent = hasNote ? "на экране" : "нет";
   const status = document.querySelector("#tvStatus");
   const state = document.querySelector("#tvState");
   const power = document.querySelector("#tvPower");
@@ -260,6 +280,16 @@ function applyState(data) {
   }
   if (data.household) {
     document.querySelector("#householdRole").textContent = data.household.role === "owner" ? "Владелец · только ваши участники и устройства" : "Участник · общее расписание этого дома";
+    document.querySelector("#homeRowValue").textContent = data.household.role === "owner" ? "Владелец" : "Участник";
+  }
+  if (data.connectedCalendars) {
+    const linked = Object.values(data.connectedCalendars).filter(Boolean).length;
+    document.querySelector("#calendarValue").textContent = linked ? `${linked} из 2` : "не подключены";
+  }
+  document.querySelector("#devicesValue").textContent = data.tvLinked ? "экран привязан" : "нет экранов";
+  if (data.display) {
+    const rotation = normalizeDisplay(data.display).rotation;
+    document.querySelector("#rotationValue").textContent = rotation.enabled ? `${rotation.today} сек` : "выключена";
   }
   if (data.features) {
     remoteEnabled = data.features.tvRemote === true;
@@ -694,7 +724,6 @@ async function loadHouseholds(preferred) {
   document.querySelector("#joinHousehold").hidden = !data.telegram;
   const fold = document.querySelector("#otherHomes");
   fold.hidden = !data.telegram;
-  fold.classList.toggle("bare", !selected);
   fold.open = !selected;
   document.querySelector("#pane-more").classList.toggle("no-home", !selected);
   const empty = document.querySelector("#householdEmpty");
@@ -761,7 +790,7 @@ async function loadAccessList() {
 }
 function paintPlace(place) {
   const label = document.querySelector("#placeCurrent");
-  label.textContent = place?.name ? `Сейчас: ${place.name}` : "Место не выбрано";
+  label.textContent = place?.name || "не выбрано";
 }
 
 async function savePlace(place) {

@@ -33,10 +33,11 @@
           <button data-mode="WEEK">Неделя</button>
         </div>
 
-        <div class="theme-groups" aria-label="Сцена">
-          <section class="theme-group">
-            <h2>Дом</h2>
-            <div class="themes">
+        <p class="list-title">Сцена</p>
+        <div class="list theme-groups" aria-label="Сцена">
+          <details class="row theme-row" name="scenes" data-group="Дом">
+            <summary><span class="row-label">Дом</span><span class="row-value"></span></summary>
+            <div class="row-body"><div class="themes">
               <button type="button" class="gallery" data-scene="gallery"><i></i><span>Галерея</span></button>
               <button type="button" class="home-day" data-scene="home-day"><i></i><span>День</span></button>
               <button type="button" class="home-evening" data-scene="home-evening"><i></i><span>Вечер</span></button>
@@ -45,21 +46,21 @@
               <button type="button" class="palace-study" data-scene="palace-study"><i></i><span>Дворцовый кабинет</span></button>
               <button type="button" class="night" data-scene="night"><i></i><span>Ночь</span></button>
               <button type="button" class="play" data-scene="play"><i></i><span>Шалость</span></button>
-            </div>
-          </section>
-          <section class="theme-group">
-            <h2>Природа</h2>
-            <div class="themes">
+            </div></div>
+          </details>
+          <details class="row theme-row" name="scenes" data-group="Природа">
+            <summary><span class="row-label">Природа</span><span class="row-value"></span></summary>
+            <div class="row-body"><div class="themes">
               <button type="button" class="forest" data-scene="forest"><i></i><span>Лес</span></button>
               <button type="button" class="autumn-forest" data-scene="autumn-forest"><i></i><span>Осенний лес</span></button>
               <button type="button" class="mountains" data-scene="mountains"><i></i><span>Горы</span></button>
               <button type="button" class="sea" data-scene="sea"><i></i><span>Море</span></button>
               <button type="button" class="space" data-scene="space"><i></i><span>Космос</span></button>
-            </div>
-          </section>
-          <section class="theme-group">
-            <h2>Города</h2>
-            <div class="themes">
+            </div></div>
+          </details>
+          <details class="row theme-row" name="scenes" data-group="Города">
+            <summary><span class="row-label">Города</span><span class="row-value"></span></summary>
+            <div class="row-body"><div class="themes">
               <button type="button" class="petersburg" data-scene="petersburg"><i></i><span>Петербург</span></button>
               <button type="button" class="petersburg-streets" data-scene="petersburg-streets"><i></i><span>Улицы Петербурга</span></button>
               <button type="button" class="oranienbaum" data-scene="oranienbaum"><i></i><span>Ораниенбаум</span></button>
@@ -68,41 +69,56 @@
               <button type="button" class="florence" data-scene="florence"><i></i><span>Флоренция</span></button>
               <button type="button" class="venice" data-scene="venice"><i></i><span>Венеция</span></button>
               <button type="button" class="italy-sunset" data-scene="italy-sunset"><i></i><span>Закат в Италии</span></button>
-            </div>
-          </section>
-          <section class="theme-group">
-            <h2>Узоры</h2>
-            <div class="themes">
+            </div></div>
+          </details>
+          <details class="row theme-row" name="scenes" data-group="Узоры">
+            <summary><span class="row-label">Узоры</span><span class="row-value"></span></summary>
+            <div class="row-body"><div class="themes">
               <button type="button" class="rus" data-scene="rus"><i></i><span>Русский</span></button>
               <button type="button" class="gzhel" data-scene="gzhel"><i></i><span>Гжель</span></button>
               <button type="button" class="soviet-carpet" data-scene="soviet-carpet"><i></i><span>Советский ковёр</span></button>
               <button type="button" class="byzantium" data-scene="byzantium"><i></i><span>Византия</span></button>
               <button type="button" class="india" data-scene="india"><i></i><span>Индия</span></button>
               <button type="button" class="italy" data-scene="italy"><i></i><span>Италия</span></button>
+            </div></div>
+          </details>
+        </div>
+
+        <p class="list-title">Ещё на экране</p>
+        <div class="list">
+          <details class="row" name="screen">
+            <summary><span class="row-label">Гости</span><span class="row-value" id="guestsValue"></span></summary>
+            <div class="row-body">
+              <p class="hint">В гостевом режиме экран прячет названия дел и оставляет только время.</p>
+              <div class="guests" role="group" aria-label="Гости">
+                <button type="button" data-privacy="false">Нет гостей</button>
+                <button type="button" data-privacy="true">Гости</button>
+              </div>
             </div>
-          </section>
-        </div>
-
-        <div class="guests" role="group" aria-label="Гости">
-          <button type="button" data-privacy="false">Нет гостей</button>
-          <button type="button" data-privacy="true">Гости</button>
-        </div>
-
-        <div class="note-block">
-          <button type="button" class="action" id="addNote">Заметка</button>
-          <div id="noteCard" class="note-card" hidden>
-            <p id="notePreview"></p>
-            <button type="button" class="action" id="clearNote">Снять</button>
-          </div>
-        </div>
-
-        <div class="wallpaper">
-          <label class="upload">
-            <input id="background" type="file" accept="image/*" />
-            <span id="wallpaperLabel">Поставить обои</span>
-          </label>
-          <span id="backgroundPreview" hidden></span>
-          <button type="button" class="ghost" id="clearBackground">Сброс</button>
+          </details>
+          <details class="row" name="screen">
+            <summary><span class="row-label">Заметка</span><span class="row-value" id="noteValue"></span></summary>
+            <div class="row-body note-block">
+              <button type="button" class="action" id="addNote">Написать заметку</button>
+              <div id="noteCard" class="note-card" hidden>
+                <p id="notePreview"></p>
+                <button type="button" class="action" id="clearNote">Снять</button>
+              </div>
+            </div>
+          </details>
+          <details class="row" name="screen">
+            <summary><span class="row-label">Обои</span><span class="row-value" id="wallpaperValue"></span></summary>
+            <div class="row-body">
+              <div class="wallpaper">
+                <label class="upload">
+                  <input id="background" type="file" accept="image/*" />
+                  <span id="wallpaperLabel">Поставить обои</span>
+                </label>
+                <span id="backgroundPreview" hidden></span>
+                <button type="button" class="ghost" id="clearBackground">Сброс</button>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -157,88 +173,106 @@
       </section>
 
       <section id="pane-more" class="pane" hidden>
-        <div class="settings-block" id="homeCard">
-          <h2>Дом</h2>
-          <p class="hint" id="householdRole"></p>
-          <p class="hint" id="householdEmpty">Откройте бота, чтобы создать свой дом или принять приглашение.</p>
-          <div id="householdOwner" class="stack" hidden>
-            <button type="button" class="action" id="inviteMember">Пригласить участника</button>
-            <p class="hint">Участник видит расписание дома, управляет экраном и подключает свой календарь.</p>
-            <form id="householdLabels" class="household-labels"><label>Календарь 1<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Календарь 2<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить подписи</button></form>
-            <button type="button" class="action" id="showHouseholdAccess">Участники и устройства</button>
-            <div id="householdAccess"></div>
-          </div>
-          <details class="fold" id="otherHomes">
-            <summary>Ещё один дом</summary>
-            <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
-            <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
+        <p class="list-title">Дом</p>
+        <div class="list" id="homeCard">
+          <details class="row" name="more">
+            <summary><span class="row-label">Участники и подписи</span><span class="row-value" id="homeRowValue"></span></summary>
+            <div class="row-body">
+              <p class="hint" id="householdRole"></p>
+              <p class="hint" id="householdEmpty">Откройте бота, чтобы создать свой дом или принять приглашение.</p>
+              <div id="householdOwner" class="stack" hidden>
+                <button type="button" class="action" id="inviteMember">Пригласить участника</button>
+                <p class="hint">Участник видит расписание дома, управляет экраном и подключает свой календарь.</p>
+                <form id="householdLabels" class="household-labels"><label>Календарь 1<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Календарь 2<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить подписи</button></form>
+                <button type="button" class="action" id="showHouseholdAccess">Показать участников и устройства</button>
+                <div id="householdAccess"></div>
+              </div>
+            </div>
+          </details>
+          <details class="row" name="more" id="otherHomes">
+            <summary><span class="row-label">Ещё один дом</span></summary>
+            <div class="row-body">
+              <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
+              <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
+            </div>
           </details>
         </div>
 
-        <div class="settings-block">
-          <h2>Устройства</h2>
-          <p class="hint" id="pairHint">Код с телевизора привяжет его к этому дому. Для нового телефона — «Код для моего телефона» ниже.</p>
-          <form id="pairForm" class="compose">
-            <input id="pairCode" inputmode="numeric" maxlength="10" placeholder="Код ТВ или телефона" aria-label="Код подключения" autocomplete="one-time-code" />
-            <button type="submit">Связать</button>
-          </form>
-          <p id="inviteCode" class="invite-code" hidden></p>
-          <button type="button" class="action" id="invitePhone" hidden>Код для моего телефона</button>
-          <button type="button" class="action" id="reloadTv">Залить обновления</button>
-        </div>
-
-        <div class="settings-block" id="calendarSettings">
-          <h2>Календари</h2>
-          <p class="hint">Только свои аккаунты или с согласия владельца: выбранные события видит весь дом.</p>
-          <div id="calendarAccounts"></div>
-          <p class="people" id="calendarWarning" hidden></p>
-        </div>
-
-        <div class="settings-block">
-          <h2>Погода</h2>
-          <p class="hint">Экран сам запрашивает прогноз для этого места.</p>
-          <p class="place-current" id="placeCurrent"></p>
-          <form id="placeSearch" class="compose">
-            <input name="query" maxlength="60" required placeholder="Город" aria-label="Город для прогноза" autocomplete="off">
-            <button type="submit">Найти</button>
-          </form>
-          <div id="placeResults" class="place-results"></div>
-          <button type="button" class="action" id="placeLocate">Определить по телефону</button>
-        </div>
-
-        <div class="settings-block">
-          <h2>На экране</h2>
-          <button type="button" class="switch-row" data-layer="showWeather" role="switch" aria-checked="true">
-            <span>Погода</span>
-            <i class="switch" aria-hidden="true"></i>
-          </button>
-          <button type="button" class="switch-row" data-layer="showCalendar" role="switch" aria-checked="true">
-            <span>Календарь</span>
-            <i class="switch" aria-hidden="true"></i>
-          </button>
-        </div>
-
-        <div class="settings-block">
-          <h2>Смена вкладок</h2>
-          <p class="hint">Телевизор сам листает Сегодня, Завтра и Неделю.</p>
-          <div class="guests" role="group" aria-label="Смена вкладок">
-            <button type="button" data-rotation-enabled="true">Вкл</button>
-            <button type="button" data-rotation-enabled="false">Выкл</button>
+        <div id="moreRest">
+          <p class="list-title">Экран</p>
+          <div class="list">
+            <button type="button" class="switch-row" data-layer="showWeather" role="switch" aria-checked="true">
+              <span>Погода</span>
+              <i class="switch" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="switch-row" data-layer="showCalendar" role="switch" aria-checked="true">
+              <span>Календарь</span>
+              <i class="switch" aria-hidden="true"></i>
+            </button>
+            <details class="row" name="more">
+              <summary><span class="row-label">Место для погоды</span><span class="row-value" id="placeCurrent"></span></summary>
+              <div class="row-body">
+                <p class="hint">Экран сам запрашивает прогноз для этого места.</p>
+                <form id="placeSearch" class="compose">
+                  <input name="query" maxlength="60" required placeholder="Город" aria-label="Город для прогноза" autocomplete="off">
+                  <button type="submit">Найти</button>
+                </form>
+                <div id="placeResults" class="place-results"></div>
+                <button type="button" class="action" id="placeLocate">Определить по телефону</button>
+              </div>
+            </details>
+            <details class="row" name="more">
+              <summary><span class="row-label">Смена вкладок</span><span class="row-value" id="rotationValue"></span></summary>
+              <div class="row-body">
+                <p class="hint">Телевизор сам листает Сегодня, Завтра и Неделю.</p>
+                <div class="guests" role="group" aria-label="Смена вкладок">
+                  <button type="button" data-rotation-enabled="true">Вкл</button>
+                  <button type="button" data-rotation-enabled="false">Выкл</button>
+                </div>
+                <p class="hint">Интервал</p>
+                <div id="rotationPresets" class="durations rotation-presets" role="group" aria-label="Интервал"></div>
+                <p class="hint">Сколько держать вкладку</p>
+                <div class="rotation-times">
+                  <label>Сегодня<input id="rotateToday" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
+                  <label>Завтра<input id="rotateTomorrow" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
+                  <label>Неделя<input id="rotateWeek" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
+                </div>
+              </div>
+            </details>
           </div>
-          <p class="hint">Интервал</p>
-          <div id="rotationPresets" class="durations rotation-presets" role="group" aria-label="Интервал"></div>
-          <p class="hint">Сколько держать вкладку</p>
-          <div class="rotation-times">
-            <label>Сегодня<input id="rotateToday" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
-            <label>Завтра<input id="rotateTomorrow" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
-            <label>Неделя<input id="rotateWeek" type="number" inputmode="numeric" min="5" max="300" step="5" /><span>сек</span></label>
-          </div>
-        </div>
 
-        <div class="settings-block danger-zone" id="householdDanger" hidden>
-          <h2>Осторожно</h2>
-          <button type="button" class="action danger" id="revokeDevices" hidden>Отключить все устройства</button>
-          <button type="button" class="action danger" id="deleteHousehold">Удалить этот дом</button>
+          <p class="list-title">Подключение</p>
+          <div class="list">
+            <details class="row" name="more" id="calendarSettings">
+              <summary><span class="row-label">Календари</span><span class="row-value" id="calendarValue"></span></summary>
+              <div class="row-body">
+                <p class="hint">Только свои аккаунты или с согласия владельца: выбранные события видит весь дом.</p>
+                <div id="calendarAccounts"></div>
+                <p class="people" id="calendarWarning" hidden></p>
+              </div>
+            </details>
+            <details class="row" name="more">
+              <summary><span class="row-label">Устройства</span><span class="row-value" id="devicesValue"></span></summary>
+              <div class="row-body">
+                <p class="hint" id="pairHint">Код с телевизора привяжет его к этому дому. Для нового телефона — «Код для моего телефона» ниже.</p>
+                <form id="pairForm" class="compose">
+                  <input id="pairCode" inputmode="numeric" maxlength="10" placeholder="Код ТВ или телефона" aria-label="Код подключения" autocomplete="one-time-code" />
+                  <button type="submit">Связать</button>
+                </form>
+                <p id="inviteCode" class="invite-code" hidden></p>
+                <button type="button" class="action" id="invitePhone" hidden>Код для моего телефона</button>
+                <button type="button" class="action" id="reloadTv">Залить обновления</button>
+              </div>
+            </details>
+          </div>
+
+          <div id="householdDanger" hidden>
+            <p class="list-title">Осторожно</p>
+            <div class="list danger-list">
+              <button type="button" class="row-button danger" id="revokeDevices" hidden>Отключить все устройства</button>
+              <button type="button" class="row-button danger" id="deleteHousehold">Удалить этот дом</button>
+            </div>
+          </div>
         </div>
       </section>
 
