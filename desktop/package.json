@@ -1,0 +1,23 @@
+{
+  "name": "dino-tv-desktop",
+  "productName": "Dino TV",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Экран Dino TV на мониторе компьютера",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --windows --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "ru.dinotv.desktop",
+    "productName": "Dino TV",
+    "files": ["main.js", "preload.js", "screen-url.js", "setup.html"],
+    "win": { "target": ["portable"], "artifactName": "dino-tv-desktop-${version}.exe" },
+    "portable": { "artifactName": "dino-tv-desktop-${version}.exe" }
+  }
+}

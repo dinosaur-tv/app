@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dino TV</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-content: center;
+        gap: 1.1rem;
+        padding: 2rem;
+        background: #141311;
+        color: #f0e5d4;
+        font: 16px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif;
+        text-align: center;
+      }
+      h1 { margin: 0; font: 400 2.4rem/1.1 Georgia, serif; letter-spacing: .01em; }
+      p { margin: 0; max-width: 26rem; color: #a89a88; font-size: .95rem; }
+      form { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+      input {
+        width: min(22rem, 70vw);
+        padding: .75rem 1rem;
+        border: 1px solid #3a332a;
+        border-radius: 999px;
+        background: #1c1916;
+        color: inherit;
+        font: inherit;
+      }
+      input:focus { outline: none; border-color: #a77e3f; }
+      button {
+        padding: .75rem 1.4rem;
+        border: 0;
+        border-radius: 999px;
+        background: #f0e5d4;
+        color: #141311;
+        font: inherit;
+        cursor: pointer;
+      }
+      button:active { transform: scale(.98); }
+      .error { min-height: 1.2rem; color: #d49c91; font-size: .88rem; }
+      kbd { padding: .1rem .4rem; border: 1px solid #3a332a; border-radius: .3rem; font-size: .8rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Dino TV</h1>
+    <p>Укажите адрес своего сервера — тот же, что открываете в браузере. Экран запомнит его и дальше будет открываться сразу.</p>
+    <form id="form">
+      <input id="server" type="url" placeholder="https://home.example.com" autocomplete="off" spellcheck="false" required />
+      <button type="submit">Открыть</button>
+    </form>
+    <p class="error" id="error"></p>
+    <p><kbd>F11</kbd> — во весь экран · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> — сменить адрес</p>
+    <script>
+      const field = document.querySelector("#server");
+      const error = document.querySelector("#error");
+      window.dino.currentServer().then((value) => { if (value) field.value = value; });
+      document.querySelector("#form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        error.textContent = "";
+        const result = await window.dino.saveServer(field.value);
+        if (!result.ok) error.textContent = result.message;
+      });
+    </script>
+  </body>
+</html>

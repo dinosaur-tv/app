@@ -4,6 +4,15 @@ export default [
   { ignores: ["node_modules/**", "output/**", ".playwright-cli/**"] },
   eslint.configs.recommended,
   {
+    // The desktop shell is CommonJS on Node, not a page in the browser.
+    files: ["desktop/**/*.js"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: { require: "readonly", module: "writable", process: "readonly", __dirname: "readonly", console: "readonly", URL: "readonly" },
+    },
+  },
+  {
+    ignores: ["desktop/**/*.js"],
     languageOptions: {
       globals: {
         window: "readonly",

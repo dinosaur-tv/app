@@ -5,3 +5,7 @@ tv/_preview.json
 output/
 .env
 *.log
+desktop/node_modules/
+desktop/dist/
+desktop/build.log
+desktop/out/
