@@ -421,10 +421,12 @@ body[data-theme="gallery"] #screen {
   background: linear-gradient(135deg, rgba(25,23,20,.83), rgba(13,12,11,.91));
   box-shadow: 0 2rem 6rem rgba(0,0,0,.2);
 }
+/* Sits directly under the heading row: panel padding 1.55rem + kicker 2.15rem.
+   At 4.2rem it used to cut across the top of the weather cards. */
 body[data-theme="gallery"] #screen::before {
   content: "";
   position: absolute;
-  top: 4.2rem;
+  top: 3.7rem;
   left: 2.2rem;
   right: 2.2rem;
   height: 1px;
@@ -459,6 +461,8 @@ body[data-theme="gallery"] #screen::before {
 .scene-title small { color: var(--muted); font-size: .7rem; }
 .scene-owner { display: flex; align-items: center; justify-content: flex-start; gap: .4rem; color: #b9aa97; font-size: .7rem; }
 .scene-owner i { width: .48rem; height: .48rem; flex: 0 0 auto; border-radius: 50%; }
+/* Clearance for the divider above, so the strip starts below it rather than through it. */
+body[data-theme="gallery"] .scene-weather { margin-top: 1rem; }
 body[data-theme="gallery"] .week { gap: .6rem; grid-template-columns: repeat(4, minmax(0, 1fr)); padding-top: 3.7rem; }
 body[data-theme="gallery"] .week .card { border-width: 0 0 1px; border-radius: 0; background: transparent; backdrop-filter: none; box-shadow: none; }
 
