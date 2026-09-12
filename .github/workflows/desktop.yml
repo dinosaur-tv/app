@@ -30,7 +30,9 @@ jobs:
         shell: bash
         working-directory: desktop
         run: |
+          # A tag names the build; a manual run falls back to the version in package.json.
           version="${GITHUB_REF_NAME#v}"
+          case "$GITHUB_REF" in refs/tags/*) ;; *) version=$(node -p "require('./package.json').version")-dev ;; esac
           built=$(ls dist/*.exe | head -1)
           mkdir -p out
           cp "$built" "out/dino-tv-desktop-${version:-dev}.exe"
