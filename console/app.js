@@ -2,6 +2,7 @@ import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, ro
 import { shouldLoadTelegramSdk } from "./telegram.js";
 import { createRemotePressController } from "./remote-press.js";
 import { createHouseholdScope } from "./household-scope.js";
+import { searchPlaces } from "./places.js";
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 let remoteEnabled = false;
@@ -274,6 +275,7 @@ function applyState(data) {
     }
   }
   if (data.connectedCalendars) paintCalendars(data.connectedCalendars, data.googleConfigured);
+  if (data.display?.place) paintPlace(data.display.place);
   if (data.display) {
     display = normalizeDisplay({ ...data.display, backgroundUrl: data.display.backgroundUrl || "" });
     currentNote = normalizeNote(data.display.note);
@@ -757,6 +759,86 @@ async function loadAccessList() {
   for (const member of members.members) row(`Telegram ${member.userId} · ${member.role === "owner" ? "владелец" : "участник"}`, member.role === "owner" ? null : `/v1/miniapp/households/members/${member.userId}`);
   for (const device of devices.devices) row(`${device.label} · ${new Date(device.created).toLocaleDateString("ru-RU")} · ${device.id.slice(0, 6)}`, `/v1/miniapp/households/devices/${device.id}`);
 }
+function paintPlace(place) {
+  const label = document.querySelector("#placeCurrent");
+  label.textContent = place?.name ? `Сейчас: ${place.name}` : "Место не выбрано";
+}
+
+async function savePlace(place) {
+  await request("/v1/miniapp/display", {
+    method: "PATCH",
+    body: JSON.stringify({ place: { name: place.name, latitude: place.latitude, longitude: place.longitude, timezone: place.timezone } }),
+  });
+  paintPlace(place);
+  document.querySelector("#placeResults").replaceChildren();
+  document.querySelector("#placeSearch").reset();
+  setNotice(`Погода теперь для места «${place.name}». Экран подхватит в течение минуты.`, "online");
+}
+
+function showPlaceResults(found) {
+  const root = document.querySelector("#placeResults");
+  root.replaceChildren();
+  if (!found.length) {
+    const empty = document.createElement("p");
+    empty.className = "hint";
+    empty.textContent = "Ничего не нашлось. Попробуйте соседний крупный город или напишите название латиницей.";
+    root.append(empty);
+    return;
+  }
+  for (const place of found) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "place-option";
+    const name = document.createElement("strong");
+    name.textContent = place.name;
+    const region = document.createElement("small");
+    region.textContent = place.region || place.timezone;
+    button.append(name, region);
+    button.addEventListener("click", () => savePlace(place).catch((error) => setNotice(error.message, "error")));
+    root.append(button);
+  }
+}
+
+document.querySelector("#placeSearch").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const field = event.target.elements.query;
+  const button = event.target.querySelector("button");
+  button.disabled = true;
+  try {
+    showPlaceResults(await searchPlaces(field.value));
+  } catch (error) {
+    setNotice(error.message, "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+// The phone knows where it is; a television almost never does.
+document.querySelector("#placeLocate").addEventListener("click", () => {
+  const button = document.querySelector("#placeLocate");
+  if (!navigator.geolocation) return setNotice("Этот телефон не умеет определять место", "error");
+  button.disabled = true;
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    try {
+      const name = window.prompt("Как назвать это место на экране?", "Дом");
+      if (!name?.trim()) return;
+      await savePlace({
+        name: name.trim().slice(0, 60),
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+    } catch (error) {
+      setNotice(error.message, "error");
+    } finally {
+      button.disabled = false;
+    }
+  }, () => {
+    button.disabled = false;
+    setNotice("Не удалось определить место. Разрешите доступ к геопозиции или найдите город вручную.", "error");
+  }, { timeout: 15_000, maximumAge: 600_000 });
+});
+
 document.querySelector("#showHouseholdAccess").addEventListener("click", () => loadAccessList().catch((error) => setNotice(error.message, "error")));
 document.querySelector("#deleteHousehold").addEventListener("click", async () => {
   if (!window.confirm("Удалить выбранный дом, календари, фон и доступ всех его устройств? Это нельзя отменить.")) return;

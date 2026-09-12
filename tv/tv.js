@@ -1,5 +1,6 @@
 import { normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 import { minutesPhrase, nextEventCue } from "../event-cue.js";
+import { fallbackWeather, fetchWeather, placeKey } from "./weather.js";
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 const modes = ["TODAY", "TOMORROW", "WEEK"];
@@ -9,6 +10,45 @@ const sceneThemes = [
   "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy",
 ];
 const russian = "ru-RU";
+const WEATHER_TTL_MS = 20 * 60 * 1000;
+
+// The forecast belongs to the screen now: the snapshot only says which place to ask about.
+let weather = readStoredWeather();
+let weatherKey = "";
+let weatherAt = 0;
+let weatherPending = false;
+
+function readStoredWeather() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("dinoTvWeather") || "null");
+    if (stored?.weather?.periods) {
+      weatherKey = stored.key || "";
+      weatherAt = Number(stored.at) || 0;
+      return stored.weather;
+    }
+  } catch { /* a cleared or corrupt cache is the same as no cache */ }
+  return fallbackWeather();
+}
+
+async function refreshWeather(place) {
+  if (!place || weatherPending) return;
+  const key = placeKey(place);
+  if (key === weatherKey && Date.now() - weatherAt < WEATHER_TTL_MS) return;
+  weatherPending = true;
+  try {
+    const next = await fetchWeather(place);
+    weather = next;
+    weatherKey = key;
+    weatherAt = Date.now();
+    try { localStorage.setItem("dinoTvWeather", JSON.stringify({ key, at: weatherAt, weather: next })); } catch { /* ignore */ }
+    if (snapshot) { snapshot.weather = weather; paint(true); }
+  } catch {
+    // Keep showing the last good reading; the next tick tries again.
+    if (key !== weatherKey) weather = fallbackWeather(place.name);
+  } finally {
+    weatherPending = false;
+  }
+}
 
 const screen = document.querySelector("#screen");
 const noteEl = document.querySelector("#note");
@@ -268,7 +308,7 @@ function weatherDayHtml(date, now = new Date()) {
   if (!weather) return `<p class="empty">Прогноз пока недоступен.</p>`;
   const today = date === todayStamp(now);
   const headline = today ? `${weather.temperature}°` : `${weather.high}° / ${weather.low}°`;
-  return `<div class="weather-now"><b>${headline}</b><div>${escapeHtml(weather.description)}<div class="muted">Санкт-Петербург</div></div></div>${periodsBlock(weather.periods)}`;
+  return `<div class="weather-now"><b>${headline}</b><div>${escapeHtml(weather.description)}<div class="muted">${escapeHtml(weather.location)}</div></div></div>${periodsBlock(weather.periods)}`;
 }
 
 function renderGuest(now = new Date()) {
@@ -542,6 +582,8 @@ async function loadSnapshot() {
   applyPower(data.power, data.powerAt);
   syncNativeSession();
   snapshot = data;
+  snapshot.weather = weather;
+  void refreshWeather(data.display?.place);
   showGuestPair(data.inviteCode);
   if (asleep) return;
   const rotation = normalizeRotation(data.display?.rotation);

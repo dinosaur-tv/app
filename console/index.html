@@ -195,6 +195,18 @@
         </div>
 
         <div class="settings-block">
+          <h2>Погода</h2>
+          <p class="hint">Экран сам запрашивает прогноз для этого места.</p>
+          <p class="place-current" id="placeCurrent"></p>
+          <form id="placeSearch" class="compose">
+            <input name="query" maxlength="60" required placeholder="Город" aria-label="Город для прогноза" autocomplete="off">
+            <button type="submit">Найти</button>
+          </form>
+          <div id="placeResults" class="place-results"></div>
+          <button type="button" class="action" id="placeLocate">Определить по телефону</button>
+        </div>
+
+        <div class="settings-block">
           <h2>На экране</h2>
           <button type="button" class="switch-row" data-layer="showWeather" role="switch" aria-checked="true">
             <span>Погода</span>

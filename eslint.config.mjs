@@ -20,6 +20,7 @@ export default [
         clearTimeout: "readonly",
         FileReader: "readonly",
         FormData: "readonly",
+        AbortSignal: "readonly",
         URL: "readonly",
         URLSearchParams: "readonly",
         innerHeight: "readonly",

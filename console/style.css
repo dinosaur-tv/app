@@ -35,6 +35,21 @@
 .household-access-row span { overflow-wrap: anywhere; min-width: 0; }
 .household-access-row button { flex-shrink: 0; font-size: .75rem; }
 .danger { color: #d49c91; }
+.place-current { margin: 0; color: var(--ink); font-size: .9rem; }
+.place-results { display: grid; gap: .35rem; }
+.place-results:empty { display: none; }
+.place-option {
+  display: grid;
+  gap: .15rem;
+  padding: .6rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: .9rem;
+  background: var(--fill);
+  text-align: left;
+}
+.place-option strong { font-weight: 500; font-size: .9rem; }
+.place-option small { color: var(--muted); font-size: .74rem; }
+.place-option:active { transform: scale(.985); }
 html, body {
   margin: 0;
   min-width: 0;
