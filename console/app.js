@@ -12,6 +12,8 @@ const householdScope = createHouseholdScope();
 let canManageHome = false;
 let calendarPermissions = {};
 let houseList = [];
+let screenList = [];
+let currentScreen = "";
 let telegram = window.Telegram?.WebApp;
 let display = normalizeDisplay();
 let currentNote = null;
@@ -56,6 +58,29 @@ function rememberHomeToken(token) {
 function forgetHomeToken() {
   window.DINO_HOME_TOKEN = "";
   try { localStorage.removeItem("dinoHomeToken"); } catch { /* ignore */ }
+}
+
+/** The screen the phone is aimed at. Nothing chosen means the whole house, as before. */
+function screenTarget() {
+  return currentScreen ? { screen: currentScreen } : {};
+}
+
+function chosenScreen() {
+  return screenList.find((screen) => screen.id === currentScreen);
+}
+
+/** Which screen was last picked, per home: two homes have two different televisions. */
+function screenKey(homeId = householdScope.id) {
+  return `dinoScreen:${homeId}`;
+}
+
+function storedScreen(homeId) {
+  try { return localStorage.getItem(screenKey(homeId)) || ""; } catch { return ""; }
+}
+
+function rememberScreen(id) {
+  currentScreen = id;
+  try { id ? localStorage.setItem(screenKey(), id) : localStorage.removeItem(screenKey()); } catch { /* ignore */ }
 }
 
 function hasRemoteAuth() {
@@ -231,6 +256,50 @@ function paintRotation() {
   });
 }
 
+/**
+ * With one television the picker stays out of the way and everything behaves as it always
+ * did. With two, the header stops meaning "the TV" and starts meaning the one chosen here.
+ */
+function paintScreens(screens) {
+  screenList = screens;
+  if (currentScreen && !screens.some((screen) => screen.id === currentScreen)) rememberScreen("");
+  const picker = document.querySelector("#screenPicker");
+  const select = document.querySelector("#screenSelect");
+  picker.hidden = screens.length < 2;
+  document.querySelector("#screenNote").hidden = picker.hidden;
+  if (picker.hidden) { currentScreen = ""; return; }
+  if (!currentScreen) rememberScreen(screens[0].id);
+  const names = JSON.stringify(screens.map((screen) => [screen.id, screen.label]));
+  if (select.dataset.names !== names) {
+    select.dataset.names = names;
+    select.replaceChildren();
+    for (const screen of screens) {
+      const option = document.createElement("option");
+      option.value = screen.id;
+      option.textContent = screen.label;
+      select.append(option);
+    }
+  }
+  select.value = currentScreen;
+  const mine = chosenScreen();
+  if (!mine) return;
+  // The status line and the power button now speak for the screen in the picker.
+  tvOnline = mine.online === true;
+  tvPower = mine.power === "off" ? "off" : "on";
+  nowPlaying = normalizeNowPlaying(mine.nowPlaying || {});
+}
+
+document.querySelector("#screenSelect").addEventListener("change", (event) => {
+  rememberScreen(event.target.value);
+  const mine = chosenScreen();
+  if (mine) {
+    tvOnline = mine.online === true;
+    tvPower = mine.power === "off" ? "off" : "on";
+    nowPlaying = normalizeNowPlaying(mine.nowPlaying || {});
+  }
+  paint();
+});
+
 function paint() {
   document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === display.mode));
   const activeScene = screenTheme(display);
@@ -376,6 +445,7 @@ function applyState(data) {
   }
   if ("tvOnline" in data) tvOnline = data.tvOnline === true;
   if (data.tvPower === "on" || data.tvPower === "off") tvPower = data.tvPower;
+  if (data.screens) paintScreens(data.screens);
   paint();
   if (data.calendars) showCalendarWarning(data.calendars);
 }
@@ -391,7 +461,9 @@ async function save(patch, successText = "") {
     paint();
   }
   try {
-    const data = await request("/v1/miniapp/display", { method: "PATCH", body: JSON.stringify(patch) });
+    // A theme or a note is the same on every screen; power and reload belong to one.
+    const aimed = patch.tvPower || patch.reloadTv ? { ...patch, ...screenTarget() } : patch;
+    const data = await request("/v1/miniapp/display", { method: "PATCH", body: JSON.stringify(aimed) });
     applyState(data);
     telegram?.HapticFeedback?.impactOccurred?.("light");
     if (successText) setNotice(successText, "online");
@@ -406,7 +478,7 @@ async function save(patch, successText = "") {
 
 async function musicCommand(action, extra = {}) {
   try {
-    const data = await request("/v1/miniapp/music", { method: "POST", body: JSON.stringify({ action, ...extra }) });
+    const data = await request("/v1/miniapp/music", { method: "POST", body: JSON.stringify({ action, ...extra, ...screenTarget() }) });
     applyState(data);
     telegram?.HapticFeedback?.impactOccurred?.("light");
     setNotice("");
@@ -424,7 +496,7 @@ async function tvCommand(body, button, { repeat = false } = {}) {
       navigator.vibrate?.(12);
       telegram?.HapticFeedback?.impactOccurred?.("medium");
     }
-    const data = await request("/v1/miniapp/tv", { method: "POST", body: JSON.stringify(body) });
+    const data = await request("/v1/miniapp/tv", { method: "POST", body: JSON.stringify({ ...body, ...screenTarget() }) });
     applyState(data);
     if (!repeat) {
       bumpRemoteButton(button, "sent");
@@ -786,6 +858,8 @@ function resetHousehold(id) {
   remotePress.stop(); clearTimeout(volumeTimer); closeNoteSheet();
   display = normalizeDisplay(); currentNote = null; nowPlaying = normalizeNowPlaying();
   tvLinked = false; tvOnline = false; tvPower = "on"; calendarUiKey = ""; canManageHome = false;
+  // A different home has different screens; the one picked here is remembered for later.
+  screenList = []; currentScreen = storedScreen(id); document.querySelector("#screenPicker").hidden = true;
   calendarPermissions = {};
   document.querySelector("#calendarAccounts").replaceChildren();
   document.querySelector("#householdAccess").replaceChildren();
@@ -874,7 +948,8 @@ async function loadAccessList() {
 
 function deviceTitle(device) {
   const since = new Date(device.created).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
-  return `${device.label} · с ${since} · ${device.id.slice(0, 6)}`;
+  // The name sits in the field above; this line says what the thing is and since when.
+  return `${device.kind === "tv" ? "Экран" : "Телефон"} · с ${since} · ${device.id.slice(0, 6)}`;
 }
 
 /** The devices row lists what is already connected, not only how to connect more. */
@@ -894,8 +969,21 @@ async function loadDevices() {
     for (const device of devices) {
       const item = document.createElement("div");
       item.className = "device-row";
-      const name = document.createElement("strong");
-      name.textContent = device.kind === "tv" ? "Экран" : "Телефон";
+      // The name is how the remote will address it, so it is typed here, not somewhere else.
+      const name = document.createElement("input");
+      name.className = "device-name";
+      name.value = device.label;
+      name.maxLength = 40;
+      name.setAttribute("aria-label", "Название устройства");
+      name.addEventListener("change", async () => {
+        const label = name.value.trim();
+        if (!label || label === device.label) { name.value = device.label; return; }
+        name.disabled = true;
+        // The picker at the top carries this name too, so refresh the state, not just the list.
+        try { await request(`/v1/miniapp/households/devices/${device.id}`, { method: "PATCH", body: JSON.stringify({ label }) }); await loadDevices(); await load(); }
+        catch (error) { name.value = device.label; setNotice(error.message, "error"); }
+        finally { name.disabled = false; }
+      });
       const detail = document.createElement("small");
       detail.textContent = deviceTitle(device);
       const drop = document.createElement("button");

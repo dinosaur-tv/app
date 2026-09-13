@@ -871,6 +871,41 @@ a.action {
 .dock button.active { background: var(--fill); color: var(--ink); }
 
 .calendar-account { padding-block: 1rem; border-top: 1px solid var(--line); }
+/* Only ever on screen when a home has more than one television. */
+.screen-picker {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-top: .9rem;
+  padding: .55rem .8rem;
+  background: var(--fill);
+  border: 1px solid var(--line);
+  border-radius: .9rem;
+}
+.screen-note { margin: .45rem .3rem 0; }
+.screen-picker label { color: var(--muted); font-size: .74rem; letter-spacing: .04em; text-transform: uppercase; }
+.screen-picker select {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.2rem;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  font-size: .95rem;
+}
+.screen-picker select:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: .5rem; }
+.device-name {
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0 .7rem;
+  background: var(--fill);
+  border: 1px solid var(--line);
+  border-radius: .7rem;
+  color: var(--ink);
+  font-size: .9rem;
+}
+.device-name:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+.device-name:disabled { opacity: .6; }
 .calendar-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; }
 /* The same dot the screen puts beside these events, so the two are read as one calendar. */
 .calendar-dot { width: .7rem; height: .7rem; flex-shrink: 0; border-radius: 50%; }
