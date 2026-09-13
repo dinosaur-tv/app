@@ -117,11 +117,18 @@ export function normalizeNowPlaying(value = {}) {
   };
 }
 
+/**
+ * A stopped player still leaves its notification and its MediaSession behind, so a title
+ * alone is not evidence that anything is playing. The screen shows a track only while it
+ * actually plays; otherwise the bar would sit there for hours after the music ended.
+ */
+function playingTrack(track) {
+  if (!track || typeof track.title !== "string" || !track.title.trim()) return null;
+  return track.isPlaying === false ? null : track;
+}
+
 export function pickNowPlaying(native, snapshot) {
-  if (native && typeof native.title === "string" && native.title.trim()) return native;
-  const remote = snapshot?.nowPlaying;
-  if (remote && typeof remote.title === "string" && remote.title.trim()) return remote;
-  return null;
+  return playingTrack(native) ?? playingTrack(snapshot?.nowPlaying) ?? null;
 }
 
 export function tvRemoteStatus({ tvOnline = false, tvPower = "on", nowPlaying = {} } = {}) {

@@ -36,6 +36,8 @@
 .household-access-row button { flex-shrink: 0; font-size: .75rem; }
 .danger { color: #d49c91; }
 .place-current { margin: 0; color: var(--ink); font-size: .9rem; }
+.setup-body { display: grid; gap: .8rem; padding: 1rem; }
+.setup-body a { color: var(--brass); }
 .place-results { display: grid; gap: .35rem; }
 .place-results:empty { display: none; }
 .place-option {
@@ -458,8 +460,29 @@ header {
   background: center / cover no-repeat;
 }
 .people { margin: 0; text-align: center; color: #c9867d; font-size: .78rem; }
-.status { margin: 0; text-align: center; color: var(--muted); font-size: .72rem; min-height: 1rem; }
-.status:empty { display: none; }
+.message {
+  width: min(20rem, calc(100vw - 2.5rem));
+  padding: 1.4rem 1.3rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  background: color-mix(in srgb, var(--fill) 92%, var(--bg));
+  color: var(--ink);
+}
+.message::backdrop { background: rgb(8 7 6 / .62); backdrop-filter: blur(2px); }
+.message p { margin: 0 0 1.1rem; font-size: .95rem; line-height: 1.45; text-align: center; }
+.message button {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: .9rem;
+}
+.message button:active { transform: scale(.98); }
+/* The accent says what kind of news this is without an icon. */
+.message.error { border-color: color-mix(in srgb, #c9867d 52%, var(--line)); }
+.message.online { border-color: color-mix(in srgb, #b5c9a5 46%, var(--line)); }
 .online { color: #b5c9a5; }
 .error { color: #c9867d; }
 .now-playing { display: grid; gap: .45rem; justify-items: center; text-align: center; }
@@ -793,8 +816,7 @@ header {
   z-index: 6;
   width: min(22rem, 100%);
   margin-inline: auto;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
   gap: .2rem;
   padding: .45rem max(1rem, env(safe-area-inset-right)) calc(.55rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
   border-top: 1px solid var(--line);
@@ -812,6 +834,8 @@ header {
   background: linear-gradient(to top, var(--bg), transparent);
 }
 .dock button {
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 2.55rem;
   border: 0;
   border-radius: .9rem;

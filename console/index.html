@@ -26,6 +26,20 @@
         </div>
       </header>
 
+      <section id="pane-setup" class="pane" hidden>
+        <p class="list-title">Первый экран</p>
+        <div class="list">
+          <div class="setup-body">
+            <p class="hint">Включите телевизор с приложением Dino TV — он покажет шестизначный код. Введите его здесь, и экран станет вашим.</p>
+            <form id="setupPairForm" class="compose">
+              <input id="setupPairCode" inputmode="numeric" maxlength="10" placeholder="Код с экрана" aria-label="Код с экрана" autocomplete="one-time-code" />
+              <button type="submit">Связать</button>
+            </form>
+            <p class="hint">Нет телевизора под рукой? Экран можно открыть на компьютере — <a href="https://github.com/dinosaur-tv/app/releases/latest" target="_blank" rel="noreferrer">приложение для Windows</a>.</p>
+          </div>
+        </div>
+      </section>
+
       <section id="pane-screen" class="pane">
         <div class="modes" role="group" aria-label="Экран">
           <button data-mode="TODAY">Сегодня</button>
@@ -176,29 +190,45 @@
         <p class="list-title">Дом</p>
         <div class="list" id="homeCard">
           <details class="row" name="more">
-            <summary><span class="row-label">Участники и подписи</span><span class="row-value" id="homeRowValue"></span></summary>
+            <summary><span class="row-label">Дом и участники</span><span class="row-value" id="homeRowValue"></span></summary>
             <div class="row-body">
               <p class="hint" id="householdRole"></p>
               <p class="hint" id="householdEmpty">Откройте бота, чтобы создать свой дом или принять приглашение.</p>
               <div id="householdOwner" class="stack" hidden>
                 <button type="button" class="action" id="inviteMember">Пригласить участника</button>
                 <p class="hint">Участник видит расписание дома, управляет экраном и подключает свой календарь.</p>
-                <form id="householdLabels" class="household-labels"><label>Календарь 1<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Календарь 2<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить подписи</button></form>
                 <button type="button" class="action" id="showHouseholdAccess">Показать участников и устройства</button>
                 <div id="householdAccess"></div>
               </div>
-            </div>
-          </details>
-          <details class="row" name="more" id="otherHomes">
-            <summary><span class="row-label">Ещё один дом</span></summary>
-            <div class="row-body">
-              <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
-              <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
+              <details class="fold" id="otherHomes">
+                <summary>Ещё один дом</summary>
+                <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
+                <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
+              </details>
             </div>
           </details>
         </div>
 
         <div id="moreRest">
+          <p class="list-title">Календари</p>
+          <div class="list">
+            <details class="row" name="more" id="calendarSettings">
+              <summary><span class="row-label">Google-календари</span><span class="row-value" id="calendarValue"></span></summary>
+              <div class="row-body">
+                <p class="hint">Только свои аккаунты или с согласия владельца: выбранные события видит весь дом.</p>
+                <div id="calendarAccounts"></div>
+                <p class="people" id="calendarWarning" hidden></p>
+              </div>
+            </details>
+            <details class="row" name="more" id="labelsRow" hidden>
+              <summary><span class="row-label">Подписи на экране</span><span class="row-value" id="labelsValue"></span></summary>
+              <div class="row-body">
+                <p class="hint">Этими именами экран подписывает события: их видно рядом с каждым делом.</p>
+                <form id="householdLabels" class="household-labels"><label>Календарь 1<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Календарь 2<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить</button></form>
+              </div>
+            </details>
+          </div>
+
           <p class="list-title">Экран</p>
           <div class="list">
             <button type="button" class="switch-row" data-layer="showWeather" role="switch" aria-checked="true">
@@ -241,18 +271,10 @@
             </details>
           </div>
 
-          <p class="list-title">Подключение</p>
+          <p class="list-title">Экраны</p>
           <div class="list">
-            <details class="row" name="more" id="calendarSettings">
-              <summary><span class="row-label">Календари</span><span class="row-value" id="calendarValue"></span></summary>
-              <div class="row-body">
-                <p class="hint">Только свои аккаунты или с согласия владельца: выбранные события видит весь дом.</p>
-                <div id="calendarAccounts"></div>
-                <p class="people" id="calendarWarning" hidden></p>
-              </div>
-            </details>
             <details class="row" name="more">
-              <summary><span class="row-label">Устройства</span><span class="row-value" id="devicesValue"></span></summary>
+              <summary><span class="row-label">Добавить экран</span><span class="row-value" id="devicesValue"></span></summary>
               <div class="row-body">
                 <p class="hint" id="pairHint">Код с телевизора привяжет его к этому дому. Для нового телефона — «Код для моего телефона» ниже.</p>
                 <form id="pairForm" class="compose">
@@ -276,7 +298,10 @@
         </div>
       </section>
 
-      <p class="status" id="notice" role="status"></p>
+      <dialog id="message" class="message">
+        <p id="messageText"></p>
+        <button type="button" id="messageClose" autofocus>Понятно</button>
+      </dialog>
     </main>
 
     <div id="noteSheet" class="sheet-root" hidden>

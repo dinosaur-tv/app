@@ -20,7 +20,7 @@ let nowPlaying = normalizeNowPlaying();
 let tvLinked = false;
 let tvOnline = false;
 let tvPower = "on";
-const notice = document.querySelector("#notice");
+const messageBox = document.querySelector("#message");
 let initData = telegram?.initData || "";
 
 function homeToken() {
@@ -82,10 +82,15 @@ async function bootTelegram() {
   applyTelegram();
 }
 
+// A line under the fold went unread; anything worth saying is worth stopping for.
 function setNotice(text, type = "") {
-  notice.textContent = text;
-  notice.className = `status ${type}`;
+  if (!text) { if (messageBox.open) messageBox.close(); return; }
+  document.querySelector("#messageText").textContent = text;
+  messageBox.className = `message ${type}`;
+  if (!messageBox.open) messageBox.showModal();
 }
+
+document.querySelector("#messageClose").addEventListener("click", () => messageBox.close());
 
 // Only the group holding the current scene is worth having open; the rest stay folded.
 function paintSceneGroups() {
@@ -104,9 +109,12 @@ for (const group of document.querySelectorAll(".theme-row")) {
 }
 
 function showTab(tab) {
+  if (!tvLinked && householdScope.id) tab = "setup";
   if (tab === "remote" && !remoteEnabled) tab = "screen";
   document.querySelectorAll(".pane").forEach((pane) => { pane.hidden = pane.id !== `pane-${tab}`; });
   document.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
+  // The dock is noise until there is a screen to control.
+  document.querySelector(".dock").hidden = tab === "setup";
 }
 
 function paintMusic() {
@@ -276,6 +284,7 @@ function applyState(data) {
     calendarPermissions = data.permissions.manageCalendars || {};
     document.querySelector("#householdOwner").hidden = !canManageHome;
     document.querySelector("#householdDanger").hidden = !canManageHome;
+    document.querySelector("#labelsRow").hidden = !canManageHome;
     document.querySelector("#calendarSettings").hidden = false;
   }
   if (data.household) {
@@ -294,11 +303,11 @@ function applyState(data) {
   if (data.features) {
     remoteEnabled = data.features.tvRemote === true;
     document.querySelector('[data-tab="remote"]').hidden = !remoteEnabled;
-    document.querySelector(".dock").style.gridTemplateColumns = `repeat(${remoteEnabled ? 4 : 3}, minmax(0, 1fr))`;
     if (!remoteEnabled && !document.querySelector("#pane-remote").hidden) showTab("screen");
   }
   if (data.personLabels) {
     personLabels = data.personLabels;
+    document.querySelector("#labelsValue").textContent = `${data.personLabels.misha} и ${data.personLabels.natasha}`;
     for (const person of ["misha", "natasha"]) {
       const field = document.querySelector(`#householdLabels [name="${person}"]`);
       if (document.activeElement !== field) field.value = personLabels[person];
@@ -311,7 +320,11 @@ function applyState(data) {
     currentNote = normalizeNote(data.display.note);
   }
   if ("nowPlaying" in data) nowPlaying = normalizeNowPlaying(data.nowPlaying || {});
-  if (data.tvLinked !== undefined) tvLinked = Boolean(data.tvLinked);
+  if (data.tvLinked !== undefined) {
+    const had = tvLinked;
+    tvLinked = Boolean(data.tvLinked);
+    if (had !== tvLinked) showTab(tvLinked ? "screen" : "setup");
+  }
   if ("tvOnline" in data) tvOnline = data.tvOnline === true;
   if (data.tvPower === "on" || data.tvPower === "off") tvPower = data.tvPower;
   paint();
@@ -618,9 +631,9 @@ document.querySelector("#background").addEventListener("change", async (event) =
     event.target.value = "";
   }
 });
-document.querySelector("#pairForm").addEventListener("submit", async (event) => {
+async function submitPairCode(event, fieldId) {
   event.preventDefault();
-  const code = document.querySelector("#pairCode").value.replace(/\D/g, "");
+  const code = document.querySelector(fieldId).value.replace(/\D/g, "");
   if (![6, 10].includes(code.length)) {
     setNotice("Код ТВ — 6 цифр, приглашение телефона — 10", "error");
     return;
@@ -629,7 +642,7 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
     const data = await request("/v1/miniapp/pair/approve", { method: "POST", body: JSON.stringify({ code }) });
     rememberHomeToken(data.homeToken);
     if (!householdScope.id) { await loadHouseholds(); }
-    document.querySelector("#pairCode").value = "";
+    document.querySelector(fieldId).value = "";
     tvLinked = true;
     showInviteCode("");
     showTab("screen");
@@ -641,7 +654,11 @@ document.querySelector("#pairForm").addEventListener("submit", async (event) => 
     telegram?.HapticFeedback?.notificationOccurred("error");
     setNotice(error.message, "error");
   }
-});
+}
+
+document.querySelector("#pairForm").addEventListener("submit", (event) => submitPairCode(event, "#pairCode"));
+document.querySelector("#setupPairForm").addEventListener("submit", (event) => submitPairCode(event, "#setupPairCode"));
+
 document.querySelector("#invitePhone").addEventListener("click", async () => {
   try {
     const data = await request("/v1/miniapp/pair/invite", { method: "POST" });
@@ -694,6 +711,7 @@ function resetHousehold(id) {
   document.querySelector("#householdAccess").replaceChildren();
   document.querySelector("#householdOwner").hidden = true;
   document.querySelector("#householdDanger").hidden = true;
+  document.querySelector("#labelsRow").hidden = true;
   document.querySelector("#calendarSettings").hidden = true;
   document.querySelector("#householdRole").textContent = "";
   document.querySelector("#calendarWarning").hidden = true;
