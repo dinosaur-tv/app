@@ -254,11 +254,16 @@ function showInviteCode(code) {
   el.hidden = !code;
 }
 
+// Signing in and joining a home are the two things you do before you have either.
+const NO_ACCOUNT_NEEDED = ["/v1/miniapp/login/", "/v1/miniapp/logout"];
+const NO_HOME_NEEDED = [...NO_ACCOUNT_NEEDED, "/v1/miniapp/households"];
+
 async function request(path, options = {}) {
   const scope = householdScope.capture();
-  const allowUnauthedPair = path.includes("/pair/approve");
-  if (!scope.id && !allowUnauthedPair && !path.startsWith("/v1/miniapp/households")) throw new Error("Сначала выберите или создайте дом");
-  if (!hasRemoteAuth() && !allowUnauthedPair) { showTab("signin"); throw new Error("Сначала войдите"); }
+  const pairing = path.includes("/pair/approve");
+  const openToAnyone = pairing || NO_ACCOUNT_NEEDED.some((prefix) => path.startsWith(prefix));
+  if (!scope.id && !pairing && !NO_HOME_NEEDED.some((prefix) => path.startsWith(prefix))) throw new Error("Сначала выберите или создайте дом");
+  if (!hasRemoteAuth() && !openToAnyone) { showTab("signin"); throw new Error("Сначала войдите"); }
   const method = (options.method || "GET").toUpperCase();
   const headers = { ...(options.headers || {}) };
   let body = options.body;
