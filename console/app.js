@@ -3,6 +3,7 @@ import { shouldLoadTelegramSdk } from "./telegram.js";
 import { createRemotePressController } from "./remote-press.js";
 import { createHouseholdScope } from "./household-scope.js";
 import { searchPlaces } from "./places.js";
+import { needsAccount, needsHome } from "./request-scope.js";
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 let remoteEnabled = false;
@@ -127,12 +128,16 @@ for (const group of document.querySelectorAll(".theme-row")) {
 
 function showTab(tab) {
   if (!hasRemoteAuth()) tab = "signin";
-  else if (!tvLinked && householdScope.id) tab = "setup";
+  else if (!householdScope.id) tab = "home";
+  else if (!tvLinked && tab !== "home") tab = "setup";
   if (tab === "remote" && !remoteEnabled) tab = "screen";
   document.querySelectorAll(".pane").forEach((pane) => { pane.hidden = pane.id !== `pane-${tab}`; });
   document.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
   // The dock is noise until there is a screen to control.
-  document.querySelector(".dock").hidden = tab === "setup" || tab === "signin";
+  // The dock returns as soon as there is a home to control; before that it leads nowhere.
+  document.querySelector(".dock").hidden = tab === "signin" || tab === "setup" || (tab === "home" && !houseList.length);
+  document.querySelector("#homePaneBack").hidden = !houseList.length;
+  document.querySelector("#homePaneTitle").textContent = houseList.length ? "Ещё один дом" : "Ваш дом";
 }
 
 function paintMusic() {
@@ -254,16 +259,10 @@ function showInviteCode(code) {
   el.hidden = !code;
 }
 
-// Signing in and joining a home are the two things you do before you have either.
-const NO_ACCOUNT_NEEDED = ["/v1/miniapp/login/", "/v1/miniapp/logout"];
-const NO_HOME_NEEDED = [...NO_ACCOUNT_NEEDED, "/v1/miniapp/households"];
-
 async function request(path, options = {}) {
   const scope = householdScope.capture();
-  const pairing = path.includes("/pair/approve");
-  const openToAnyone = pairing || NO_ACCOUNT_NEEDED.some((prefix) => path.startsWith(prefix));
-  if (!scope.id && !pairing && !NO_HOME_NEEDED.some((prefix) => path.startsWith(prefix))) throw new Error("Сначала выберите или создайте дом");
-  if (!hasRemoteAuth() && !openToAnyone) { showTab("signin"); throw new Error("Сначала войдите"); }
+  if (!scope.id && needsHome(path)) throw new Error("Сначала выберите или создайте дом");
+  if (!hasRemoteAuth() && needsAccount(path)) { showTab("signin"); throw new Error("Сначала войдите"); }
   const method = (options.method || "GET").toUpperCase();
   const headers = { ...(options.headers || {}) };
   let body = options.body;
@@ -679,45 +678,27 @@ async function submitPairCode(event, fieldId) {
   }
 }
 
-// Вход через бота: страница ждёт, пока человек подтвердит переход в Telegram.
-let signInTimer;
-async function waitForSignIn(nonce, until) {
-  clearTimeout(signInTimer);
-  if (Date.now() > until) {
-    document.querySelector("#signInStatus").textContent = "Ссылка устарела. Нажмите «Войти» ещё раз.";
+// Один код на все случаи: восемь цифр — вход, шесть — экран, десять — приглашение.
+document.querySelector("#otherHomes").addEventListener("click", () => showTab("home"));
+document.querySelector("#homePaneBack").addEventListener("click", () => showTab("more"));
+
+document.querySelector("#signInForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const field = document.querySelector("#signInCode");
+  const code = field.value.replace(/\D/g, "");
+  if (code.length === 8) {
+    try {
+      const { token } = await request("/v1/miniapp/login", { method: "POST", body: JSON.stringify({ code }) });
+      rememberSession(token);
+      field.value = "";
+      await load();
+    } catch (error) {
+      setNotice(error.message, "error");
+    }
     return;
   }
-  try {
-    const answer = await request("/v1/miniapp/login/wait?nonce=" + encodeURIComponent(nonce));
-    if (answer.status === "ready") {
-      rememberSession(answer.token);
-      document.querySelector("#signInStatus").textContent = "";
-      await load();
-      return;
-    }
-    if (answer.status === "expired") {
-      document.querySelector("#signInStatus").textContent = "Ссылка устарела. Нажмите «Войти» ещё раз.";
-      return;
-    }
-  } catch { /* сеть моргнула — просто попробуем ещё раз */ }
-  signInTimer = setTimeout(() => waitForSignIn(nonce, until), 2000);
-}
-
-document.querySelector("#signInTelegram").addEventListener("click", async () => {
-  const status = document.querySelector("#signInStatus");
-  status.textContent = "Открываю Telegram…";
-  try {
-    const started = await request("/v1/miniapp/login/start", { method: "POST" });
-    if (!started.link) throw new Error("Сервер не знает имени бота — вход через Telegram пока недоступен");
-    status.textContent = "Подтвердите вход в Telegram и вернитесь сюда.";
-    window.open(started.link, "_blank", "noopener");
-    waitForSignIn(started.nonce, Date.now() + started.expiresIn * 1000);
-  } catch (error) {
-    status.textContent = "";
-    setNotice(error.message, "error");
-  }
+  await submitPairCode(event, "#signInCode");
 });
-document.querySelector("#signInPairForm").addEventListener("submit", (event) => submitPairCode(event, "#signInPairCode"));
 
 document.querySelector("#pairForm").addEventListener("submit", (event) => submitPairCode(event, "#pairCode"));
 document.querySelector("#setupPairForm").addEventListener("submit", (event) => submitPairCode(event, "#setupPairCode"));
@@ -785,7 +766,7 @@ function resetHousehold(id) {
 
 /** The empty state names the step the person can actually take here. */
 function houseStartHint(data) {
-  if (data.registrationOpen) return "Создайте свой дом или введите код приглашения от владельца.";
+  if (data.registrationOpen) return "Дом — это ваш экран, календари и участники. Создайте свой или войдите в чужой по приглашению.";
   return "Новые дома сейчас не создаются. Введите код приглашения от владельца дома.";
 }
 
@@ -802,17 +783,11 @@ async function loadHouseholds(preferred) {
   document.querySelector(".home").classList.toggle("switchable", !select.hidden);
   document.querySelector("#createHousehold").hidden = !data.telegram || !data.registrationOpen;
   document.querySelector("#joinHousehold").hidden = !data.telegram;
-  const fold = document.querySelector("#otherHomes");
-  fold.hidden = !data.telegram;
-  fold.open = !selected;
-  document.querySelector("#pane-more").classList.toggle("no-home", !selected);
-  const empty = document.querySelector("#householdEmpty");
-  empty.hidden = Boolean(selected);
-  empty.textContent = houseStartHint(data);
+  document.querySelector("#otherHomes").hidden = !data.telegram;
+  document.querySelector("#householdEmpty").textContent = houseStartHint(data);
   if ((selected?.id || "") !== householdScope.id) resetHousehold(selected?.id || "");
   if (selected) select.value = selected.id;
-  // The card already spells out the next step; a notice would only repeat it.
-  else showTab("more");
+  else showTab("home");
 }
 
 document.querySelector("#householdSelect").addEventListener("change", async (event) => {

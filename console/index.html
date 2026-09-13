@@ -30,16 +30,24 @@
         <p class="list-title">Вход</p>
         <div class="list">
           <div class="setup-body">
-            <p class="hint">Dino TV узнаёт вас по Telegram — пароля нет. Нажмите кнопку, подтвердите в боте и возвращайтесь: приложение откроется на вашем доме.</p>
-            <button type="button" class="action primary" id="signInTelegram">Войти через Telegram</button>
-            <p class="hint" id="signInStatus"></p>
-            <details class="fold">
-              <summary>У меня есть код с другого устройства</summary>
-              <form id="signInPairForm" class="compose">
-                <input id="signInPairCode" inputmode="numeric" maxlength="10" placeholder="Код приглашения" aria-label="Код приглашения" autocomplete="one-time-code" />
-                <button type="submit">Войти</button>
-              </form>
-            </details>
+            <p class="hint">Откройте <a id="botLink" href="https://t.me/dino_server_bot" target="_blank" rel="noreferrer">бота в Telegram</a> и нажмите «Запустить» — он пришлёт код. Введите его здесь.</p>
+            <form id="signInForm" class="compose">
+              <input id="signInCode" inputmode="numeric" maxlength="10" placeholder="Код из бота" aria-label="Код из бота" autocomplete="one-time-code" required />
+              <button type="submit">Войти</button>
+            </form>
+            <p class="hint">Сюда же подойдёт код приглашения, если вас позвали в чужой дом.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="pane-home" class="pane" hidden>
+        <p class="list-title" id="homePaneTitle">Ваш дом</p>
+        <div class="list">
+          <div class="setup-body">
+            <p class="hint" id="householdEmpty">Дом — это ваш экран, календари и участники. Создайте свой или войдите в чужой по приглашению.</p>
+            <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название дома" aria-label="Название дома"><button type="submit">Создать</button></form>
+            <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Код приглашения" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
+            <button type="button" class="ghost" id="homePaneBack" hidden>Назад</button>
           </div>
         </div>
       </section>
@@ -211,18 +219,13 @@
             <summary><span class="row-label">Дом и участники</span><span class="row-value" id="homeRowValue"></span></summary>
             <div class="row-body">
               <p class="hint" id="householdRole"></p>
-              <p class="hint" id="householdEmpty">Создайте свой дом или введите код приглашения от владельца.</p>
               <div id="householdOwner" class="stack" hidden>
                 <button type="button" class="action" id="inviteMember">Пригласить участника</button>
                 <p class="hint">Участник видит расписание дома, управляет экраном и подключает свой календарь.</p>
                 <button type="button" class="action" id="showHouseholdAccess">Показать участников и устройства</button>
                 <div id="householdAccess"></div>
               </div>
-              <details class="fold" id="otherHomes">
-                <summary>Ещё один дом</summary>
-                <form id="createHousehold" class="compose" hidden><input name="name" maxlength="60" required placeholder="Название нового дома" aria-label="Название дома"><button type="submit">Создать</button></form>
-                <form id="joinHousehold" class="compose" hidden><input name="code" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="Приглашение участника" aria-label="Код приглашения участника"><button type="submit">Войти</button></form>
-              </details>
+              <button type="button" class="action" id="otherHomes">Ещё один дом</button>
             </div>
           </details>
         </div>
