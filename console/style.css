@@ -10,26 +10,6 @@
   background: var(--bg);
 }
 * { box-sizing: border-box; }
-.household-labels { display: grid; gap: .45rem; }
-.household-labels label {
-  display: grid;
-  grid-template-columns: 5.6rem minmax(0, 1fr);
-  align-items: center;
-  gap: .6rem;
-  color: var(--muted);
-  font-size: .8rem;
-}
-.household-labels input { width: 100%; min-height: 2.5rem; padding: 0 .8rem; background: var(--fill); border: 1px solid var(--line); border-radius: .8rem; }
-.household-labels button {
-  min-height: 2.6rem;
-  margin-top: .15rem;
-  padding: 0 .65rem;
-  background: transparent;
-  border: 1px solid rgb(255 255 255 / .18);
-  border-radius: 999px;
-  color: var(--ink);
-  font-size: .84rem;
-}
 .household-access-row button { padding: .55rem .8rem; background: var(--fill); border: 1px solid var(--line); border-radius: .7rem; color: var(--brass); }
 .household-access-row { display: flex; gap: .6rem; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding: .8rem 0; font-size: .8rem; }
 .household-access-row span { overflow-wrap: anywhere; min-width: 0; }
@@ -891,10 +871,25 @@ a.action {
 .dock button.active { background: var(--fill); color: var(--ink); }
 
 .calendar-account { padding-block: 1rem; border-top: 1px solid var(--line); }
-.calendar-account strong { display: block; margin-bottom: .6rem; overflow-wrap: anywhere; }
+.calendar-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; }
+/* The same dot the screen puts beside these events, so the two are read as one calendar. */
+.calendar-dot { width: .7rem; height: .7rem; flex-shrink: 0; border-radius: 50%; }
+.calendar-label {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0 .75rem;
+  background: var(--fill);
+  border: 1px solid var(--line);
+  border-radius: .8rem;
+  color: var(--ink);
+  font-size: .95rem;
+}
+.calendar-label:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+.calendar-label:disabled { opacity: .6; }
+.calendar-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
 .calendar-account button {
-  margin: .3rem .4rem .3rem 0;
-  padding: .65rem .9rem;
+  padding: .6rem .75rem;
   min-height: 2.75rem;
   border: 1px solid var(--line);
   border-radius: .9rem;
@@ -907,6 +902,7 @@ a.action {
 .calendar-account button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 .calendar-account button:disabled { opacity: .5; cursor: wait; }
 .calendar-account button[type="submit"] { background: var(--ink); color: var(--bg); }
+.calendar-account form { margin-top: .6rem; }
 .calendar-account label { display: flex; align-items: center; gap: .6rem; margin-block: .6rem; overflow-wrap: anywhere; }
 .calendar-account input[type="checkbox"] { width: 1.1rem; height: 1.1rem; flex-shrink: 0; accent-color: var(--brass); }
 [hidden] { display: none !important; }

@@ -12,7 +12,6 @@ const householdScope = createHouseholdScope();
 let canManageHome = false;
 let calendarPermissions = {};
 let houseList = [];
-let personLabels = { misha: "Участник 1", natasha: "Участник 2" };
 let telegram = window.Telegram?.WebApp;
 let display = normalizeDisplay();
 let currentNote = null;
@@ -340,16 +339,19 @@ function applyState(data) {
     calendarPermissions = data.permissions.manageCalendars || {};
     document.querySelector("#householdOwner").hidden = !canManageHome;
     document.querySelector("#householdDanger").hidden = !canManageHome;
-    document.querySelector("#labelsRow").hidden = !canManageHome;
     document.querySelector("#calendarSettings").hidden = false;
   }
   if (data.household) {
     document.querySelector("#householdRole").textContent = data.household.role === "owner" ? "Владелец · только ваши участники и устройства" : "Участник · общее расписание этого дома";
     document.querySelector("#homeRowValue").textContent = data.household.role === "owner" ? "Владелец" : "Участник";
   }
-  if (data.connectedCalendars) {
-    const linked = Object.values(data.connectedCalendars).filter(Boolean).length;
-    document.querySelector("#calendarValue").textContent = linked ? `${linked} из 2` : "не подключены";
+  if (data.calendars) {
+    const count = data.calendars.length;
+    // Names would run past the row and push the title onto a second line; the count fits.
+    const word = count % 10 === 1 && count % 100 !== 11 ? "календарь"
+      : [2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100) ? "календаря"
+        : "календарей";
+    document.querySelector("#calendarValue").textContent = count ? `${count} ${word}` : "не подключены";
   }
   if (data.display) {
     const rotation = normalizeDisplay(data.display).rotation;
@@ -360,15 +362,7 @@ function applyState(data) {
     document.querySelector('[data-tab="remote"]').hidden = !remoteEnabled;
     if (!remoteEnabled && !document.querySelector("#pane-remote").hidden) showTab("screen");
   }
-  if (data.personLabels) {
-    personLabels = data.personLabels;
-    document.querySelector("#labelsValue").textContent = `${data.personLabels.misha} и ${data.personLabels.natasha}`;
-    for (const person of ["misha", "natasha"]) {
-      const field = document.querySelector(`#householdLabels [name="${person}"]`);
-      if (document.activeElement !== field) field.value = personLabels[person];
-    }
-  }
-  if (data.connectedCalendars) paintCalendars(data.connectedCalendars, data.googleConfigured);
+  if (data.calendars) paintCalendars(data.calendars, data.googleConfigured);
   if (data.display?.place) paintPlace(data.display.place);
   if (data.display) {
     display = normalizeDisplay({ ...data.display, backgroundUrl: data.display.backgroundUrl || "" });
@@ -383,7 +377,7 @@ function applyState(data) {
   if ("tvOnline" in data) tvOnline = data.tvOnline === true;
   if (data.tvPower === "on" || data.tvPower === "off") tvPower = data.tvPower;
   paint();
-  if (data.connectedCalendars) showCalendarWarning(data.connectedCalendars);
+  if (data.calendars) showCalendarWarning(data.calendars);
 }
 
 async function save(patch, successText = "") {
@@ -467,18 +461,10 @@ function readFile(file) {
   });
 }
 
-function showCalendarWarning(connected = {}) {
-  const missing = [];
-  if (!connected.misha) missing.push(personLabels.misha);
-  if (!connected.natasha) missing.push(personLabels.natasha);
+function showCalendarWarning(accounts = []) {
   const warning = document.querySelector("#calendarWarning");
-  if (!missing.length) {
-    warning.hidden = true;
-    warning.textContent = "";
-    return;
-  }
-  warning.hidden = false;
-  warning.textContent = `Ещё не подключены: ${missing.join(", ")}.`;
+  warning.hidden = accounts.length > 0;
+  warning.textContent = accounts.length ? "" : "Пока ни одного календаря — экран покажет только погоду и заметки.";
 }
 
 async function load() {
@@ -800,12 +786,11 @@ function resetHousehold(id) {
   remotePress.stop(); clearTimeout(volumeTimer); closeNoteSheet();
   display = normalizeDisplay(); currentNote = null; nowPlaying = normalizeNowPlaying();
   tvLinked = false; tvOnline = false; tvPower = "on"; calendarUiKey = ""; canManageHome = false;
-  personLabels = { misha: "Участник 1", natasha: "Участник 2" }; calendarPermissions = {};
+  calendarPermissions = {};
   document.querySelector("#calendarAccounts").replaceChildren();
   document.querySelector("#householdAccess").replaceChildren();
   document.querySelector("#householdOwner").hidden = true;
   document.querySelector("#householdDanger").hidden = true;
-  document.querySelector("#labelsRow").hidden = true;
   document.querySelector("#calendarSettings").hidden = true;
   document.querySelector("#householdRole").textContent = "";
   document.querySelector("#calendarWarning").hidden = true;
@@ -869,13 +854,6 @@ document.querySelector("#inviteMember").addEventListener("click", async () => {
   } catch (error) { setNotice(error.message, "error"); }
 });
 
-document.querySelector("#householdLabels").addEventListener("submit", async (event) => {
-  event.preventDefault(); const fields = new FormData(event.currentTarget);
-  try {
-    await request("/v1/miniapp/households/labels", { method: "PATCH", body: JSON.stringify(Object.fromEntries(fields)) });
-    await load(); setNotice("Подписи календарей сохранены", "online");
-  } catch (error) { setNotice(error.message, "error"); }
-});
 
 async function loadAccessList() {
   const [members, devices] = await Promise.all([request("/v1/miniapp/households/members"), request("/v1/miniapp/households/devices")]);
@@ -1026,12 +1004,24 @@ document.querySelector("#deleteHousehold").addEventListener("click", async () =>
   catch (error) { setNotice(error.message, "error"); }
 });
 
-function paintCalendars(connected, configured) {
-  const key = JSON.stringify([connected, configured, personLabels, calendarPermissions]);
-  if (key === calendarUiKey) return;
-  calendarUiKey = key;
+/** Google's consent screen must be a real navigation: an embedded view refuses to sign in. */
+async function openGoogle(body) {
+  const result = await request("/v1/miniapp/calendars/connect", { method: "POST", body: JSON.stringify(body) });
+  const target = new URL(result.url);
+  if (target.protocol !== "https:" || target.hostname !== "accounts.google.com") throw new Error("Некорректная ссылка Google");
+  if (telegram?.openLink) telegram.openLink(target.href);
+  else window.location.assign(target.href);
+}
+
+function paintCalendars(accounts, configured) {
   const root = document.querySelector("#calendarAccounts");
+  const key = JSON.stringify([accounts, configured, calendarPermissions]);
+  if (key === calendarUiKey) return;
+  // Someone is typing a name or ticking calendars in here; repainting would swallow it.
+  if (root.contains(document.activeElement)) return;
+  calendarUiKey = key;
   root.replaceChildren();
+  document.querySelector("#addCalendar").hidden = configured === false;
   if (configured === false) {
     const hint = document.createElement("p");
     hint.className = "hint";
@@ -1039,15 +1029,47 @@ function paintCalendars(connected, configured) {
     root.append(hint);
     return;
   }
-  for (const person of ["misha", "natasha"]) {
+  for (const account of accounts) {
+    const person = account.id;
     const card = document.createElement("div");
     card.className = "calendar-account";
-    const title = document.createElement("strong");
-    title.textContent = `${personLabels[person]} · ${connected[person] ? "подключён" : "не подключён"}`;
-    card.append(title);
-    if (calendarPermissions[person] === false) {
-      const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = "Настраивает владелец этого календаря или дома."; card.append(hint); root.append(card); continue;
+
+    // The name lives on the card it belongs to: what you write here is what the screen writes.
+    const head = document.createElement("div");
+    head.className = "calendar-head";
+    const dot = document.createElement("span");
+    dot.className = "calendar-dot";
+    dot.style.background = account.color;
+    const name = document.createElement("input");
+    name.className = "calendar-label";
+    name.value = account.label;
+    name.maxLength = 60;
+    name.setAttribute("aria-label", "Подпись календаря на экране");
+    head.append(dot, name);
+    card.append(head);
+
+    const mine = calendarPermissions[person] !== false;
+    name.disabled = !mine;
+    name.addEventListener("change", async () => {
+      const label = name.value.trim();
+      if (!label || label === account.label) { name.value = account.label; return; }
+      name.disabled = true;
+      try {
+        await request(`/v1/miniapp/calendars/${person}`, { method: "PATCH", body: JSON.stringify({ label }) });
+        await load();
+      } catch (error) { name.value = account.label; setNotice(error.message, "error"); }
+      finally { name.disabled = false; }
+    });
+
+    if (!mine) {
+      const hint = document.createElement("p"); hint.className = "hint";
+      hint.textContent = "Настраивает владелец этого календаря или дома.";
+      card.append(hint); root.append(card); continue;
     }
+
+    const actions = document.createElement("div");
+    actions.className = "calendar-actions";
+    card.append(actions);
     const button = (text, action) => {
       const el = document.createElement("button");
       el.type = "button";
@@ -1057,49 +1079,50 @@ function paintCalendars(connected, configured) {
         try { await action(); } catch (error) { setNotice(error.message, "error"); }
         finally { el.disabled = false; }
       });
-      card.append(el);
+      actions.append(el);
     };
-    button(connected[person] ? "Подключить заново" : "Подключить Google", async () => {
-      const result = await request("/v1/miniapp/calendars/connect", { method: "POST", body: JSON.stringify({ person }) });
-      // Native wrappers open this HTTPS navigation in the system browser, not an embedded Google login.
-      const target = new URL(result.url);
-      if (target.protocol !== "https:" || target.hostname !== "accounts.google.com") throw new Error("Некорректная ссылка Google");
-      if (telegram?.openLink) telegram.openLink(target.href);
-      else window.location.assign(target.href);
+
+    button("Выбрать календари", async () => {
+      const result = await request(`/v1/miniapp/calendars/${person}`);
+      card.querySelector("form")?.remove();
+      const form = document.createElement("form");
+      for (const item of result.calendars) {
+        const label = document.createElement("label");
+        const check = document.createElement("input");
+        check.type = "checkbox"; check.value = item.id; check.checked = item.selected;
+        label.append(check, document.createTextNode(item.name));
+        form.append(label);
+      }
+      const save = document.createElement("button");
+      save.textContent = "Сохранить выбор"; save.type = "submit";
+      form.append(save);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault(); save.disabled = true;
+        try {
+          const calendarIds = [...form.querySelectorAll("input:checked")].map((el) => el.value);
+          if (!calendarIds.length) throw new Error("Выберите хотя бы один календарь или отключите аккаунт.");
+          await request(`/v1/miniapp/calendars/${person}`, { method: "PATCH", body: JSON.stringify({ calendarIds }) });
+          setNotice("Календари сохранены", "online"); form.remove();
+        } catch (error) { setNotice(error.message, "error"); }
+        finally { save.disabled = false; }
+      });
+      card.append(form);
     });
-    if (connected[person]) {
-      button("Выбрать календари", async () => {
-        const result = await request(`/v1/miniapp/calendars/${person}`);
-        card.querySelector("form")?.remove();
-        const form = document.createElement("form");
-        for (const item of result.calendars) {
-          const label = document.createElement("label");
-          const check = document.createElement("input");
-          check.type = "checkbox"; check.value = item.id; check.checked = item.selected;
-          label.append(check, document.createTextNode(item.name));
-          form.append(label);
-        }
-        const save = document.createElement("button");
-        save.textContent = "Сохранить выбор"; save.type = "submit";
-        form.append(save);
-        form.addEventListener("submit", async (event) => {
-          event.preventDefault(); save.disabled = true;
-          try {
-            const calendarIds = [...form.querySelectorAll("input:checked")].map((el) => el.value);
-            if (!calendarIds.length) throw new Error("Выберите хотя бы один календарь или отключите аккаунт.");
-            await request(`/v1/miniapp/calendars/${person}`, { method: "PATCH", body: JSON.stringify({ calendarIds }) });
-            setNotice("Календари сохранены", "online"); form.remove();
-          } catch (error) { setNotice(error.message, "error"); }
-          finally { save.disabled = false; }
-        });
-        card.append(form);
-      });
-      button("Отключить", async () => {
-        if (!await askConfirm(`Убрать календарь «${personLabels[person]}» из этого дома? События пропадут с экрана.`, { verb: "Убрать" })) return;
-        await request("/v1/miniapp/calendars/disconnect", { method: "POST", body: JSON.stringify({ person }) });
-        await load();
-      });
-    }
+    button("Подключить заново", () => openGoogle({ person }));
+    button("Убрать", async () => {
+      if (!await askConfirm(`Убрать календарь «${account.label}» из этого дома? События пропадут с экрана.`, { verb: "Убрать" })) return;
+      await request("/v1/miniapp/calendars/disconnect", { method: "POST", body: JSON.stringify({ person }) });
+      await load();
+    });
     root.append(card);
   }
 }
+
+document.querySelector("#addCalendar").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget, button = form.querySelector("button");
+  button.disabled = true;
+  try { await openGoogle({ label: new FormData(form).get("label").trim() }); }
+  catch (error) { setNotice(error.message, "error"); }
+  finally { button.disabled = false; }
+});

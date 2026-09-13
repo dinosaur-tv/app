@@ -237,16 +237,10 @@
             <details class="row" name="more" id="calendarSettings">
               <summary><span class="row-label">Google-календари</span><span class="row-value" id="calendarValue"></span></summary>
               <div class="row-body">
-                <p class="hint">Только свои аккаунты или с согласия владельца: выбранные события видит весь дом.</p>
+                <p class="hint">Имя над карточкой — то самое, которым экран подписывает события. Только свои аккаунты или с согласия владельца: выбранные события видит весь дом.</p>
                 <div id="calendarAccounts"></div>
+                <form id="addCalendar" class="compose"><input name="label" maxlength="60" required placeholder="Чей календарь — Миша, Школа…" aria-label="Подпись нового календаря"><button type="submit">Подключить</button></form>
                 <p class="people" id="calendarWarning" hidden></p>
-              </div>
-            </details>
-            <details class="row" name="more" id="labelsRow" hidden>
-              <summary><span class="row-label">Подписи на экране</span><span class="row-value" id="labelsValue"></span></summary>
-              <div class="row-body">
-                <p class="hint">Этими именами экран подписывает события: их видно рядом с каждым делом.</p>
-                <form id="householdLabels" class="household-labels"><label>Календарь 1<input name="misha" required maxlength="60" placeholder="Имя"></label><label>Календарь 2<input name="natasha" required maxlength="60" placeholder="Имя"></label><button type="submit">Сохранить</button></form>
               </div>
             </details>
           </div>
