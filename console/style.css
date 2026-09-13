@@ -511,6 +511,20 @@ a.action {
   font-size: .9rem;
 }
 .message button:active { transform: scale(.98); }
+.message-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.message-actions button:first-child { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+.message button.danger { background: #b8776c; color: #fdf6ee; }
+.message button:disabled { opacity: .45; }
+#confirmGuardLabel { display: grid; gap: .4rem; margin-bottom: 1rem; color: var(--muted); font-size: .8rem; text-align: left; }
+#confirmGuardLabel input {
+  min-height: 2.6rem;
+  padding: 0 .85rem;
+  border: 1px solid var(--line);
+  border-radius: .8rem;
+  background: var(--fill);
+  color: var(--ink);
+}
+#confirmGuardLabel b { color: var(--ink); }
 /* The accent says what kind of news this is without an icon. */
 .message.error { border-color: color-mix(in srgb, #c9867d 52%, var(--line)); }
 .message.online { border-color: color-mix(in srgb, #b5c9a5 46%, var(--line)); }

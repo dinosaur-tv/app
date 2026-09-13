@@ -271,6 +271,7 @@
                 </form>
                 <div id="placeResults" class="place-results"></div>
                 <button type="button" class="action" id="placeLocate">Определить по телефону</button>
+                <p class="hint">Название возьмётся из поля выше — впишите, как подписать это место на экране.</p>
               </div>
             </details>
             <details class="row" name="more">
@@ -324,6 +325,14 @@
       <dialog id="message" class="message">
         <p id="messageText"></p>
         <button type="button" id="messageClose" autofocus>Понятно</button>
+      </dialog>
+      <dialog id="confirm" class="message">
+        <p id="confirmText"></p>
+        <label id="confirmGuardLabel" hidden><span>Впишите <b id="confirmGuardWord"></b>, чтобы подтвердить</span><input id="confirmGuard" autocomplete="off" spellcheck="false"></label>
+        <div class="message-actions">
+          <button type="button" id="confirmNo" autofocus>Отмена</button>
+          <button type="button" id="confirmYes" class="danger">Удалить</button>
+        </div>
       </dialog>
     </main>
 

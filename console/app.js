@@ -110,6 +110,39 @@ function setNotice(text, type = "") {
 
 document.querySelector("#messageClose").addEventListener("click", () => messageBox.close());
 
+/**
+ * A web view answers window.confirm with "no" and never shows anything, which is how the
+ * destructive buttons came to do nothing at all. This one is ours, so it always appears —
+ * and for the irreversible cases it asks the name to be typed out.
+ */
+const confirmBox = document.querySelector("#confirm");
+let confirmResolve = null;
+
+function askConfirm(text, { verb = "Удалить", guard = "" } = {}) {
+  document.querySelector("#confirmText").textContent = text;
+  document.querySelector("#confirmYes").textContent = verb;
+  const field = document.querySelector("#confirmGuard");
+  const label = document.querySelector("#confirmGuardLabel");
+  label.hidden = !guard;
+  field.value = "";
+  document.querySelector("#confirmGuardWord").textContent = guard;
+  document.querySelector("#confirmYes").disabled = Boolean(guard);
+  field.oninput = guard ? () => { document.querySelector("#confirmYes").disabled = field.value.trim() !== guard; } : null;
+  confirmBox.showModal();
+  return new Promise((resolve) => { confirmResolve = resolve; });
+}
+
+function closeConfirm(answer) {
+  confirmBox.close();
+  confirmResolve?.(answer);
+  confirmResolve = null;
+}
+
+document.querySelector("#confirmNo").addEventListener("click", () => closeConfirm(false));
+document.querySelector("#confirmYes").addEventListener("click", () => closeConfirm(true));
+// Escape and the backdrop count as "no", never as a silent yes.
+confirmBox.addEventListener("cancel", (event) => { event.preventDefault(); closeConfirm(false); });
+
 // Only the group holding the current scene is worth having open; the rest stay folded.
 function paintSceneGroups() {
   let opened = false;
@@ -729,9 +762,12 @@ document.querySelector("#invitePhone").addEventListener("click", async () => {
   }
 });
 
-document.querySelector("#revokeDevices").addEventListener("click", async (event) => {
-  if (!window.confirm("Отключить все связанные телевизоры и телефоны, включая этот? Календари сохранятся. Владельцы в Telegram сохранят доступ.")) return;
-  event.currentTarget.disabled = true;
+// The dialog hands the answer back long after the click is over, so the button has to be
+// held by name: event.currentTarget is already null by then and reading it threw silently.
+document.querySelector("#revokeDevices").addEventListener("click", async () => {
+  const button = document.querySelector("#revokeDevices");
+  if (!await askConfirm("Отключить все телевизоры и телефоны, включая этот? Календари сохранятся, владельцы в Telegram — тоже.", { verb: "Отключить" })) return;
+  button.disabled = true;
   try {
     await request("/v1/miniapp/access/revoke", { method: "POST" });
     forgetHomeToken();
@@ -744,7 +780,7 @@ document.querySelector("#revokeDevices").addEventListener("click", async (event)
   } catch (error) {
     setNotice(error.message, "error");
   } finally {
-    document.querySelector("#revokeDevices").disabled = false;
+    button.disabled = false;
   }
 });
 
@@ -849,7 +885,7 @@ async function loadAccessList() {
     item.className = "household-access-row"; label.textContent = text; item.append(label);
     if (url) { const button = document.createElement("button"); button.type = "button"; button.textContent = "Отключить";
       button.addEventListener("click", async () => {
-        if (!window.confirm("Отключить доступ к этому дому?")) return;
+        if (!await askConfirm("Отключить этот доступ к дому?", { verb: "Отключить" })) return;
         try { await request(url, { method: "DELETE" }); await loadAccessList(); } catch (error) { setNotice(error.message, "error"); }
       }); item.append(button); }
     root.append(item);
@@ -889,7 +925,7 @@ async function loadDevices() {
       drop.className = "ghost danger";
       drop.textContent = "Отключить";
       drop.addEventListener("click", async () => {
-        if (!window.confirm(`Отключить «${device.label}» от этого дома?`)) return;
+        if (!await askConfirm(`Отключить «${device.label}» от этого дома?`, { verb: "Отключить" })) return;
         try { await request(`/v1/miniapp/households/devices/${device.id}`, { method: "DELETE" }); await loadDevices(); }
         catch (error) { setNotice(error.message, "error"); }
       });
@@ -961,10 +997,9 @@ document.querySelector("#placeLocate").addEventListener("click", () => {
   button.disabled = true;
   navigator.geolocation.getCurrentPosition(async (position) => {
     try {
-      const name = window.prompt("Как назвать это место на экране?", "Дом");
-      if (!name?.trim()) return;
+      const typed = document.querySelector("#placeSearch").elements.query.value.trim();
       await savePlace({
-        name: name.trim().slice(0, 60),
+        name: (typed || "Дом").slice(0, 60),
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -982,7 +1017,11 @@ document.querySelector("#placeLocate").addEventListener("click", () => {
 
 document.querySelector("#showHouseholdAccess").addEventListener("click", () => loadAccessList().catch((error) => setNotice(error.message, "error")));
 document.querySelector("#deleteHousehold").addEventListener("click", async () => {
-  if (!window.confirm("Удалить выбранный дом, календари, фон и доступ всех его устройств? Это нельзя отменить.")) return;
+  const home = houseList.find((item) => item.id === householdScope.id);
+  if (!await askConfirm(
+    `Дом «${home?.name ?? ""}» исчезнет вместе с календарями, обоями и доступом всех его экранов. Это нельзя отменить.`,
+    { verb: "Удалить дом", guard: home?.name ?? "" },
+  )) return;
   try { await request("/v1/miniapp/households/current", { method: "DELETE" }); resetHousehold(""); if (!initData) forgetHomeToken(); else await loadHouseholds(); await load(); }
   catch (error) { setNotice(error.message, "error"); }
 });
@@ -1056,7 +1095,7 @@ function paintCalendars(connected, configured) {
         card.append(form);
       });
       button("Отключить", async () => {
-        if (!window.confirm(`Убрать календарь «${personLabels[person]}» из этого дома?`)) return;
+        if (!await askConfirm(`Убрать календарь «${personLabels[person]}» из этого дома? События пропадут с экрана.`, { verb: "Убрать" })) return;
         await request("/v1/miniapp/calendars/disconnect", { method: "POST", body: JSON.stringify({ person }) });
         await load();
       });
