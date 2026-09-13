@@ -318,7 +318,6 @@ function applyState(data) {
     const linked = Object.values(data.connectedCalendars).filter(Boolean).length;
     document.querySelector("#calendarValue").textContent = linked ? `${linked} из 2` : "не подключены";
   }
-  document.querySelector("#devicesValue").textContent = data.tvLinked ? "экран привязан" : "нет экранов";
   if (data.display) {
     const rotation = normalizeDisplay(data.display).rotation;
     document.querySelector("#rotationValue").textContent = rotation.enabled ? `${rotation.today} сек` : "выключена";
@@ -679,6 +678,21 @@ async function submitPairCode(event, fieldId) {
 }
 
 // Один код на все случаи: восемь цифр — вход, шесть — экран, десять — приглашение.
+// A web view swallows target="_blank" unless the host app opts into extra windows, and a
+// browser may refuse the popup outright. Either way, navigating still reaches Telegram.
+document.querySelector("#botLink").addEventListener("click", (event) => {
+  event.preventDefault();
+  const url = event.currentTarget.href;
+  let opened = null;
+  try { opened = window.open(url, "_blank", "noopener"); } catch { /* fall through */ }
+  if (!opened) window.location.href = url;
+});
+
+// Читаем список, только когда строку раскрыли: лишний запрос каждые две секунды ни к чему.
+for (const row of document.querySelectorAll("#pane-more .row")) {
+  row.addEventListener("toggle", () => { if (row.open && row.querySelector("#deviceList")) loadDevices(); });
+}
+
 document.querySelector("#otherHomes").addEventListener("click", () => showTab("home"));
 document.querySelector("#homePaneBack").addEventListener("click", () => showTab("more"));
 
@@ -841,7 +855,50 @@ async function loadAccessList() {
     root.append(item);
   };
   for (const member of members.members) row(`Telegram ${member.userId} · ${member.role === "owner" ? "владелец" : "участник"}`, member.role === "owner" ? null : `/v1/miniapp/households/members/${member.userId}`);
-  for (const device of devices.devices) row(`${device.label} · ${new Date(device.created).toLocaleDateString("ru-RU")} · ${device.id.slice(0, 6)}`, `/v1/miniapp/households/devices/${device.id}`);
+  for (const device of devices.devices) row(deviceTitle(device), `/v1/miniapp/households/devices/${device.id}`);
+}
+
+function deviceTitle(device) {
+  const since = new Date(device.created).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+  return `${device.label} · с ${since} · ${device.id.slice(0, 6)}`;
+}
+
+/** The devices row lists what is already connected, not only how to connect more. */
+async function loadDevices() {
+  const root = document.querySelector("#deviceList");
+  try {
+    const { devices } = await request("/v1/miniapp/households/devices");
+    root.replaceChildren();
+    document.querySelector("#devicesValue").textContent = devices.length ? `${devices.length}` : "нет";
+    if (!devices.length) {
+      const empty = document.createElement("p");
+      empty.className = "hint";
+      empty.textContent = "Пока ни одного. Включите телевизор — он покажет код.";
+      root.append(empty);
+      return;
+    }
+    for (const device of devices) {
+      const item = document.createElement("div");
+      item.className = "device-row";
+      const name = document.createElement("strong");
+      name.textContent = device.kind === "tv" ? "Экран" : "Телефон";
+      const detail = document.createElement("small");
+      detail.textContent = deviceTitle(device);
+      const drop = document.createElement("button");
+      drop.type = "button";
+      drop.className = "ghost danger";
+      drop.textContent = "Отключить";
+      drop.addEventListener("click", async () => {
+        if (!window.confirm(`Отключить «${device.label}» от этого дома?`)) return;
+        try { await request(`/v1/miniapp/households/devices/${device.id}`, { method: "DELETE" }); await loadDevices(); }
+        catch (error) { setNotice(error.message, "error"); }
+      });
+      item.append(name, detail, drop);
+      root.append(item);
+    }
+  } catch {
+    root.replaceChildren();
+  }
 }
 function paintPlace(place) {
   const label = document.querySelector("#placeCurrent");

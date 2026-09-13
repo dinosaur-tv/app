@@ -30,7 +30,8 @@
         <p class="list-title">Вход</p>
         <div class="list">
           <div class="setup-body">
-            <p class="hint">Откройте <a id="botLink" href="https://t.me/dino_server_bot" target="_blank" rel="noreferrer">бота в Telegram</a> и нажмите «Запустить» — он пришлёт код. Введите его здесь.</p>
+            <p class="hint">Бот пришлёт код — введите его здесь.</p>
+            <a class="action primary" id="botLink" href="https://t.me/dino_server_bot" target="_blank" rel="noreferrer">Открыть бота в Telegram</a>
             <form id="signInForm" class="compose">
               <input id="signInCode" inputmode="numeric" maxlength="10" placeholder="Код из бота" aria-label="Код из бота" autocomplete="one-time-code" required />
               <button type="submit">Войти</button>
@@ -295,8 +296,9 @@
           <p class="list-title">Экраны</p>
           <div class="list">
             <details class="row" name="more">
-              <summary><span class="row-label">Добавить экран</span><span class="row-value" id="devicesValue"></span></summary>
+              <summary><span class="row-label">Экраны и телефоны</span><span class="row-value" id="devicesValue"></span></summary>
               <div class="row-body">
+                <div id="deviceList" class="device-list"></div>
                 <p class="hint" id="pairHint">Код с телевизора привяжет его к этому дому. Для нового телефона — «Код для моего телефона» ниже.</p>
                 <form id="pairForm" class="compose">
                   <input id="pairCode" inputmode="numeric" maxlength="10" placeholder="Код ТВ или телефона" aria-label="Код подключения" autocomplete="one-time-code" />
