@@ -36,6 +36,10 @@ function rememberSession(token) {
   try { localStorage.setItem("dinoSession", token); } catch { /* ignore */ }
 }
 
+function forgetSession() {
+  try { localStorage.removeItem("dinoSession"); } catch { /* ignore */ }
+}
+
 function homeToken() {
   try {
     return window.DINO_HOME_TOKEN || localStorage.getItem("dinoHomeToken") || "";
@@ -240,9 +244,7 @@ function paintPairingUi() {
   const hint = document.querySelector("#pairHint");
   inviteButton.hidden = !authed || !householdScope.id;
   document.querySelector("#revokeDevices").hidden = !authed || !canManageHome;
-  hint.textContent = authed
-    ? "Код с телевизора привяжет его к этому дому. Свой телефон — кнопкой ниже, чужой человек — приглашением участника."
-    : "Первый телевизор подключает владелец из бота. Для этого телефона возьмите код на авторизованном: «Код для моего телефона».";
+  hint.textContent = "Код с телевизора привяжет его к этому дому. Свой телефон — кнопкой ниже, чужой человек — приглашением участника.";
   if (!authed) inviteCode.hidden = true;
 }
 
@@ -256,7 +258,7 @@ async function request(path, options = {}) {
   const scope = householdScope.capture();
   const allowUnauthedPair = path.includes("/pair/approve");
   if (!scope.id && !allowUnauthedPair && !path.startsWith("/v1/miniapp/households")) throw new Error("Сначала выберите или создайте дом");
-  if (!hasRemoteAuth() && !allowUnauthedPair) throw new Error("Откройте консоль из бота или введите код приглашения во вкладке «Ещё»");
+  if (!hasRemoteAuth() && !allowUnauthedPair) { showTab("signin"); throw new Error("Сначала войдите"); }
   const method = (options.method || "GET").toUpperCase();
   const headers = { ...(options.headers || {}) };
   let body = options.body;
@@ -286,8 +288,9 @@ async function request(path, options = {}) {
     }
     if (response.status === 401 && /устарела|Нет доступа к пульту/i.test(message)) {
       forgetHomeToken();
-      showTab("more");
-      message = "Связь устарела. Откройте консоль из бота или получите новое приглашение у участника дома.";
+      forgetSession();
+      showTab("signin");
+      message = "Связь устарела. Войдите заново.";
     }
     throw new Error(message);
   }
@@ -777,7 +780,6 @@ function resetHousehold(id) {
 
 /** The empty state names the step the person can actually take here. */
 function houseStartHint(data) {
-  if (!data.telegram) return "Откройте консоль из бота или получите код приглашения у участника дома.";
   if (data.registrationOpen) return "Создайте свой дом или введите код приглашения от владельца.";
   return "Новые дома сейчас не создаются. Введите код приглашения от владельца дома.";
 }
