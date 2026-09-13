@@ -4,6 +4,7 @@ import { createRemotePressController } from "./remote-press.js";
 import { createHouseholdScope } from "./household-scope.js";
 import { searchPlaces } from "./places.js";
 import { needsAccount, needsHome } from "./request-scope.js";
+import { deviceTitle } from "./device-title.js";
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 let remoteEnabled = false;
@@ -944,12 +945,6 @@ async function loadAccessList() {
   };
   for (const member of members.members) row(`Telegram ${member.userId} · ${member.role === "owner" ? "владелец" : "участник"}`, member.role === "owner" ? null : `/v1/miniapp/households/members/${member.userId}`);
   for (const device of devices.devices) row(deviceTitle(device), `/v1/miniapp/households/devices/${device.id}`);
-}
-
-function deviceTitle(device) {
-  const since = new Date(device.created).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
-  // The name sits in the field above; this line says what the thing is and since when.
-  return `${device.kind === "tv" ? "Экран" : "Телефон"} · с ${since} · ${device.id.slice(0, 6)}`;
 }
 
 /** The devices row lists what is already connected, not only how to connect more. */
