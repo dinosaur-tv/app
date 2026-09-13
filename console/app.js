@@ -23,6 +23,19 @@ let tvPower = "on";
 const messageBox = document.querySelector("#message");
 let initData = telegram?.initData || "";
 
+function sessionToken() {
+  try {
+    return localStorage.getItem("dinoSession") || "";
+  } catch {
+    return "";
+  }
+}
+
+function rememberSession(token) {
+  if (!token) return;
+  try { localStorage.setItem("dinoSession", token); } catch { /* ignore */ }
+}
+
 function homeToken() {
   try {
     return window.DINO_HOME_TOKEN || localStorage.getItem("dinoHomeToken") || "";
@@ -42,7 +55,7 @@ function forgetHomeToken() {
 }
 
 function hasRemoteAuth() {
-  return Boolean(initData || homeToken());
+  return Boolean(initData || homeToken() || sessionToken());
 }
 
 function isNativeIos() {
@@ -109,12 +122,13 @@ for (const group of document.querySelectorAll(".theme-row")) {
 }
 
 function showTab(tab) {
-  if (!tvLinked && householdScope.id) tab = "setup";
+  if (!hasRemoteAuth()) tab = "signin";
+  else if (!tvLinked && householdScope.id) tab = "setup";
   if (tab === "remote" && !remoteEnabled) tab = "screen";
   document.querySelectorAll(".pane").forEach((pane) => { pane.hidden = pane.id !== `pane-${tab}`; });
   document.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
   // The dock is noise until there is a screen to control.
-  document.querySelector(".dock").hidden = tab === "setup";
+  document.querySelector(".dock").hidden = tab === "setup" || tab === "signin";
 }
 
 function paintMusic() {
@@ -249,6 +263,8 @@ async function request(path, options = {}) {
   if (body === undefined && method !== "GET" && method !== "HEAD") body = "{}";
   if (body !== undefined) headers["content-type"] = "application/json";
   if (initData) headers["x-telegram-init-data"] = initData;
+  const session = sessionToken();
+  if (session) headers["x-dino-session"] = session;
   const token = homeToken();
   if (token) headers["x-dino-home-token"] = token;
   if (scope.id) headers["x-dino-home-id"] = scope.id;
@@ -429,8 +445,7 @@ function showCalendarWarning(connected = {}) {
 async function load() {
   paint();
   if (!hasRemoteAuth()) {
-    showTab("more");
-    setNotice("Откройте консоль из бота или введите код приглашения, чтобы подключиться к дому");
+    showTab("signin");
     return;
   }
   try {
@@ -440,7 +455,7 @@ async function load() {
     }
     const data = await request("/v1/miniapp/state");
     applyState(data);
-    if (!tvLinked) showTab("more");
+    if (!tvLinked) showTab("setup");
     setNotice("");
   } catch (error) {
     setNotice(error.message, "error");
@@ -655,6 +670,46 @@ async function submitPairCode(event, fieldId) {
     setNotice(error.message, "error");
   }
 }
+
+// Вход через бота: страница ждёт, пока человек подтвердит переход в Telegram.
+let signInTimer;
+async function waitForSignIn(nonce, until) {
+  clearTimeout(signInTimer);
+  if (Date.now() > until) {
+    document.querySelector("#signInStatus").textContent = "Ссылка устарела. Нажмите «Войти» ещё раз.";
+    return;
+  }
+  try {
+    const answer = await request("/v1/miniapp/login/wait?nonce=" + encodeURIComponent(nonce));
+    if (answer.status === "ready") {
+      rememberSession(answer.token);
+      document.querySelector("#signInStatus").textContent = "";
+      await load();
+      return;
+    }
+    if (answer.status === "expired") {
+      document.querySelector("#signInStatus").textContent = "Ссылка устарела. Нажмите «Войти» ещё раз.";
+      return;
+    }
+  } catch { /* сеть моргнула — просто попробуем ещё раз */ }
+  signInTimer = setTimeout(() => waitForSignIn(nonce, until), 2000);
+}
+
+document.querySelector("#signInTelegram").addEventListener("click", async () => {
+  const status = document.querySelector("#signInStatus");
+  status.textContent = "Открываю Telegram…";
+  try {
+    const started = await request("/v1/miniapp/login/start", { method: "POST" });
+    if (!started.link) throw new Error("Сервер не знает имени бота — вход через Telegram пока недоступен");
+    status.textContent = "Подтвердите вход в Telegram и вернитесь сюда.";
+    window.open(started.link, "_blank", "noopener");
+    waitForSignIn(started.nonce, Date.now() + started.expiresIn * 1000);
+  } catch (error) {
+    status.textContent = "";
+    setNotice(error.message, "error");
+  }
+});
+document.querySelector("#signInPairForm").addEventListener("submit", (event) => submitPairCode(event, "#signInPairCode"));
 
 document.querySelector("#pairForm").addEventListener("submit", (event) => submitPairCode(event, "#pairCode"));
 document.querySelector("#setupPairForm").addEventListener("submit", (event) => submitPairCode(event, "#setupPairCode"));

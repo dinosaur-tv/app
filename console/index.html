@@ -26,6 +26,24 @@
         </div>
       </header>
 
+      <section id="pane-signin" class="pane" hidden>
+        <p class="list-title">Вход</p>
+        <div class="list">
+          <div class="setup-body">
+            <p class="hint">Dino TV узнаёт вас по Telegram — пароля нет. Нажмите кнопку, подтвердите в боте и возвращайтесь: приложение откроется на вашем доме.</p>
+            <button type="button" class="action primary" id="signInTelegram">Войти через Telegram</button>
+            <p class="hint" id="signInStatus"></p>
+            <details class="fold">
+              <summary>У меня есть код с другого устройства</summary>
+              <form id="signInPairForm" class="compose">
+                <input id="signInPairCode" inputmode="numeric" maxlength="10" placeholder="Код приглашения" aria-label="Код приглашения" autocomplete="one-time-code" />
+                <button type="submit">Войти</button>
+              </form>
+            </details>
+          </div>
+        </div>
+      </section>
+
       <section id="pane-setup" class="pane" hidden>
         <p class="list-title">Первый экран</p>
         <div class="list">

@@ -308,6 +308,16 @@ header {
 .row-button:active { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .danger-list { border-color: color-mix(in srgb, #c9867d 30%, var(--line)); }
 .stack { display: grid; gap: .6rem; }
+.fold > summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--muted);
+  font-size: .84rem;
+}
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: " +"; }
+.fold[open] > summary { margin-bottom: .6rem; }
+.fold[open] > summary::after { content: " −"; }
 .danger { color: #d49c91; }
 .action.danger { border-color: color-mix(in srgb, #c9867d 46%, transparent); color: #d49c91; }
 .switch-row {
