@@ -436,6 +436,9 @@ function applyState(data) {
   if (data.features) {
     remoteEnabled = data.features.tvRemote === true;
     document.querySelector('[data-tab="remote"]').hidden = !remoteEnabled;
+    // It lives in the music card, away from the remote tab, and used to sit there doing
+    // nothing at all whenever the server had the remote switched off.
+    document.querySelector("#openKinopoisk").hidden = !remoteEnabled;
     if (!remoteEnabled && !document.querySelector("#pane-remote").hidden) showTab("screen");
   }
   if (data.calendars) paintCalendars(data.calendars, data.googleConfigured);
@@ -503,7 +506,10 @@ async function musicCommand(action, extra = {}) {
 }
 
 async function tvCommand(body, button, { repeat = false } = {}) {
-  if (!remoteEnabled) return;
+  if (!remoteEnabled) {
+    setNotice("Пульт выключен на сервере: в .env бэкенда нужен TV_REMOTE_ENABLED=true.", "error");
+    return;
+  }
   if (!repeat) bumpRemoteButton(button, "pressing");
   try {
     if (!repeat) {
