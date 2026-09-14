@@ -269,7 +269,9 @@ function paintScreens(screens) {
   picker.hidden = screens.length < 2;
   document.querySelector("#screenNote").hidden = picker.hidden;
   if (picker.hidden) { currentScreen = ""; return; }
-  if (!currentScreen) rememberScreen(screens[0].id);
+  // A screen that is awake is the one you meant; a dead entry left over from an old pairing
+  // would silently swallow every button until someone noticed and changed the picker.
+  if (!currentScreen) rememberScreen((screens.find((screen) => screen.online) ?? screens[0]).id);
   const names = JSON.stringify(screens.map((screen) => [screen.id, screen.label]));
   if (select.dataset.names !== names) {
     select.dataset.names = names;
