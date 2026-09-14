@@ -193,7 +193,10 @@ body.hide-weather #weatherLine { display: none; }
 .when { margin-top: auto; padding-top: 1rem; color: var(--accent); font-size: 1.05rem; }
 .events { display: grid; gap: .65rem; margin-top: .8rem; overflow: auto; align-content: start; }
 .event { display: grid; grid-template-columns: .45rem minmax(0, 1fr); gap: .55rem; align-items: start; min-width: 0; }
-.event i { width: .45rem; height: .45rem; margin-top: .4rem; border-radius: 99px; background: var(--accent); }
+.event i { width: .45rem; height: .45rem; border-radius: 99px; background: var(--accent); }
+/* A cluster, not a row: the dots belong to one event and sit closer than anything else. */
+.owner-dots { display: inline-flex; align-items: center; gap: .16rem; }
+.event .owner-dots { align-self: flex-start; margin-top: .4rem; }
 .event strong { display: block; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .event-owner { display: block; margin-top: .12rem; color: var(--accent); font-size: .76rem; }
 .periods { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-top: 1rem; }
@@ -459,7 +462,9 @@ body[data-theme="gallery"] #screen::before {
 .scene-title { min-width: 0; padding-left: .85rem; border-left: 1px solid var(--accent); }
 .scene-title strong { display: block; overflow: hidden; color: var(--ink); font: 400 clamp(.84rem, 1.15vw, 1.04rem) var(--font); text-overflow: ellipsis; white-space: nowrap; }
 .scene-title small { color: var(--muted); font-size: .7rem; }
-.scene-owner { display: flex; align-items: center; justify-content: flex-start; gap: .4rem; color: #b9aa97; font-size: .7rem; }
+.scene-owner { display: flex; align-items: flex-start; justify-content: flex-start; gap: .4rem; color: #b9aa97; font-size: .7rem; }
+/* The dots mark the first line of a name that wraps, not the middle of the block. */
+.scene-owner .owner-dots { margin-top: .18rem; }
 .scene-owner i { width: .48rem; height: .48rem; flex: 0 0 auto; border-radius: 50%; }
 /* Clearance for the divider above, so the strip starts below it rather than through it. */
 body[data-theme="gallery"] .scene-weather { margin-top: 1rem; }

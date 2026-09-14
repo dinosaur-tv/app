@@ -252,7 +252,7 @@ function upcomingEvents(now = new Date(), limit) {
 
 function eventRow(event) {
   return `<div class="event">
-    <i style="background:${event.color}"></i>
+    ${ownerDots(event)}
     <div>
       <strong>${escapeHtml(titleOf(event))}</strong>
       <span class="event-owner">${escapeHtml(eventOwner(event))}</span>
@@ -271,6 +271,17 @@ function durationLabel(event) {
 
 function eventOwner(event) {
   return event.ownerName || event.calendarName || "Дом";
+}
+
+// A colour reaches here from a calendar label, so it is checked before it becomes markup.
+function dotColor(value) {
+  return /^#[0-9a-f]{3,8}$/i.test(String(value)) ? value : "var(--accent)";
+}
+
+/** One dot per person who has this event: an invitation shared by two shows two. */
+function ownerDots(event) {
+  const owners = Array.isArray(event.owners) && event.owners.length ? event.owners : [{ color: event.color }];
+  return `<span class="owner-dots">${owners.slice(0, 4).map((owner) => `<i style="background:${dotColor(owner.color)}"></i>`).join("")}</span>`;
 }
 
 function escapeHtml(value) {
@@ -426,7 +437,7 @@ function renderSceneAgenda(now, scene) {
     ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map((event, index) => `<article class="scene-event" style="--event-index:${index}">
       <time class="scene-time">${timeOf(event.start)}</time>
       <div class="scene-title"><strong>${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
-      <span class="scene-owner"><i style="background:${event.color}"></i>${escapeHtml(eventOwner(event))}</span>
+      <span class="scene-owner">${ownerDots(event)}${escapeHtml(eventOwner(event))}</span>
     </article>`).join("") : `<p class="empty">${mode === "TOMORROW" ? "Завтра" : "Сегодня"} тихо. Можно никуда не спешить.</p>`}</div>
     ${pages.length > 1 ? `<div class="agenda-pages"><span>${pageIndex + 1} / ${pages.length}</span><i style="--page-progress:${((pageIndex + 1) / pages.length) * 100}%"></i></div>` : ""}` : ""}
   </section>`;
