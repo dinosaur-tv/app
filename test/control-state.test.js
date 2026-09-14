@@ -92,12 +92,13 @@ test("can hide weather and calendar without breaking the rest of the screen", ()
   assert.equal(normalizeDisplay({ showWeather: false, showCalendar: false }).showCalendar, false);
 });
 
-test("остановленный трек не показывается: уведомление плеера переживает саму музыку", () => {
+test("пауза — это тоже трек: он остаётся на экране, но помеченный паузой", () => {
   const stopped = { title: "На здравом", artist: "Andery Toronto", isPlaying: false };
   const playing = { title: "На здравом", artist: "Andery Toronto", isPlaying: true };
-  assert.equal(pickNowPlaying(stopped, null), null);
-  assert.equal(pickNowPlaying(null, { nowPlaying: stopped }), null);
-  assert.equal(pickNowPlaying(stopped, { nowPlaying: playing })?.isPlaying, true, "сервер знает, что играет — берём его");
+  assert.equal(pickNowPlaying(stopped, null)?.isPlaying, false, "плеер на паузе — видно, что он там");
+  assert.equal(pickNowPlaying(null, { nowPlaying: stopped })?.isPlaying, false);
+  assert.equal(pickNowPlaying(stopped, { nowPlaying: playing })?.isPlaying, true, "кто-то слышит, что играет — верим ему");
+  assert.equal(pickNowPlaying(playing, { nowPlaying: stopped })?.isPlaying, true);
   assert.equal(pickNowPlaying(playing, null)?.title, "На здравом");
   // Поле может не прийти вовсе: старые клиенты не присылали isPlaying.
   assert.equal(pickNowPlaying({ title: "Без флага" }, null)?.title, "Без флага");

@@ -467,7 +467,8 @@ function paintClock(now = new Date()) {
   clockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
   if (dateLine) dateLine.textContent = now.toLocaleDateString(russian, { weekday: "long", day: "numeric", month: "long" });
   if (weatherLine) {
-    const visible = screenLayers().weather;
+    // The clock runs before the first snapshot; the forecast has nothing to say yet.
+    const visible = Boolean(snapshot?.weather) && screenLayers().weather;
     weatherLine.hidden = !visible;
     weatherLine.textContent = visible ? `${snapshot.weather.temperature}° · ${snapshot.weather.description}` : "";
   }
@@ -490,12 +491,14 @@ function paintMedia() {
   document.body.classList.toggle("media-visible", visible);
   mediaBar.hidden = !visible;
   if (!visible) return;
-  mediaBar.classList.toggle("is-playing", playing.isPlaying !== false);
+  const live = playing.isPlaying !== false;
+  mediaBar.classList.toggle("is-playing", live);
   mediaTitle.textContent = playing.title;
   mediaArtist.textContent = playing.artist || "";
   mediaArtist.hidden = !playing.artist;
-  mediaSource.textContent = playing.source || "";
-  mediaSource.hidden = !playing.source;
+  // Still on the player, just not moving — said plainly, since the wave has gone still.
+  mediaSource.textContent = [playing.source, live ? "" : "на паузе"].filter(Boolean).join(" · ");
+  mediaSource.hidden = !mediaSource.textContent;
 }
 
 function viewSig() {
@@ -524,6 +527,7 @@ function viewSig() {
 
 function paint(force = false) {
   if (!snapshot) return;
+  document.body.classList.remove("waking");
   const now = new Date();
   const display = normalizeDisplay(snapshot.display);
   const activeTheme = screenTheme(display);
@@ -573,6 +577,7 @@ async function request(path, options = {}) {
   if (response.status === 401) {
     session = "";
     localStorage.removeItem("dinoTvSession");
+    try { localStorage.removeItem(REMEMBERED); } catch { /* ignore */ }
     throw new Error("auth");
   }
   if (!response.ok) throw new Error(await response.text() || "request failed");
@@ -589,6 +594,29 @@ function showGuestPair(code) {
   pairNote.textContent = "Код живёт десять минут";
   pairCode.textContent = code;
   pairEl.hidden = false;
+}
+
+/**
+ * The overlay loads this page from scratch every time it is raised over a film, and until
+ * the first snapshot arrives there is nothing to draw — which showed as a stranger's
+ * wallpaper and a clock reading 00:00. The last snapshot is kept so the screen comes up
+ * already looking like itself, and is thrown away if the television is re-paired.
+ */
+const REMEMBERED = "dinoTvSnapshot";
+
+function rememberSnapshot(data) {
+  try { localStorage.setItem(REMEMBERED, JSON.stringify({ session: session.slice(0, 12), at: Date.now(), data })); } catch { /* the screen simply starts blank */ }
+}
+
+function rememberedSnapshot() {
+  try {
+    const kept = JSON.parse(localStorage.getItem(REMEMBERED) || "null");
+    if (!kept?.data?.display || kept.session !== session.slice(0, 12)) return null;
+    // A day-old agenda is worse than none; the wallpaper and theme are still right.
+    return Date.now() - Number(kept.at || 0) < 12 * 3600_000 ? kept.data : null;
+  } catch {
+    return null;
+  }
 }
 
 async function loadSnapshot() {
@@ -617,6 +645,7 @@ async function loadSnapshot() {
     startRotation();
   }
   paint();
+  rememberSnapshot(data);
 }
 
 async function startPairing() {
@@ -731,10 +760,21 @@ async function boot() {
     }
   }
   if (session) {
+    const kept = rememberedSnapshot();
+    if (kept) {
+      snapshot = kept;
+      snapshot.weather = weather;
+      pairEl.hidden = true;
+      paint(true);
+    }
     loadSnapshot().then(startRotation).catch(startPairing);
   } else {
     startPairing();
   }
 }
+
+// The clock needs nothing from the server, so it is never allowed to read 00:00.
+paintClock(new Date());
+document.body.classList.add("waking");
 
 boot();

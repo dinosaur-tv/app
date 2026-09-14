@@ -1,6 +1,5 @@
 import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 import { shouldLoadTelegramSdk } from "./telegram.js";
-import { createRemotePressController } from "./remote-press.js";
 import { createHouseholdScope } from "./household-scope.js";
 import { searchPlaces } from "./places.js";
 import { needsAccount, needsHome } from "./request-scope.js";
@@ -188,7 +187,6 @@ function showTab(tab) {
   if (!hasRemoteAuth()) tab = "signin";
   else if (!householdScope.id) tab = "home";
   else if (!tvLinked && tab !== "home") tab = "setup";
-  if (tab === "remote" && !remoteEnabled) tab = "screen";
   document.querySelectorAll(".pane").forEach((pane) => { pane.hidden = pane.id !== `pane-${tab}`; });
   document.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
   // The dock is noise until there is a screen to control.
@@ -435,11 +433,9 @@ function applyState(data) {
   }
   if (data.features) {
     remoteEnabled = data.features.tvRemote === true;
-    document.querySelector('[data-tab="remote"]').hidden = !remoteEnabled;
-    // It lives in the music card, away from the remote tab, and used to sit there doing
-    // nothing at all whenever the server had the remote switched off.
+    // The one thing left that speaks to the television directly. Без пульта на сервере
+    // it can do nothing, so it goes away rather than sitting there in silence.
     document.querySelector("#openKinopoisk").hidden = !remoteEnabled;
-    if (!remoteEnabled && !document.querySelector("#pane-remote").hidden) showTab("screen");
   }
   if (data.calendars) paintCalendars(data.calendars, data.googleConfigured);
   if (data.display?.place) paintPlace(data.display.place);
@@ -696,27 +692,6 @@ document.querySelectorAll("[data-music]").forEach((button) => {
 document.querySelector("#openKinopoisk")?.addEventListener("click", (event) => {
   tvCommand({ action: "launch", app: "kinopoisk" }, event.currentTarget);
 });
-const remotePress = createRemotePressController({
-  send: (key, button, options) => tvCommand({ action: "key", key }, button, options),
-  feedback: () => navigator.vibrate?.(8),
-});
-document.querySelectorAll("[data-tv-key]").forEach((button) => {
-  button.addEventListener("pointerdown", (event) => remotePress.pointerDown(button, event));
-  button.addEventListener("pointerup", (event) => remotePress.pointerEnd(button, event));
-  button.addEventListener("pointercancel", (event) => remotePress.pointerEnd(button, event));
-  button.addEventListener("lostpointercapture", (event) => remotePress.pointerEnd(button, event));
-  button.addEventListener("click", (event) => remotePress.click(button, event));
-});
-document.querySelectorAll("[data-tv-launch]").forEach((button) => {
-  button.addEventListener("pointerdown", () => {
-    button.classList.add("is-pressing");
-    navigator.vibrate?.(8);
-  });
-  button.addEventListener("pointerup", () => button.classList.remove("is-pressing"));
-  button.addEventListener("pointercancel", () => button.classList.remove("is-pressing"));
-  button.addEventListener("pointerleave", () => button.classList.remove("is-pressing"));
-  button.addEventListener("click", () => tvCommand({ action: "launch", app: button.dataset.tvLaunch }, button));
-});
 let volumeTimer;
 let lastSentVolume;
 let volumeTouchedAt = 0;
@@ -875,7 +850,7 @@ boot();
 
 function resetHousehold(id) {
   householdScope.select(id);
-  remotePress.stop(); clearTimeout(volumeTimer); closeNoteSheet();
+  clearTimeout(volumeTimer); closeNoteSheet();
   display = normalizeDisplay(); currentNote = null; nowPlaying = normalizeNowPlaying();
   tvLinked = false; tvOnline = false; tvPower = "on"; calendarUiKey = ""; canManageHome = false;
   // A different home has different screens; the one picked here is remembered for later.

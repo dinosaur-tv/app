@@ -122,13 +122,20 @@ export function normalizeNowPlaying(value = {}) {
  * alone is not evidence that anything is playing. The screen shows a track only while it
  * actually plays; otherwise the bar would sit there for hours after the music ended.
  */
-function playingTrack(track) {
+function namedTrack(track) {
   if (!track || typeof track.title !== "string" || !track.title.trim()) return null;
-  return track.isPlaying === false ? null : track;
+  return track;
 }
 
+/**
+ * A paused track is still what is on the player, so the screen keeps showing it — quietly,
+ * without the wave. A track only disappears when the television stops reporting one at
+ * all, which is how a player that has been closed leaves the screen.
+ * Of the two sources, whichever says it is playing wins: a stale copy usually says paused.
+ */
 export function pickNowPlaying(native, snapshot) {
-  return playingTrack(native) ?? playingTrack(snapshot?.nowPlaying) ?? null;
+  const heard = [namedTrack(native), namedTrack(snapshot?.nowPlaying)].filter(Boolean);
+  return heard.find((track) => track.isPlaying !== false) ?? heard[0] ?? null;
 }
 
 export function tvRemoteStatus({ tvOnline = false, tvPower = "on", nowPlaying = {} } = {}) {
