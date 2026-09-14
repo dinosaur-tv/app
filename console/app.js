@@ -208,7 +208,10 @@ function paintMusic() {
   const hint = document.querySelector("#musicHint");
   const toTv = document.querySelector("[data-music=toTv]");
   const live = Boolean(nowPlaying.title);
-  const copy = musicRemoteCopy({ tvOnline, nowPlaying });
+  const screen = chosenScreen();
+  // One screen and no picker still has a permission, and it is the one the house uses.
+  const canOverlay = (screen ?? screenList[0])?.canOverlay !== false;
+  const copy = musicRemoteCopy({ tvOnline, nowPlaying, canOverlay });
   title.textContent = nowPlaying.title || "Тихо";
   artist.textContent = live
     ? (nowPlaying.artist || nowPlaying.source || "Яндекс Музыка")
@@ -223,7 +226,8 @@ function paintMusic() {
     lastSentVolume = Number(volume.value);
   }
   document.querySelectorAll("[data-music]").forEach((button) => {
-    if (button.dataset.music === "toTv") button.disabled = tvOnline;
+    // A blocked screen keeps the button pressable: pressing it is how you learn why.
+    if (button.dataset.music === "toTv") button.disabled = tvOnline && !copy.blocked;
     else button.disabled = !live;
   });
   volume.disabled = !live;
@@ -480,6 +484,13 @@ async function save(patch, successText = "") {
 }
 
 async function musicCommand(action, extra = {}) {
+  if (action === "toTv") {
+    const screen = chosenScreen() ?? screenList[0];
+    if (screen && screen.canOverlay === false) {
+      setNotice(musicRemoteCopy({ canOverlay: false }).hint, "error");
+      return;
+    }
+  }
   try {
     const data = await request("/v1/miniapp/music", { method: "POST", body: JSON.stringify({ action, ...extra, ...screenTarget() }) });
     applyState(data);

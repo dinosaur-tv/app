@@ -142,8 +142,17 @@ export function tvRemoteStatus({ tvOnline = false, tvPower = "on", nowPlaying = 
   return { state: tvPower === "off" ? "выключен" : "не на связи", power: "Вкл" };
 }
 
-export function musicRemoteCopy({ tvOnline = false, nowPlaying = {} } = {}) {
+export function musicRemoteCopy({ tvOnline = false, nowPlaying = {}, canOverlay = true } = {}) {
   const title = typeof nowPlaying.title === "string" ? nowPlaying.title.trim() : "";
+  // Android will not let one app draw over another without permission, and the television
+  // is the only place it can be granted. Better to say so than to offer a dead button.
+  if (!canOverlay) {
+    return {
+      toTv: "Поверх музыки",
+      blocked: true,
+      hint: "Телевизору не разрешено показывать Dino поверх других приложений. Включите это в настройках телевизора: Приложения → Dino TV → Поверх других приложений.",
+    };
+  }
   if (tvOnline && title) {
     return {
       toTv: "Уже на экране",

@@ -68,6 +68,10 @@ test("labels the power button for overlaying Dino over living-room music", () =>
   assert.deepEqual(tvRemoteStatus({ tvOnline: false, tvPower: "off" }), { state: "выключен", power: "Вкл" });
   assert.equal(musicRemoteCopy({ nowPlaying: { title: "GANG" } }).toTv, "Поверх музыки");
   assert.equal(musicRemoteCopy({ tvOnline: true, nowPlaying: { title: "GANG" } }).toTv, "Уже на экране");
+  const blocked = musicRemoteCopy({ nowPlaying: { title: "GANG" }, canOverlay: false });
+  assert.equal(blocked.blocked, true, "мёртвую кнопку надо объяснить, а не просто показать");
+  assert.match(blocked.hint, /Поверх других приложений/);
+  assert.equal(musicRemoteCopy({ nowPlaying: { title: "GANG" } }).blocked, undefined);
 });
 
 test("keeps tab rotation on by default and clamps how long each view stays", () => {
