@@ -777,4 +777,19 @@ async function boot() {
 paintClock(new Date());
 document.body.classList.add("waking");
 
+// Physical TV remotes (and Escape on desktop) should be able to leave without the
+// console power toggle — the native shell turns this into moveTaskToBack.
+window.addEventListener("keydown", (event) => {
+  const leave = event.key === "Escape"
+    || event.key === "GoBack"
+    || event.key === "BrowserBack"
+    || event.keyCode === 4
+    || event.keyCode === 27;
+  if (!leave) return;
+  const bridge = nativeBridge();
+  if (!bridge || typeof bridge.powerOff !== "function") return;
+  event.preventDefault();
+  bridge.powerOff();
+});
+
 boot();
