@@ -66,6 +66,7 @@ const mediaBar = document.querySelector("#mediaBar");
 const mediaTitle = document.querySelector("#mediaTitle");
 const mediaArtist = document.querySelector("#mediaArtist");
 const mediaSource = document.querySelector("#mediaSource");
+const mediaBars = [...document.querySelectorAll(".media-wave i")];
 
 let snapshot = null;
 let mode = "TODAY";
@@ -83,6 +84,7 @@ let appliedReloadAt = localStorage.getItem("dinoTvReloadAt") || "";
 let appliedPowerAt = localStorage.getItem("dinoTvPowerAt") || "";
 let asleep = false;
 let nativeNowPlaying = null;
+let nativeSpectrumMayBeRunning = false;
 let agendaPage = 0;
 let agendaPageCount = 1;
 const scenePageSizes = new Map();
@@ -91,7 +93,10 @@ function nativeBridge() {
   return window.DinoTV || null;
 }
 
-if (nativeBridge()) document.body.classList.add("native-tv");
+if (nativeBridge()) {
+  document.body.classList.add("native-tv");
+  if (typeof nativeBridge().audioSpectrum === "function") document.body.classList.add("supports-audio-spectrum");
+}
 
 function nativeForeground() {
   const bridge = nativeBridge();
@@ -501,15 +506,50 @@ function paintMedia() {
   const visible = Boolean(playing?.title);
   document.body.classList.toggle("media-visible", visible);
   mediaBar.hidden = !visible;
-  if (!visible) return;
+  if (!visible) {
+    stopNativeSpectrum();
+    return;
+  }
   const live = playing.isPlaying !== false;
   mediaBar.classList.toggle("is-playing", live);
+  if (!live) stopNativeSpectrum();
   mediaTitle.textContent = playing.title;
   mediaArtist.textContent = playing.artist || "";
   mediaArtist.hidden = !playing.artist;
   // Still on the player, just not moving — said plainly, since the wave has gone still.
   mediaSource.textContent = [playing.source, live ? "" : "на паузе"].filter(Boolean).join(" · ");
   mediaSource.hidden = !mediaSource.textContent;
+}
+
+function stopNativeSpectrum() {
+  mediaBar.classList.remove("has-audio-spectrum");
+  for (const bar of mediaBars) bar.style.height = "";
+  const bridge = nativeBridge();
+  if (nativeSpectrumMayBeRunning) {
+    nativeSpectrumMayBeRunning = false;
+    try { bridge?.stopAudioSpectrum?.(); } catch { /* native audio capture is optional */ }
+  }
+}
+
+function paintNativeSpectrum() {
+  const bridge = nativeBridge();
+  if (!bridge || typeof bridge.audioSpectrum !== "function" || mediaBar.hidden || !mediaBar.classList.contains("is-playing")) return;
+  try {
+    nativeSpectrumMayBeRunning = true;
+    const spectrum = JSON.parse(bridge.audioSpectrum());
+    const active = spectrum?.state === "active" && Array.isArray(spectrum.bands);
+    mediaBar.classList.toggle("has-audio-spectrum", active);
+    if (!active) {
+      for (const bar of mediaBars) bar.style.height = "";
+      return;
+    }
+    mediaBars.forEach((bar, index) => {
+      const level = Math.max(0, Math.min(1, Number(spectrum.bands[index]) || 0));
+      bar.style.height = `${8 + level * 92}%`;
+    });
+  } catch {
+    mediaBar.classList.remove("has-audio-spectrum");
+  }
 }
 
 function viewSig() {
@@ -731,6 +771,7 @@ setInterval(() => {
   if (!snapshot) return;
   if (now.getSeconds() === 0) paint();
 }, 1000);
+if (typeof nativeBridge()?.audioSpectrum === "function") setInterval(paintNativeSpectrum, 80);
 let polling = false;
 setInterval(() => {
   if (!session || polling) return;

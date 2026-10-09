@@ -327,6 +327,14 @@ body.hide-calendar:not(.guests) #screen { display: none !important; }
 #mediaBar.is-playing .media-wave i {
   animation: mediaWave 1.45s ease-in-out infinite;
 }
+#mediaBar.has-audio-spectrum .media-wave { opacity: .78; }
+#mediaBar.has-audio-spectrum .media-wave i {
+  animation: none !important;
+  transition: height 75ms linear;
+}
+body.native-tv:not(.supports-audio-spectrum) #mediaBar.is-playing .media-wave i {
+  animation: mediaWave 1.45s ease-in-out infinite !important;
+}
 /*
  * Между открытием страницы и первым снимком показывать нечего, кроме времени: пустая
  * повестка и чужая тема успевали мигнуть, прежде чем приходили настоящие данные.
