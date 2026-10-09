@@ -129,6 +129,7 @@ body.has-photo #wash {
 }
 #weatherLine { margin: .35rem 0 0; color: var(--muted); font-size: 1.15rem; }
 body.hide-weather #weatherLine { display: none; }
+body.hide-calendar:not(.guests) #screen { display: none !important; }
 #note {
   margin: .8rem 0 0;
   padding: 1.05rem 1.35rem 1.15rem 1.45rem;

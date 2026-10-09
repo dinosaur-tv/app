@@ -166,6 +166,15 @@ function showEventCue(cue) {
   }, EVENT_CUE_DWELL_MS);
 }
 
+function hideEventCue() {
+  const el = document.querySelector("#eventCue");
+  if (!el) return;
+  clearTimeout(eventCueTimer);
+  eventCueTimer = undefined;
+  el.hidden = true;
+  el.classList.remove("leaving");
+}
+
 function maybeEventCue(now = new Date()) {
   if (!snapshot || asleep) return;
   const display = normalizeDisplay(snapshot.display);
@@ -541,6 +550,7 @@ function paint(force = false) {
   document.body.classList.toggle("guests", display.privacy);
   document.body.classList.toggle("hide-weather", !display.showWeather);
   document.body.classList.toggle("hide-calendar", !display.showCalendar);
+  if (!display.showCalendar || display.privacy) hideEventCue();
   photo.style.backgroundImage = snapshot.display.backgroundUrl ? `url("${snapshot.display.backgroundUrl}")` : "";
   paintClock(now);
   paintMedia();
