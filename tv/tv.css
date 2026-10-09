@@ -1229,3 +1229,26 @@ body:is([data-theme="mountains"], [data-theme="florence"]) .scene-owner { margin
   #stage, #mediaBar { transition-duration: 1ms; }
   #mediaBar.is-playing .media-wave i { animation: none; height: 55%; }
 }
+
+/* Keep native TV rendering responsive on devices with limited GPU headroom. */
+body.native-tv *,
+body.native-tv *::before,
+body.native-tv *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+body.native-tv #sceneDecor,
+body.native-tv #orbs,
+body.native-tv #grain {
+  display: none !important;
+}
+
+body.native-tv #screen,
+body.native-tv #note,
+body.native-tv #modes,
+body.native-tv #modes button {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}

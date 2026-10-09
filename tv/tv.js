@@ -91,6 +91,8 @@ function nativeBridge() {
   return window.DinoTV || null;
 }
 
+if (nativeBridge()) document.body.classList.add("native-tv");
+
 function nativeForeground() {
   const bridge = nativeBridge();
   if (!bridge || typeof bridge.isForeground !== "function") return true;

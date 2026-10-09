@@ -407,7 +407,11 @@ async function request(path, options = {}) {
   return response.status === 204 ? null : response.json();
 }
 
+let lastStateSignature = "";
+let statePollInFlight = false;
+
 function applyState(data) {
+  lastStateSignature = JSON.stringify(data);
   if (data.permissions) {
     canManageHome = data.permissions.manageHome === true;
     calendarPermissions = data.permissions.manageCalendars || {};
@@ -841,9 +845,16 @@ async function boot() {
   await bootTelegram();
   await load();
   setInterval(() => {
-    if (!hasRemoteAuth() || !householdScope.id || document.hidden) return;
-    request("/v1/miniapp/state").then(applyState).catch(() => {});
-  }, 2000);
+    if (!hasRemoteAuth() || !householdScope.id || document.hidden || statePollInFlight) return;
+    statePollInFlight = true;
+    request("/v1/miniapp/state")
+      .then((data) => {
+        const signature = JSON.stringify(data);
+        if (signature !== lastStateSignature) applyState(data);
+      })
+      .catch(() => {})
+      .finally(() => { statePollInFlight = false; });
+  }, 5000);
 }
 
 boot();
