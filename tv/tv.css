@@ -128,8 +128,21 @@ body.has-photo #wash {
   text-transform: capitalize;
 }
 #weatherLine { margin: .35rem 0 0; color: var(--muted); font-size: 1.15rem; }
+#nextUpLine {
+  margin: .45rem 0 0;
+  max-width: 28rem;
+  color: var(--ink);
+  font-size: 1.2rem;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#nextUpLine[hidden] { display: none; }
 body.hide-weather #weatherLine { display: none; }
 body.hide-calendar:not(.guests) #screen { display: none !important; }
+body.hide-calendar #nextUpLine,
+body.guests #nextUpLine { display: none !important; }
 #note {
   margin: .8rem 0 0;
   padding: 1.05rem 1.35rem 1.15rem 1.45rem;
@@ -439,6 +452,12 @@ body[data-theme="gallery"] #weatherLine {
   font: 400 clamp(1.4rem, 2.2vw, 2.1rem) var(--serif);
 }
 body[data-theme="gallery"] #weatherLine::before { content: "☁"; margin-right: 1rem; filter: grayscale(1); }
+body[data-theme="gallery"] #nextUpLine {
+  width: 22rem;
+  margin-top: .7rem;
+  color: var(--muted);
+  font: 400 clamp(1.05rem, 1.5vw, 1.35rem) var(--font);
+}
 body[data-theme="gallery"] #note { position: absolute; left: 4.5%; bottom: 4%; width: min(46%, 34rem); }
 body[data-theme="gallery"] #screen {
   position: absolute;

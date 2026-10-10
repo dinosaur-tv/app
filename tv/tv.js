@@ -1,5 +1,5 @@
 import { normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
-import { minutesPhrase, nextEventCue } from "../event-cue.js";
+import { minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
 import { fallbackWeather, fetchWeather, placeKey } from "./weather.js";
 import { screenNameFrom } from "./screen-name.js";
 
@@ -65,6 +65,7 @@ const noteEl = document.querySelector("#note");
 const clockEl = document.querySelector("#clock");
 const dateLine = document.querySelector("#dateLine");
 const weatherLine = document.querySelector("#weatherLine");
+const nextUpLine = document.querySelector("#nextUpLine");
 const pairEl = document.querySelector("#pair");
 const pairCode = document.querySelector("#pairCode");
 const pairEyebrow = document.querySelector("#pairEyebrow");
@@ -496,6 +497,22 @@ function paintClock(now = new Date()) {
     const visible = Boolean(snapshot?.weather) && screenLayers().weather;
     weatherLine.hidden = !visible;
     weatherLine.textContent = visible ? `${snapshot.weather.temperature}° · ${snapshot.weather.description}` : "";
+  }
+  if (nextUpLine) {
+    const layers = screenLayers();
+    const display = normalizeDisplay(snapshot?.display);
+    const next = layers.calendar
+      ? nextUpEvent((snapshot?.days || []).flatMap((day) => day.events || []), {
+        now: now.getTime(),
+        privacy: display.privacy,
+        showCalendar: display.showCalendar,
+      })
+      : null;
+    const text = next
+      ? nextUpPhrase(next, { now: now.getTime(), timeZone: snapshot?.timezone || snapshot?.display?.place?.timezone || "Europe/Moscow" })
+      : "";
+    nextUpLine.hidden = !text;
+    nextUpLine.textContent = text;
   }
 }
 
