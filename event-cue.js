@@ -46,16 +46,41 @@ export function nextEventCue(events, {
   return null;
 }
 
-/** The quiet line under the clock: soonest timed event still ahead, else one that is live. */
+function dayStamp(value, timeZone) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(value));
+}
+
+function clockStamp(value, timeZone) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const hour = parts.find((part) => part.type === "hour")?.value ?? "00";
+  const minute = parts.find((part) => part.type === "minute")?.value ?? "00";
+  return `${hour}:${minute}`;
+}
+
+/** Only today's timed events — a Monday meeting is not "next" on Saturday. */
 export function nextUpEvent(events, {
   now = Date.now(),
   privacy = false,
   showCalendar = true,
+  timeZone = "Europe/Moscow",
 } = {}) {
   if (privacy || showCalendar === false) return null;
+  const today = dayStamp(now, timeZone);
   const timed = (events || []).filter((event) => event && !event.allDay && event.start && event.end);
   const upcoming = timed
-    .filter((event) => Date.parse(event.start) > now)
+    .filter((event) => Date.parse(event.start) > now && dayStamp(event.start, timeZone) === today)
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
   const next = upcoming[0];
   if (next) {
@@ -73,42 +98,12 @@ export function nextUpEvent(events, {
   return { title: live.title || "Дело", start: live.start, minutes: 0, live: true };
 }
 
-function clockStamp(value, timeZone) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(date);
-  const hour = parts.find((part) => part.type === "hour")?.value ?? "00";
-  const minute = parts.find((part) => part.type === "minute")?.value ?? "00";
-  return `${hour}:${minute}`;
-}
-
-function dayStamp(value, timeZone) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(value));
-}
-
-/** One glance from the sofa: when, then what. */
-export function nextUpPhrase(event, { now = Date.now(), timeZone = "Europe/Moscow" } = {}) {
+/** One glance from the sofa: when, then what — only used for today. */
+export function nextUpPhrase(event, { timeZone = "Europe/Moscow" } = {}) {
   if (!event) return "";
   const title = event.title || "Дело";
   if (event.live) return `Сейчас · ${title}`;
   const minutes = Math.max(1, Number(event.minutes) || 1);
   if (minutes <= 90) return `Через ${minutes} мин · ${title}`;
-  const startDay = dayStamp(event.start, timeZone);
-  const today = dayStamp(now, timeZone);
-  const tomorrow = dayStamp(now + 24 * 60 * 60 * 1000, timeZone);
-  const time = clockStamp(event.start, timeZone);
-  if (startDay === today) return `в ${time} · ${title}`;
-  if (startDay === tomorrow) return `Завтра в ${time} · ${title}`;
-  const weekday = new Intl.DateTimeFormat("ru-RU", { timeZone, weekday: "short" }).format(new Date(event.start));
-  return `${weekday} в ${time} · ${title}`;
+  return `в ${clockStamp(event.start, timeZone)} · ${title}`;
 }

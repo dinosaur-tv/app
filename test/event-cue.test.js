@@ -11,14 +11,20 @@ test("does not nag about distant or guest-hidden events", () => {
   assert.equal(nextEventCue([{ id: "1", title: "Ужин", start: "2026-09-08T16:05:00+03:00", allDay: true }], { now }), null);
 });
 
-test("the next-up line names the soonest timed event, or the one still going", () => {
+test("the next-up line names today's soonest timed event, or the one still going", () => {
   assert.equal(nextUpEvent([], { now }), null);
   assert.equal(nextUpEvent([{ title: "День рождения", start: "2026-09-08", end: "2026-09-09", allDay: true }], { now }), null);
   assert.equal(nextUpEvent([{ title: "Ужин", start: "2026-09-08T19:00:00+03:00", end: "2026-09-08T21:00:00+03:00" }], { now, privacy: true }), null);
+  assert.equal(
+    nextUpEvent([{ title: "Понедельник", start: "2026-09-10T10:00:00+03:00", end: "2026-09-10T11:00:00+03:00" }], { now }),
+    null,
+    "a Monday meeting is not next on Saturday",
+  );
 
   const soon = nextUpEvent([
     { title: "Ужин", start: "2026-09-08T19:00:00+03:00", end: "2026-09-08T21:00:00+03:00" },
     { title: "Созвон", start: "2026-09-08T16:40:00+03:00", end: "2026-09-08T17:00:00+03:00" },
+    { title: "Понедельник", start: "2026-09-10T10:00:00+03:00", end: "2026-09-10T11:00:00+03:00" },
   ], { now });
   assert.deepEqual(soon, { title: "Созвон", start: "2026-09-08T16:40:00+03:00", minutes: 40, live: false });
 
@@ -31,12 +37,8 @@ test("the next-up line names the soonest timed event, or the one still going", (
 
 test("the next-up phrase stays short enough to read from the sofa", () => {
   assert.equal(nextUpPhrase({ title: "Йога", live: true }), "Сейчас · Йога");
-  assert.equal(nextUpPhrase({ title: "Созвон", start: "2026-09-08T16:40:00+03:00", minutes: 40 }, { now }), "Через 40 мин · Созвон");
-  assert.equal(nextUpPhrase({ title: "Ужин", start: "2026-09-08T19:00:00+03:00", minutes: 180 }, { now }), "в 19:00 · Ужин");
-  assert.equal(
-    nextUpPhrase({ title: "Поезд", start: "2026-09-09T10:15:00+03:00", minutes: 18 * 60 }, { now }),
-    "Завтра в 10:15 · Поезд",
-  );
+  assert.equal(nextUpPhrase({ title: "Созвон", start: "2026-09-08T16:40:00+03:00", minutes: 40 }), "Через 40 мин · Созвон");
+  assert.equal(nextUpPhrase({ title: "Ужин", start: "2026-09-08T19:00:00+03:00", minutes: 180 }), "в 19:00 · Ужин");
 });
 
 test("cues thirty minutes and again at five", () => {

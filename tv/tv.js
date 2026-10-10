@@ -501,16 +501,16 @@ function paintClock(now = new Date()) {
   if (nextUpLine) {
     const layers = screenLayers();
     const display = normalizeDisplay(snapshot?.display);
+    const timeZone = snapshot?.timezone || snapshot?.display?.place?.timezone || "Europe/Moscow";
     const next = layers.calendar
       ? nextUpEvent((snapshot?.days || []).flatMap((day) => day.events || []), {
         now: now.getTime(),
         privacy: display.privacy,
         showCalendar: display.showCalendar,
+        timeZone,
       })
       : null;
-    const text = next
-      ? nextUpPhrase(next, { now: now.getTime(), timeZone: snapshot?.timezone || snapshot?.display?.place?.timezone || "Europe/Moscow" })
-      : "";
+    const text = next ? nextUpPhrase(next, { timeZone }) : "";
     nextUpLine.hidden = !text;
     nextUpLine.textContent = text;
   }
