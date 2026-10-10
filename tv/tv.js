@@ -31,17 +31,26 @@ function readStoredWeather() {
   return fallbackWeather();
 }
 
+function adoptWeather(next, place) {
+  if (!next?.periods) return false;
+  weather = next;
+  weatherKey = placeKey(place);
+  weatherAt = Date.now();
+  try { localStorage.setItem("dinoTvWeather", JSON.stringify({ key: weatherKey, at: weatherAt, weather: next })); } catch { /* ignore */ }
+  return true;
+}
+
 async function refreshWeather(place) {
+  // Prefer the forecast the server already attached to the snapshot. Xiaomi WebViews
+  // often cannot open api.open-meteo.com themselves, so a direct fetch is only a fallback
+  // for older backends that still omit weather from the snapshot.
   if (!place || weatherPending) return;
   const key = placeKey(place);
   if (key === weatherKey && Date.now() - weatherAt < WEATHER_TTL_MS) return;
   weatherPending = true;
   try {
     const next = await fetchWeather(place);
-    weather = next;
-    weatherKey = key;
-    weatherAt = Date.now();
-    try { localStorage.setItem("dinoTvWeather", JSON.stringify({ key, at: weatherAt, weather: next })); } catch { /* ignore */ }
+    adoptWeather(next, place);
     if (snapshot) { snapshot.weather = weather; paint(true); }
   } catch {
     // Keep showing the last good reading; the next tick tries again.
@@ -677,8 +686,12 @@ async function loadSnapshot() {
   applyPower(data.power, data.powerAt);
   syncNativeSession();
   snapshot = data;
-  snapshot.weather = weather;
-  void refreshWeather(data.display?.place);
+  if (adoptWeather(data.weather, data.display?.place)) {
+    snapshot.weather = weather;
+  } else {
+    snapshot.weather = weather;
+    void refreshWeather(data.display?.place);
+  }
   showGuestPair(data.inviteCode);
   if (asleep) return;
   const rotation = normalizeRotation(data.display?.rotation);
@@ -816,6 +829,7 @@ async function boot() {
     const kept = rememberedSnapshot();
     if (kept) {
       snapshot = kept;
+      adoptWeather(kept.weather, kept.display?.place);
       snapshot.weather = weather;
       pairEl.hidden = true;
       paint(true);
