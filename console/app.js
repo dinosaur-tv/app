@@ -168,19 +168,27 @@ document.querySelector("#confirmYes").addEventListener("click", () => closeConfi
 confirmBox.addEventListener("cancel", (event) => { event.preventDefault(); closeConfirm(false); });
 
 // Only the group holding the current scene is worth having open; the rest stay folded.
+// After the user toggles any group, stop fighting them — a poll must not snap the accordion shut.
+let syncingSceneGroups = false;
 function paintSceneGroups() {
+  const groups = [...document.querySelectorAll(".theme-row")];
+  const browsing = groups.some((group) => group.dataset.touched);
   let opened = false;
-  for (const group of document.querySelectorAll(".theme-row")) {
+  syncingSceneGroups = true;
+  for (const group of groups) {
     const chosen = group.querySelector("[data-scene].active");
     group.querySelector(".row-value").textContent = chosen ? chosen.querySelector("span").textContent : "";
+    if (browsing) continue;
     if (chosen && !opened) { group.open = true; opened = true; }
-    else if (!chosen && !group.dataset.touched) group.open = false;
+    else group.open = false;
   }
+  syncingSceneGroups = false;
 }
 
-// Once someone opens a group by hand, stop closing it for them.
 for (const group of document.querySelectorAll(".theme-row")) {
-  group.addEventListener("toggle", () => { if (group.open) group.dataset.touched = "1"; });
+  group.addEventListener("toggle", () => {
+    if (!syncingSceneGroups) group.dataset.touched = "1";
+  });
 }
 
 function showTab(tab) {

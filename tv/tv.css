@@ -690,13 +690,13 @@ body[data-theme="forest"] #weatherLine { color: #ced9cf; letter-spacing: .08em; 
 body[data-theme="forest"] #screen { right: 3.5%; top: 5%; bottom: 5%; width: 46%; padding: 2.2rem 2.5rem; border: 1px solid rgba(198,217,202,.2); border-radius: .35rem 3rem .35rem 3rem; background: linear-gradient(135deg, rgba(13,42,31,.72), rgba(4,19,14,.54)); backdrop-filter: blur(14px); box-shadow: 0 2rem 5rem rgba(0,0,0,.26); }
 body[data-theme="forest"] .scene-event { padding: .7rem 0; border-color: rgba(186,208,191,.16); }
 body[data-theme="forest"] .scene-title { border-color: #b68a51; }
-body[data-theme="forest"] #sceneDecor i:nth-child(-n+3) { display: block; left: -10%; width: 120%; height: 8rem; border-radius: 50%; background: rgba(197,218,207,.22); filter: blur(3rem); animation: mistPass 42s ease-in-out infinite alternate; }
+body[data-theme="forest"] #sceneDecor i:nth-child(-n+2) { display: block; left: -10%; width: 120%; height: 8rem; border-radius: 50%; background: rgba(197,218,207,.22); filter: blur(3rem); animation: mistPass 42s ease-in-out infinite alternate; }
 body[data-theme="forest"] #sceneDecor i:nth-child(1) { bottom: 18%; }
 body[data-theme="forest"] #sceneDecor i:nth-child(2) { bottom: 33%; animation-delay: -15s; animation-duration: 55s; }
-body[data-theme="forest"] #sceneDecor i:nth-child(3) { top: 31%; animation-delay: -28s; animation-duration: 68s; }
-body[data-theme="forest"] #sceneDecor i:nth-child(n+4) { display: block; left: -6%; top: 20%; width: .7rem; height: 1.1rem; border-radius: 70% 0 70% 0; background: rgba(210,184,105,.72); box-shadow: 16rem 8rem rgba(182,208,128,.38), 38rem -4rem rgba(231,203,116,.3), 61rem 11rem rgba(143,178,105,.36); animation: forestLeaf 34s linear infinite; }
-body[data-theme="forest"] #sceneDecor i:nth-child(5) { top: 46%; animation-delay: -12s; animation-duration: 42s; }
-body[data-theme="forest"] #sceneDecor i:nth-child(6) { top: 67%; animation-delay: -27s; animation-duration: 51s; }
+body[data-theme="forest"] #sceneDecor i:nth-child(n+3):nth-child(-n+4) { display: block; left: -6%; top: 20%; width: .7rem; height: 1.1rem; border-radius: 70% 0 70% 0; background: rgba(210,184,105,.72); box-shadow: 16rem 8rem rgba(182,208,128,.38), 38rem -4rem rgba(231,203,116,.3), 61rem 11rem rgba(143,178,105,.36); animation: forestLeaf 34s linear infinite; }
+body[data-theme="forest"] #sceneDecor i:nth-child(4) { top: 52%; animation-delay: -18s; animation-duration: 41s; }
+body[data-theme="forest"] #sceneDecor i:nth-child(n+5) { display: block; left: 8%; top: -10%; width: .75rem; height: 1.15rem; border-radius: 80% 0 75% 0; background: rgba(196,168,92,.78); box-shadow: 22rem 6rem rgba(168,196,118,.55), 48rem -2rem rgba(214,186,104,.48), 71rem 10rem rgba(129,162,96,.5); animation: autumnLeafFall 18s linear infinite; }
+body[data-theme="forest"] #sceneDecor i:nth-child(6) { left: 42%; animation-delay: -9s; animation-duration: 24s; }
 
 /* Mountains — centered horizon, monumental type and a low panoramic agenda. */
 body[data-theme="mountains"] { --bg: #25313b; --ink: #f2eee8; --muted: #c2cbd0; --accent: #e6b97a; --panel: rgba(25,35,43,.58); --line: rgba(231,238,241,.24); --selected: rgba(236,242,245,.15); --glow: rgba(234,190,133,.2); }
@@ -982,25 +982,28 @@ body[data-theme="italy"] #sceneDecor i:nth-child(-n+3) { display: block; left: 3
 body[data-theme="italy"] #sceneDecor i:nth-child(2) { left: 20%; bottom: 18%; top: auto; width: 5rem; height: 5rem; animation-delay: -9s; }
 body[data-theme="italy"] #sceneDecor i:nth-child(3) { right: 2%; left: auto; bottom: 13%; top: auto; width: 13rem; height: 13rem; animation-delay: -16s; }
 
-/* Autumn forest — a warm path remains visible while leaves pass in the foreground. */
-body[data-theme="autumn-forest"] { --bg: #15150f; --ink: #f5eddf; --muted: #c1b4a1; --accent: #d5964e; --panel: rgba(25,25,18,.5); --line: rgba(235,209,165,.2); --selected: rgba(133,82,37,.36); --glow: rgba(200,119,48,.24); }
-body[data-theme="autumn-forest"] #sceneBackdrop { opacity: 1; background-image: url("../assets/scene-autumn-forest.png"); animation: slowZoom 120s ease-in-out infinite alternate; }
-body[data-theme="autumn-forest"] #wash { background: linear-gradient(90deg, rgba(12,10,6,.18), transparent 46%, rgba(5,11,8,.52)), linear-gradient(0deg, rgba(8,7,4,.5), transparent 56%); }
-body[data-theme="autumn-forest"] #orbs { display: none; }
-body[data-theme="autumn-forest"] #top { position: absolute; right: 4%; top: 4%; }
-body[data-theme="autumn-forest"] #hero { position: absolute; left: 4.5%; top: 12%; display: block; }
-body[data-theme="autumn-forest"] #clock { font: 300 clamp(8.5rem, 13vw, 14rem)/.8 var(--serif); text-shadow: 0 1rem 4rem rgba(21,13,6,.48); }
-body[data-theme="autumn-forest"] .hero-copy { padding: 1.5rem 0 0 .6rem; }
-body[data-theme="autumn-forest"] #dateLine { font: 500 1rem var(--font); letter-spacing: .16em; text-transform: uppercase; }
-body[data-theme="autumn-forest"] #screen { right: 3.5%; top: 9%; bottom: 5%; width: 44%; padding: 1.7rem 2.1rem; border: 1px solid rgba(235,211,170,.2); border-radius: .55rem 2.7rem .55rem 2.7rem; background: linear-gradient(145deg, rgba(31,34,23,.67), rgba(8,16,11,.57)); backdrop-filter: blur(18px); box-shadow: 0 2rem 6rem rgba(7,8,4,.26); }
-body[data-theme="autumn-forest"] .scene-event { padding: .62rem 0; }
+/* Autumn forest — same composition as forest, warm canopy and both drifting and falling leaves. */
+body[data-theme="autumn-forest"] { --bg: #1a120c; --ink: #f5eddf; --muted: #c1b4a1; --accent: #d5964e; --panel: rgba(32,22,14,.6); --line: rgba(235,209,165,.2); --selected: rgba(133,82,37,.48); --glow: rgba(200,119,48,.28); }
+body[data-theme="autumn-forest"] #sceneBackdrop { opacity: .92; background-image: url("../assets/scene-autumn-forest.png"); animation: slowZoom 95s ease-in-out infinite alternate; }
+body[data-theme="autumn-forest"] #wash { background: linear-gradient(90deg, rgba(18,10,5,.5), transparent 43%, rgba(12,8,4,.62)), linear-gradient(0deg, rgba(10,6,3,.66), transparent 55%); }
+body[data-theme="autumn-forest"] #grain { opacity: .08; }
+body[data-theme="autumn-forest"] #top { position: absolute; left: 4%; top: 4%; }
+body[data-theme="autumn-forest"] #modes button { color: #d4c4b0; }
+body[data-theme="autumn-forest"] #hero { position: absolute; left: 4.5%; top: 13%; display: block; }
+body[data-theme="autumn-forest"] #clock { font-size: clamp(9rem, 14vw, 15rem); text-shadow: 0 1rem 4rem #120a06; }
+body[data-theme="autumn-forest"] .hero-copy { padding: 2rem 0 0 .5rem; }
+body[data-theme="autumn-forest"] #dateLine { font: 400 1.5rem var(--serif); }
+body[data-theme="autumn-forest"] #weatherLine { color: #ddd0be; letter-spacing: .08em; }
+body[data-theme="autumn-forest"] #screen { right: 3.5%; top: 5%; bottom: 5%; width: 46%; padding: 2.2rem 2.5rem; border: 1px solid rgba(235,211,170,.2); border-radius: .35rem 3rem .35rem 3rem; background: linear-gradient(135deg, rgba(48,30,16,.72), rgba(18,11,7,.54)); backdrop-filter: blur(14px); box-shadow: 0 2rem 5rem rgba(0,0,0,.26); }
+body[data-theme="autumn-forest"] .scene-event { padding: .7rem 0; border-color: rgba(235,209,165,.16); }
 body[data-theme="autumn-forest"] .scene-title { border-color: #c6813f; }
-body[data-theme="autumn-forest"] #sceneDecor i { display: block; left: 3%; top: -12%; width: .8rem; height: 1.25rem; border-radius: 80% 0 75% 0; background: #c87632; box-shadow: 18rem 4rem rgba(217,145,63,.82), 37rem -3rem rgba(147,75,31,.7), 62rem 9rem rgba(225,170,77,.62), 83rem -2rem rgba(118,57,27,.72); animation: autumnLeafFall 15s linear infinite; }
-body[data-theme="autumn-forest"] #sceneDecor i:nth-child(2) { left: 18%; animation-delay: -5s; animation-duration: 19s; }
-body[data-theme="autumn-forest"] #sceneDecor i:nth-child(3) { left: 42%; animation-delay: -13s; animation-duration: 24s; }
-body[data-theme="autumn-forest"] #sceneDecor i:nth-child(4) { left: 61%; animation-delay: -8s; animation-duration: 17s; }
-body[data-theme="autumn-forest"] #sceneDecor i:nth-child(5) { left: 78%; animation-delay: -17s; animation-duration: 27s; }
-body[data-theme="autumn-forest"] #sceneDecor i:nth-child(6) { left: 92%; animation-delay: -2s; animation-duration: 21s; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(-n+2) { display: block; left: -10%; width: 120%; height: 8rem; border-radius: 50%; background: rgba(232,196,148,.18); filter: blur(3rem); animation: mistPass 42s ease-in-out infinite alternate; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(1) { bottom: 18%; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(2) { bottom: 33%; animation-delay: -15s; animation-duration: 55s; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(n+3):nth-child(-n+4) { display: block; left: -6%; top: 20%; width: .7rem; height: 1.1rem; border-radius: 70% 0 70% 0; background: rgba(200,118,50,.82); box-shadow: 16rem 8rem rgba(217,145,63,.55), 38rem -4rem rgba(147,75,31,.48), 61rem 11rem rgba(225,170,77,.42); animation: forestLeaf 34s linear infinite; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(4) { top: 52%; animation-delay: -18s; animation-duration: 41s; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(n+5) { display: block; left: 8%; top: -10%; width: .75rem; height: 1.15rem; border-radius: 80% 0 75% 0; background: #c87632; box-shadow: 22rem 6rem rgba(217,145,63,.7), 48rem -2rem rgba(147,75,31,.62), 71rem 10rem rgba(225,170,77,.55); animation: autumnLeafFall 18s linear infinite; }
+body[data-theme="autumn-forest"] #sceneDecor i:nth-child(6) { left: 42%; animation-delay: -9s; animation-duration: 24s; }
 
 /* Oranienbaum — the UI rests on the shaded lawn, leaving the palace facade clear. */
 body[data-theme="oranienbaum"] { --bg: #1e2a22; --ink: #faf1df; --muted: #c6bea9; --accent: #d0a15d; --panel: rgba(24,38,28,.55); --line: rgba(241,221,181,.22); --selected: rgba(238,210,158,.17); --glow: rgba(191,137,66,.24); }
@@ -1186,15 +1189,15 @@ body[data-theme="byzantium"] #mediaBar {
 body[data-theme="byzantium"]:is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
 
 @media (max-height: 800px) {
-  body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) #screen {
+  body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="autumn-forest"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) #screen {
     bottom: 5%;
     padding-block: 1.35rem;
   }
-  body:is([data-theme="home-evening"], [data-theme="forest"], [data-theme="petersburg"]) #screen { top: 6%; }
+  body:is([data-theme="home-evening"], [data-theme="forest"], [data-theme="autumn-forest"], [data-theme="petersburg"]) #screen { top: 6%; }
   body:is([data-theme="home-day"], [data-theme="rome"], [data-theme="venice"], [data-theme="play"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) #screen { top: 9%; }
   body[data-theme="sea"] #screen { top: 18%; bottom: 5%; padding-block: 1.35rem; }
-  body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-agenda > .kicker { height: 2.05rem; }
-  body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-event { min-height: 2.85rem; padding-block: .32rem; }
+  body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="autumn-forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-agenda > .kicker { height: 2.05rem; }
+  body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="forest"], [data-theme="autumn-forest"], [data-theme="sea"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="venice"], [data-theme="rus"], [data-theme="india"], [data-theme="italy"]) .scene-event { min-height: 2.85rem; padding-block: .32rem; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) #screen { height: 40%; padding-block: 1.1rem; }
   body[data-theme="byzantium"]:is([data-mode="today"], [data-mode="tomorrow"]) #screen { height: 52%; }
   body:is([data-theme="mountains"], [data-theme="florence"], [data-theme="byzantium"]) .scene-agenda > .kicker { height: 2.15rem; }
@@ -1205,7 +1208,7 @@ body[data-theme="byzantium"]:is([data-mode="today"], [data-mode="tomorrow"]) #sc
 body.immersive #mediaBar { bottom: 4%; }
 
 /* Composition-aware rails: keep the dominant object in every photographic scene uncovered. */
-body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"], [data-theme="petersburg"], [data-theme="rome"]) #screen {
+body:is([data-theme="home-day"], [data-theme="play"], [data-theme="petersburg"], [data-theme="rome"]) #screen {
   left: 4%;
   right: auto;
   top: 40%;
@@ -1215,11 +1218,21 @@ body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"
   padding: 1.2rem 1.7rem;
 }
 body[data-theme="home-day"] #screen { background: rgba(244,239,231,.63); }
-body[data-theme="home-evening"] #screen { background: rgba(18,18,19,.49); }
 body[data-theme="play"] #screen { background: linear-gradient(145deg, rgba(58,20,34,.62), rgba(18,7,12,.58)); }
 body[data-theme="petersburg"] #screen { background: rgba(12,31,46,.52); }
 body[data-theme="rome"] #screen { background: rgba(248,238,219,.69); }
-body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="mountains"], [data-theme="florence"]) #note {
+/* Evening keeps the agenda top-right; notes stay on the open left rail. */
+body[data-theme="home-evening"] #screen {
+  left: auto;
+  right: 3.8%;
+  top: 8%;
+  bottom: 5%;
+  width: 46%;
+  height: auto;
+  padding: 2.2rem 2.5rem;
+  background: rgba(18,18,19,.49);
+}
+body:is([data-theme="home-day"], [data-theme="play"], [data-theme="petersburg"], [data-theme="rome"], [data-theme="mountains"], [data-theme="florence"]) #note {
   left: auto;
   right: 4%;
   width: min(39%, 30rem);
@@ -1227,7 +1240,7 @@ body:is([data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"
 
 /* Keep temporary notes and now-playing details in the open rail, never over the agenda. */
 body:is(
-  [data-theme="home-day"], [data-theme="home-evening"], [data-theme="play"], [data-theme="petersburg"],
+  [data-theme="home-day"], [data-theme="play"], [data-theme="petersburg"],
   [data-theme="rome"], [data-theme="mountains"], [data-theme="florence"], [data-theme="oranienbaum"],
   [data-theme="italy-sunset"], [data-theme="palace-study"], [data-theme="india"]
 ) #mediaBar {

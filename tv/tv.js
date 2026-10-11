@@ -346,7 +346,10 @@ function weatherDayHtml(date, now = new Date()) {
   if (!weather) return `<p class="empty">Прогноз пока недоступен.</p>`;
   const today = date === todayStamp(now);
   const headline = today ? `${weather.temperature}°` : `${weather.high}° / ${weather.low}°`;
-  return `<div class="weather-now"><b>${headline}</b><div>${escapeHtml(weather.description)}<div class="muted">${escapeHtml(weather.location)}</div></div></div>${periodsBlock(weather.periods)}`;
+  // Day slices from the week forecast omit the place name; fall back to the live reading.
+  const location = weather.location || snapshot?.weather?.location || "";
+  const place = location ? `<div class="muted">${escapeHtml(location)}</div>` : "";
+  return `<div class="weather-now"><b>${headline}</b><div>${escapeHtml(weather.description || "")}${place}</div></div>${periodsBlock(weather.periods)}`;
 }
 
 function renderGuest(now = new Date()) {
