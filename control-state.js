@@ -1,6 +1,7 @@
 export const displayModes = ["TODAY", "TOMORROW", "WEEK"];
 export const displayThemes = [
   "gallery", "home-day", "home-evening", "forest", "autumn-forest", "mountains", "sea", "space",
+  "aurora", "dunes", "mist-lake",
   "petersburg", "petersburg-streets", "oranienbaum", "peterhof", "rome", "florence", "venice", "italy-sunset",
   "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy",
 ];
@@ -16,6 +17,9 @@ export const themeNames = {
   mountains: "Горы",
   sea: "Море",
   space: "Космос",
+  aurora: "Северное сияние",
+  dunes: "Дюны",
+  "mist-lake": "Туманное озеро",
   petersburg: "Петербург",
   "petersburg-streets": "Улицы Петербурга",
   oranienbaum: "Ораниенбаум",

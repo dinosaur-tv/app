@@ -1,0 +1,118 @@
+/* New scenes are resolution-independent landscapes, with no remote asset requests. */
+body[data-theme="aurora"] { --bg: #081d29; }
+body[data-theme="aurora"] #sceneBackdrop {
+  opacity: 1;
+  background: radial-gradient(ellipse at 58% 0%, #274d67, transparent 65%), linear-gradient(#081423 35%, #173d4a 70%, #10292c);
+}
+body[data-theme="aurora"] #sceneBackdrop::before {
+  content: ""; position: absolute; inset: -25% -15% 22%;
+  background: radial-gradient(ellipse at 44% 38%, transparent 15%, #72dec36b 27%, #4eacbb38 32%, transparent 44%), radial-gradient(ellipse at 74% 22%, transparent 22%, #978ac142 36%, transparent 43%);
+  transform: rotate(-18deg); animation: auroraFlow 24s ease-in-out infinite alternate;
+}
+body[data-theme="aurora"] #sceneBackdrop::after {
+  content: ""; position: absolute; inset: 64% 0 0;
+  background: #0b2028; clip-path: polygon(0 35%, 12% 8%, 22% 31%, 36% 0, 51% 42%, 68% 14%, 83% 40%, 100% 12%, 100% 100%, 0 100%);
+}
+body[data-theme="dunes"] { --bg: #dfc5a4; }
+body[data-theme="dunes"] #sceneBackdrop {
+  opacity: 1;
+  background: radial-gradient(circle at 72% 24%, #fff4d2 0 4%, #f6dab66b 8%, transparent 22%), linear-gradient(#c9d3d4, #edddc7 54%, #d9b899);
+}
+body[data-theme="dunes"] #sceneBackdrop::before {
+  content: ""; position: absolute; width: 150%; height: 75%; left: -35%; bottom: -38%;
+  border-radius: 50% 65% 0 0; transform: rotate(-12deg);
+  background: linear-gradient(165deg, #e9d3b5 8%, #d0aa87 45%, #a5785b);
+  box-shadow: 0 -1px 0 #fff1d7;
+}
+body[data-theme="dunes"] #sceneBackdrop::after {
+  content: ""; position: absolute; width: 130%; height: 57%; right: -45%; bottom: -20%;
+  border-radius: 70% 55% 0 0; transform: rotate(15deg);
+  background: linear-gradient(170deg, #f5e4c8, #bd9270 60%, #a0755c);
+}
+body[data-theme="mist-lake"] { --bg: #46616b; }
+body[data-theme="mist-lake"] #sceneBackdrop {
+  opacity: 1;
+  background: linear-gradient(180deg, #b3c6ca, #9aafb6 43%, #718e9a 44%, #3b5a68 100%);
+}
+body[data-theme="mist-lake"] #sceneBackdrop::before {
+  content: ""; position: absolute; inset: 18% -5% 44%;
+  background: linear-gradient(140deg, #536f7d, #7e969f);
+  clip-path: polygon(0 62%, 8% 48%, 18% 60%, 32% 8%, 42% 35%, 52% 20%, 67% 64%, 78% 25%, 91% 57%, 100% 36%, 100% 100%, 0 100%);
+  opacity: .65;
+}
+body[data-theme="mist-lake"] #sceneBackdrop::after {
+  content: ""; position: absolute; inset: 38% -12% 24%;
+  background: radial-gradient(ellipse, #d2e0e17d, transparent 68%);
+  animation: lakeMist 28s ease-in-out infinite alternate;
+}
+body:is([data-theme="aurora"], [data-theme="dunes"], [data-theme="mist-lake"]) #wash { background: linear-gradient(90deg, #0715231a, transparent 70%); }
+body[data-theme="mist-lake"] #wash { background: linear-gradient(90deg, #142d3d77, transparent 85%); }
+/* A little shading preserves clock contrast on bright, detailed photographs. */
+body:is([data-theme="forest"], [data-theme="autumn-forest"], [data-theme="sea"], [data-theme="mountains"], [data-theme="peterhof"], [data-theme="oranienbaum"]) #wash {
+  background: linear-gradient(90deg, rgba(4, 16, 23, .5), rgba(4, 16, 23, .06) 65%), linear-gradient(0deg, rgba(4, 16, 23, .28), transparent 45%);
+}
+body:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"]) #wash {
+  background: linear-gradient(90deg, rgba(249, 246, 238, .64), rgba(249, 246, 238, .04) 75%);
+}
+body[data-theme="night"] #wash { background: linear-gradient(90deg, #02071255, transparent); }
+body.immersive:is([data-theme="forest"], [data-theme="autumn-forest"]) #sceneDecor i:nth-child(n+3),
+body.immersive[data-theme="night"] #sceneDecor i:nth-child(n+2) { display: none; }
+#sceneParticles { position: absolute; z-index: 1; inset: 0; overflow: hidden; pointer-events: none; }
+#sceneParticles i { position: absolute; left: var(--x); top: var(--y); animation-duration: var(--duration); animation-delay: var(--delay); animation-iteration-count: infinite; }
+#sceneParticles[data-motion="leaf"] i {
+  top: -7%; width: calc(1rem * var(--size)); height: calc(1.45rem * var(--size));
+  border-radius: 80% 0 80% 0; background: #bbce80;
+  box-shadow: inset -2px -1px #58704b66; opacity: 0;
+  animation-name: leafFall; animation-timing-function: linear;
+}
+#sceneParticles[data-motion="leaf"] i:nth-child(3n) { background: #e3ce8c; }
+body[data-theme="autumn-forest"] #sceneParticles[data-motion="leaf"] i { background: #e1a35c; }
+body[data-theme="autumn-forest"] #sceneParticles[data-motion="leaf"] i:nth-child(3n) { background: #c07642; }
+#sceneParticles[data-motion="star"] i {
+  width: calc(3px * var(--size)); height: calc(3px * var(--size));
+  background: #e4f1ff; border-radius: 50%; box-shadow: 0 0 7px #b7ddff88;
+  animation-name: starShimmer; animation-timing-function: ease-in-out;
+}
+#sceneParticles[data-motion="star"] i.meteor {
+  width: 8rem; height: 2px; border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #d8edff); box-shadow: none;
+  animation-name: meteorPass; animation-timing-function: linear; opacity: 0;
+}
+#sceneParticles[data-motion="glint"] i {
+  width: calc(1.8rem * var(--size)); height: 2px; border-radius: 50%; background: #e7f8fb;
+  animation-name: lakeGlint; animation-timing-function: ease-in-out; opacity: 0;
+}
+#sceneParticles[data-motion="snow"] i {
+  top: -5%; width: calc(4px * var(--size)); height: calc(4px * var(--size));
+  border-radius: 50%; background: #e8f5ff; opacity: 0;
+  animation-name: snowFall; animation-timing-function: linear;
+}
+#sceneParticles[data-motion="mote"] i {
+  width: calc(3px * var(--size)); height: calc(3px * var(--size)); border-radius: 50%;
+  background: #f6dcaf; animation-name: moteDrift; animation-timing-function: ease-in-out;
+}
+body[data-theme="dunes"] #sceneParticles i { background: #fff3d4; }
+body.asleep #sceneParticles { visibility: hidden; }
+body:is(.motion-paused, .asleep) *, body:is(.motion-paused, .asleep) *::before, body:is(.motion-paused, .asleep) *::after { animation-play-state: paused !important; }
+@keyframes leafFall {
+  0% { transform: translate3d(0, -5vh, 0) rotate(0); opacity: 0; }
+  8% { opacity: .8; }
+  45% { transform: translate3d(calc(5vw * var(--sway)), 47vh, 0) rotate(160deg); }
+  90% { opacity: .8; }
+  100% { transform: translate3d(calc(-4vw * var(--sway)), 115vh, 0) rotate(380deg); opacity: 0; }
+}
+@keyframes starShimmer { 0%, 100% { opacity: .2; transform: scale(.7); } 50% { opacity: .9; transform: scale(1.15); } }
+@keyframes meteorPass { 0%, 78% { opacity: 0; transform: translate3d(0,0,0) rotate(-32deg); } 80% { opacity: .9; } 87%, 100% { opacity: 0; transform: translate3d(-32vw,24vh,0) rotate(-32deg); } }
+@keyframes lakeGlint { 0%, 100% { opacity: 0; transform: translateX(-1rem) scaleX(.4); } 50% { opacity: .45; transform: translateX(1rem) scaleX(1.15); } }
+@keyframes snowFall { 0% { opacity: 0; transform: translate3d(0,0,0); } 10%, 90% { opacity: .65; } 100% { opacity: 0; transform: translate3d(6vw,112vh,0); } }
+@keyframes moteDrift { 0%, 100% { opacity: .08; transform: translate3d(0,0,0); } 50% { opacity: .6; transform: translate3d(2vw,-3vh,0); } }
+@keyframes auroraFlow { from { transform: rotate(-18deg) translate3d(-3%,0,0) scaleY(.8); opacity: .6; } to { transform: rotate(-12deg) translate3d(4%,3%,0) scaleY(1.2); opacity: 1; } }
+@keyframes lakeMist { from { transform: translate3d(-6%,0,0); opacity: .5; } to { transform: translate3d(6%,2%,0); opacity: .9; } }
+/* Native keeps only composited particles; the landscape stays still. */
+body.native-tv #sceneBackdrop::before, body.native-tv #sceneBackdrop::after { animation: none; }
+body.native-tv[data-theme="aurora"] #sceneBackdrop::before { animation: auroraFlow 24s ease-in-out infinite alternate; }
+body.native-tv[data-theme="mist-lake"] #sceneBackdrop::after { animation: lakeMist 28s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) {
+  #sceneParticles { display: none; }
+  #sceneBackdrop::before, #sceneBackdrop::after { animation: none !important; }
+}

@@ -9,13 +9,16 @@
     <script src="/config.js"></script>
     <link rel="icon" type="image/png" href="/assets/dino-icon-512.png" />
     <link rel="stylesheet" href="./tv.css" />
+    <link rel="stylesheet" href="./scenes.css" />
+    <link rel="stylesheet" href="./layout.css" />
   </head>
   <body data-theme="gallery">
     <div id="sceneBackdrop" aria-hidden="true"></div>
     <div id="photo"></div>
     <div id="wash"></div>
     <div id="orbs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-    <div id="sceneDecor" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="sceneDecor" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="sceneParticles" aria-hidden="true"></div>
     <div id="grain" aria-hidden="true"></div>
     <div id="stage">
       <header id="top">
@@ -35,15 +38,15 @@
       </section>
       <p id="note" hidden></p>
       <main id="screen"></main>
+      <aside id="mediaBar" hidden aria-label="Сейчас играет">
+        <div class="media-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="media-copy">
+          <strong id="mediaTitle"></strong>
+          <span id="mediaArtist"></span>
+          <em id="mediaSource"></em>
+        </div>
+      </aside>
     </div>
-    <aside id="mediaBar" hidden aria-label="Сейчас играет">
-      <div class="media-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="media-copy">
-        <strong id="mediaTitle"></strong>
-        <span id="mediaArtist"></span>
-        <em id="mediaSource"></em>
-      </div>
-    </aside>
     <section id="pair" hidden>
       <p class="eyebrow" id="pairEyebrow">Подключение экрана</p>
       <h1 id="pairTitle">Откройте Dino TV в телефоне и введите код</h1>

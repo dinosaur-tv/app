@@ -316,7 +316,11 @@ document.querySelector("#screenSelect").addEventListener("change", (event) => {
 function paint() {
   document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === display.mode));
   const activeScene = screenTheme(display);
-  document.querySelectorAll("[data-scene]").forEach((button) => button.classList.toggle("active", button.dataset.scene === activeScene));
+  document.querySelectorAll("[data-scene]").forEach((button) => {
+    const selected = button.dataset.scene === activeScene;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
   paintSceneGroups();
   document.querySelectorAll("[data-privacy]").forEach((button) => button.classList.toggle("active", String(display.privacy) === button.dataset.privacy));
   document.querySelector("#guestsValue").textContent = display.privacy ? "скрыты названия" : "выключен";

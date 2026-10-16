@@ -797,3 +797,54 @@ a.action {
 .calendar-account label { display: flex; align-items: center; gap: .6rem; margin-block: .6rem; overflow-wrap: anywhere; }
 .calendar-account input[type="checkbox"] { width: 1.1rem; height: 1.1rem; flex-shrink: 0; accent-color: var(--brass); }
 [hidden] { display: none !important; }
+
+/* A quieter companion to the TV: system type, grouped surfaces and a glass dock. */
+:root {
+  --bg: #101114;
+  --ink: #f2f4f7;
+  --muted: #a1a6b0;
+  --line: #2c3038;
+  --brass: #b7ccdf;
+  --fill: #1b1e24;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+}
+.remote { max-width: 28rem; gap: 1.3rem; padding-top: calc(1.4rem + env(safe-area-inset-top)); }
+.home strong { font-size: 1.2rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.home { flex: 1 1 auto; }
+.tv-status { flex: 0 0 auto; flex-direction: column; align-items: flex-end; gap: .35rem; }
+.tv-status button { flex: 0 0 auto; min-height: 2rem; }
+.tv-status > span { max-width: 10rem; }
+#tvState { overflow: hidden; text-overflow: ellipsis; }
+.home .brand { letter-spacing: .12em; }
+.list { border-radius: 1.2rem; }
+.list-title { letter-spacing: .05em; color: var(--muted); }
+.modes, .guests { padding: .25rem; gap: .2rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--fill); }
+.modes button, .guests button { min-height: 2.6rem; border: 0; border-radius: .75rem; }
+.modes button.active, .guests button.active { background: #3b414c; color: var(--ink); box-shadow: 0 2px 8px #0003; }
+.themes { gap: 1rem .8rem; }
+.themes button { min-width: 0; position: relative; }
+.themes button span { line-height: 1.35; overflow-wrap: anywhere; }
+.themes button i { border-radius: 1rem; border-color: #ffffff1c; }
+.themes button.active i { border-color: #c9e1f7; box-shadow: 0 0 0 2px #c9e1f7; }
+.themes button.active::after {
+  content: "✓"; position: absolute; top: .45rem; right: .45rem;
+  display: grid; place-items: center; width: 1.35rem; height: 1.35rem;
+  border: 1px solid #ffffff80; border-radius: 50%; background: #f1f7fc; color: #1d3247;
+  font-size: .8rem; font-weight: 700; box-shadow: 0 2px 8px #0003;
+}
+.aurora i { background: radial-gradient(ellipse at 50% 25%, #82d9bb85, transparent 40%), linear-gradient(145deg, #111e38, #28546b 56%, #0d252d); }
+.dunes i { background: radial-gradient(ellipse at 5% 120%, #d1ac84 0 55%, transparent 56%), radial-gradient(ellipse at 90% 110%, #f2d6b1 0 50%, transparent 51%), linear-gradient(#cbd4d5, #efdcc2); }
+.mist-lake i { background: linear-gradient(165deg, transparent 44%, #67859188 45% 60%, transparent 61%), linear-gradient(#bbced2, #809faa 54%, #3c5a68); }
+.dock { width: min(28rem, 100%); background: #14171ce8; border-top-color: #ffffff12; backdrop-filter: blur(24px) saturate(1.3); }
+.dock button.active { background: #ffffff10; }
+.dock::before { height: 1rem; background: linear-gradient(to top, #101114aa, transparent); }
+button, a, summary, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+input, textarea, select { font-size: max(1rem, 16px); }
+.sheet { width: min(28rem, 100%); background: var(--fill); max-height: 100dvh; overflow-y: auto; }
+.sheet textarea { font-family: inherit; font-size: 16px; line-height: 1.4; }
+.compose input { min-width: 0; }
+.row-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

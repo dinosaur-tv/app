@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, normalizeRotation, noteDurations, pickNowPlaying, screenTheme, shouldApplyTvReload, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
+import { displayThemes, themeNames, displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, normalizeRotation, noteDurations, pickNowPlaying, screenTheme, shouldApplyTvReload, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 
 const idleDisplay = { mode: "TODAY", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, today: 30, tomorrow: 30, week: 30 } };
 
@@ -27,9 +27,10 @@ test("treats night and play as moods, not color themes", () => {
 });
 
 test("keeps every designed scene available to the television and console", () => {
-  for (const theme of ["gallery", "home-day", "home-evening", "forest", "autumn-forest", "mountains", "sea", "space", "petersburg", "petersburg-streets", "oranienbaum", "peterhof", "rome", "florence", "venice", "italy-sunset", "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy"]) {
+  for (const theme of displayThemes) {
     assert.equal(normalizeDisplay({ theme }).theme, theme);
     assert.equal(screenTheme(normalizeDisplay({ theme })), theme);
+    assert.ok(themeNames[theme]);
   }
 });
 

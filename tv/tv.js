@@ -1,23 +1,20 @@
-import { normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
+import { displayThemes, normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
+import { paintSceneMotion } from "./scene-motion.js";
 import { minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
 import { fallbackWeather, fetchWeather, placeKey } from "./weather.js";
 import { screenNameFrom } from "./screen-name.js";
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 const modes = ["TODAY", "TOMORROW", "WEEK"];
-const sceneThemes = [
-  "gallery", "home-day", "home-evening", "night", "play", "forest", "autumn-forest", "mountains", "sea", "space",
-  "petersburg", "petersburg-streets", "oranienbaum", "peterhof", "rome", "florence", "venice", "italy-sunset",
-  "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy",
-];
+const sceneThemes = [...displayThemes, "night", "play"];
 const russian = "ru-RU";
 const WEATHER_TTL_MS = 20 * 60 * 1000;
 
 // The forecast belongs to the screen now: the snapshot only says which place to ask about.
-let weather = readStoredWeather();
 let weatherKey = "";
 let weatherAt = 0;
 let weatherPending = false;
+let weather = readStoredWeather();
 
 function readStoredWeather() {
   try {
@@ -381,7 +378,7 @@ function sceneWeather(periods) {
 
 function scenePageSizeKey(scene) {
   const layers = screenLayers();
-  return [scene, mode, window.innerWidth, window.innerHeight, layers.weather].join(":");
+  return [scene, mode, screen.clientWidth, screen.clientHeight, layers.weather].join(":");
 }
 
 function scenePageSize(scene) {
@@ -393,27 +390,13 @@ function scenePageSize(scene) {
   return window.innerHeight <= 800 ? 7 : 9;
 }
 
-function measuredScenePageSize(scene) {
+function measuredScenePageSize() {
   const list = screen.querySelector(".scene-list");
   const rows = [...screen.querySelectorAll(".scene-event")];
   if (!list || !rows.length || list.clientHeight < 1) return null;
-  if (["byzantium"].includes(scene)) {
-    const gap = Number.parseFloat(window.getComputedStyle(list).columnGap) || 0;
-  return Math.max(1, Math.min(16, Math.floor((list.clientWidth + gap) / (190 + gap))));
-  }
   const heights = rows.map((row) => row.getBoundingClientRect().height).filter((height) => Number.isFinite(height) && height > 0);
   if (!heights.length) return null;
-  const available = list.clientHeight + 1;
-  let used = 0;
-  let count = 0;
-  for (const height of heights) {
-    if (used + height > available) break;
-    used += height;
-    count += 1;
-  }
-  const typicalHeight = Math.min(...heights);
-  count += Math.floor(Math.max(0, available - used) / typicalHeight);
-  return Math.max(1, Math.min(16, count));
+  return Math.max(1, Math.min(16, Math.floor(list.clientHeight / Math.max(...heights))));
 }
 
 function agendaDayLabel(date, now, compact = false) {
@@ -465,10 +448,10 @@ function renderSceneAgenda(now, scene) {
     ${layers.weather && daily ? sceneWeather(weatherForSelectedDay(selectedDate, now)?.periods) : ""}
     ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map((event, index) => `<article class="scene-event" style="--event-index:${index}">
       <time class="scene-time">${timeOf(event.start)}</time>
-      <div class="scene-title"><strong>${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
-      <span class="scene-owner">${ownerDots(event)}${escapeHtml(eventOwner(event))}</span>
+      <div class="scene-title"><strong title="${escapeHtml(titleOf(event))}">${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
+      <span class="scene-owner" title="${escapeHtml(eventOwner(event))}">${ownerDots(event)}<span>${escapeHtml(eventOwner(event))}</span></span>
     </article>`).join("") : `<p class="empty">${mode === "TOMORROW" ? "Завтра" : "Сегодня"} тихо. Можно никуда не спешить.</p>`}</div>
-    ${pages.length > 1 ? `<div class="agenda-pages"><span>${pageIndex + 1} / ${pages.length}</span><i style="--page-progress:${((pageIndex + 1) / pages.length) * 100}%"></i></div>` : ""}` : ""}
+    <div class="agenda-pages${pages.length > 1 ? "" : " single-page"}"><span>${pageIndex + 1} / ${pages.length}</span><i style="--page-progress:${((pageIndex + 1) / pages.length) * 100}%"></i></div>` : ""}
   </section>`;
 }
 
@@ -616,6 +599,7 @@ function paint(force = false) {
   document.body.dataset.mode = mode.toLowerCase();
   document.body.classList.toggle("immersive", sceneThemes.includes(activeTheme));
   document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.mood !== "night");
+  paintSceneMotion(activeTheme, document.body.classList.contains("has-photo"));
   document.body.classList.toggle("guests", display.privacy);
   document.body.classList.toggle("hide-weather", !display.showWeather);
   document.body.classList.toggle("hide-calendar", !display.showCalendar);
@@ -623,13 +607,18 @@ function paint(force = false) {
   photo.style.backgroundImage = snapshot.display.backgroundUrl ? `url("${snapshot.display.backgroundUrl}")` : "";
   paintClock(now);
   paintMedia();
-  document.querySelectorAll("#modes [data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
+  document.querySelectorAll("#modes [data-mode]").forEach((button) => {
+    const selected = button.dataset.mode === mode;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
   if (snapshot.display.note?.text && !display.privacy) {
     noteEl.hidden = false;
     noteEl.textContent = snapshot.display.note.text;
   } else {
     noteEl.hidden = true;
   }
+  document.body.classList.toggle("has-note", !noteEl.hidden);
   const key = `${viewSig()}|${now.getMinutes()}`;
   if (!force && key === paintedKey) return;
   paintedKey = key;
@@ -637,7 +626,7 @@ function paint(force = false) {
     const sizeKey = scenePageSizeKey(activeTheme);
     const previousSize = scenePageSize(activeTheme);
     screen.innerHTML = renderSceneAgenda(now, activeTheme);
-    const measuredSize = measuredScenePageSize(activeTheme);
+    const measuredSize = measuredScenePageSize();
     if (measuredSize && measuredSize !== previousSize) {
       scenePageSizes.set(sizeKey, measuredSize);
       screen.innerHTML = renderSceneAgenda(now, activeTheme);
@@ -797,6 +786,7 @@ setInterval(() => {
 paintClock();
 setInterval(() => {
   const now = new Date();
+  document.body.classList.toggle("motion-paused", document.hidden || asleep || !nativeForeground());
   paintClock(now);
   maybeEventCue(now);
   readNativeNowPlaying();
@@ -804,6 +794,18 @@ setInterval(() => {
   if (!snapshot) return;
   if (now.getSeconds() === 0) paint();
 }, 1000);
+document.addEventListener("visibilitychange", () => {
+  document.body.classList.toggle("motion-paused", document.hidden || asleep || !nativeForeground());
+});
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    scenePageSizes.clear();
+    agendaPage = 0;
+    paint(true);
+  }, 120);
+});
 if (typeof nativeBridge()?.audioSpectrum === "function") setInterval(paintNativeSpectrum, 80);
 let polling = false;
 setInterval(() => {
