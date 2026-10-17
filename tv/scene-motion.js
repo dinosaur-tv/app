@@ -1,6 +1,8 @@
 // Small composited particles keep the native WebView moving without repainting
 // a full-screen photograph or animating expensive blur filters.
 export function sceneMotion(scene) {
+  if (scene === "rain-glass") return { kind: "rain", count: 24 };
+  if (scene === "liquid-glass" || scene === "sunroom") return { kind: "none", count: 0 };
   if (scene === "forest" || scene === "autumn-forest") return { kind: "leaf", count: 18 };
   if (["night", "space", "aurora"].includes(scene)) return { kind: "star", count: 32 };
   if (["sea", "venice", "peterhof", "oranienbaum", "mist-lake"].includes(scene)) return { kind: "glint", count: 18 };

@@ -1,9 +1,34 @@
-import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
+import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, themeNames, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 import { shouldLoadTelegramSdk } from "./telegram.js";
 import { createHouseholdScope } from "./household-scope.js";
 import { searchPlaces } from "./places.js";
 import { needsAccount, needsHome } from "./request-scope.js";
 import { deviceTitle } from "./device-title.js";
+import { artworks, artworkThumbnailUrl } from "../artworks.js";
+
+for (const group of document.querySelectorAll("[data-art-collection]")) {
+  for (const work of artworks.filter((artwork) => artwork.collection === group.dataset.artCollection)) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "art-theme";
+    button.dataset.scene = work.id;
+    button.setAttribute("aria-label", `${work.artist}. ${work.title}, ${work.year}`);
+    const preview = document.createElement("i");
+    preview.style.backgroundColor = work.wall;
+    const image = document.createElement("img");
+    image.src = artworkThumbnailUrl(work);
+    image.alt = "";
+    image.loading = "lazy";
+    preview.append(image);
+    const name = document.createElement("span");
+    name.textContent = work.artist.split(" ").at(-1);
+    const title = document.createElement("small");
+    title.textContent = work.title;
+    name.append(title);
+    button.append(preview, name);
+    group.querySelector(".themes").append(button);
+  }
+}
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 let remoteEnabled = false;
@@ -177,7 +202,7 @@ function paintSceneGroups() {
   syncingSceneGroups = true;
   for (const group of groups) {
     const chosen = group.querySelector("[data-scene].active");
-    group.querySelector(".row-value").textContent = chosen ? chosen.querySelector("span").textContent : "";
+    group.querySelector(".row-value").textContent = chosen ? themeNames[chosen.dataset.scene] || chosen.querySelector("span").textContent : "";
     if (browsing) continue;
     if (chosen && !opened) { group.open = true; opened = true; }
     else group.open = false;

@@ -247,12 +247,14 @@ header {
 .list + .list-title, .list ~ div > .list-title:first-child { margin-top: 1.3rem; }
 .list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 1.05rem;
   background: color-mix(in srgb, var(--fill) 62%, transparent);
 }
 .list > * + * { border-top: 1px solid var(--line); }
+.row { min-width: 0; }
 .row > summary {
   display: flex;
   align-items: center;
@@ -832,6 +834,14 @@ a.action {
   border: 1px solid #ffffff80; border-radius: 50%; background: #f1f7fc; color: #1d3247;
   font-size: .8rem; font-weight: 700; box-shadow: 0 2px 8px #0003;
 }
+.art-collection .themes { align-items: start; }
+.art-collection .themes button i { display: flex; align-items: center; justify-content: center; aspect-ratio: 1.4; overflow: hidden; padding: .55rem; }
+.art-theme img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.art-theme small { display: block; margin-top: .2rem; color: var(--muted); font-size: .68rem; font-weight: 400; line-height: 1.35; }
+.art-hint { margin: .2rem 0 .35rem; }
+.sunroom i { background: repeating-linear-gradient(110deg, transparent 0 23%, #71624b26 24% 27%, transparent 28% 45%), linear-gradient(135deg, #f8eedc, #cbb79c); }
+.rain-glass i { background: radial-gradient(ellipse at 75% 70%, #f3b98199, transparent 20%), radial-gradient(ellipse at 25% 60%, #8ebbb599, transparent 25%), linear-gradient(145deg, #294651, #101d2c); }
+.liquid-glass i { background: radial-gradient(ellipse at 30% 40%, #9baad4aa, transparent 55%), radial-gradient(ellipse at 90% 85%, #70c0b399, transparent 60%), linear-gradient(145deg, #242d46, #292635); }
 .aurora i { background: radial-gradient(ellipse at 50% 25%, #82d9bb85, transparent 40%), linear-gradient(145deg, #111e38, #28546b 56%, #0d252d); }
 .dunes i { background: radial-gradient(ellipse at 5% 120%, #d1ac84 0 55%, transparent 56%), radial-gradient(ellipse at 90% 110%, #f2d6b1 0 50%, transparent 51%), linear-gradient(#cbd4d5, #efdcc2); }
 .mist-lake i { background: linear-gradient(165deg, transparent 44%, #67859188 45% 60%, transparent 61%), linear-gradient(#bbced2, #809faa 54%, #3c5a68); }

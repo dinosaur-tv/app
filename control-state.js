@@ -1,14 +1,19 @@
+import { artworks, artworkThemes } from "./artworks.js";
+
 export const displayModes = ["TODAY", "TOMORROW", "WEEK"];
 export const displayThemes = [
   "gallery", "home-day", "home-evening", "forest", "autumn-forest", "mountains", "sea", "space",
   "aurora", "dunes", "mist-lake",
+  "sunroom", "rain-glass", "liquid-glass",
   "petersburg", "petersburg-streets", "oranienbaum", "peterhof", "rome", "florence", "venice", "italy-sunset",
   "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy",
+  ...artworkThemes,
 ];
 export const displayMoods = ["home", "night", "play"];
 
 const modeNames = { TODAY: "Сегодня", TOMORROW: "Завтра", WEEK: "Неделя" };
 export const themeNames = {
+  ...Object.fromEntries(artworks.map((work) => [work.id, `${work.artist} · ${work.title}`])),
   gallery: "Галерея",
   "home-day": "Дом · День",
   "home-evening": "Дом · Вечер",
@@ -20,6 +25,9 @@ export const themeNames = {
   aurora: "Северное сияние",
   dunes: "Дюны",
   "mist-lake": "Туманное озеро",
+  sunroom: "Свет на стене",
+  "rain-glass": "Дождь на стекле",
+  "liquid-glass": "Жидкое стекло",
   petersburg: "Петербург",
   "petersburg-streets": "Улицы Петербурга",
   oranienbaum: "Ораниенбаум",

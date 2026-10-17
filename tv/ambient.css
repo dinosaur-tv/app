@@ -1,0 +1,82 @@
+/* Interior light studies. Only transform and opacity move; no animated blur. */
+body[data-theme="sunroom"] { --bg: #dfd1ba; }
+body[data-theme="sunroom"] #sceneBackdrop {
+  opacity: 1;
+  background: radial-gradient(ellipse at 25% 12%, #fff9e8, transparent 65%), linear-gradient(125deg, #eee3d0, #cbb89b);
+}
+body[data-theme="sunroom"] #sceneBackdrop::before {
+  content: ""; position: absolute; inset: -30%;
+  background: repeating-linear-gradient(90deg, transparent 0 15vw, #66574426 15.2vw 16.4vw, transparent 16.6vw 30vw), linear-gradient(0deg, transparent 0 46%, #66574426 46.2% 48%, transparent 48.2%);
+  transform-origin: center;
+  animation: windowLight 48s ease-in-out infinite alternate;
+}
+body[data-theme="sunroom"] #sceneBackdrop::after {
+  content: ""; position: absolute; inset: -15% -30% 5% 20%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #fff4d761, transparent 66%);
+  animation: sunlightBreathe 32s ease-in-out infinite alternate;
+}
+body[data-theme="sunroom"] #wash { background: linear-gradient(90deg, #f3eadb55, transparent 70%); }
+body[data-theme="rain-glass"] { --bg: #142633; }
+body[data-theme="rain-glass"] #sceneBackdrop {
+  opacity: 1;
+  background: radial-gradient(ellipse at 80% 72%, #e6ae7561, transparent 19%), radial-gradient(ellipse at 27% 57%, #87b8b955, transparent 24%), radial-gradient(ellipse at 57% 86%, #d2b39538, transparent 16%), linear-gradient(160deg, #314a58, #172b3b 55%, #12202e);
+}
+body[data-theme="rain-glass"] #sceneBackdrop::before {
+  content: ""; position: absolute; inset: -8%;
+  background: radial-gradient(ellipse at 82% 74%, #e4b47533, transparent 15%), radial-gradient(ellipse at 20% 62%, #92bdc244, transparent 24%);
+  animation: distantLights 35s ease-in-out infinite alternate;
+}
+body[data-theme="rain-glass"] #wash { background: linear-gradient(90deg, #0a182755, transparent 75%); }
+#sceneParticles[data-motion="rain"] i {
+  top: -12%;
+  width: calc(5px * var(--size)); height: calc(24px * var(--size));
+  border: 1px solid #d5eef02e; border-top-color: transparent;
+  border-radius: 45% 45% 55% 55%;
+  background: linear-gradient(175deg, transparent, #e3f8fa1c 78%, #e3f8fa66);
+  box-shadow: 1px 1px 2px #020d1733;
+  animation-name: windowRain; animation-timing-function: linear;
+}
+body[data-theme="liquid-glass"] { --bg: #20283c; }
+body[data-theme="liquid-glass"] #sceneBackdrop {
+  opacity: 1;
+  background: radial-gradient(ellipse at 45% 90%, #4d405e, transparent 70%), linear-gradient(135deg, #253249, #272637 70%, #353648);
+}
+body[data-theme="liquid-glass"] #sceneBackdrop::before,
+body[data-theme="liquid-glass"] #sceneBackdrop::after {
+  content: ""; position: absolute; width: 85vw; height: 105vh;
+  border: 1px solid #e3e9ff30; border-radius: 48% 52% 65% 35% / 48% 35% 65% 52%;
+  background: radial-gradient(ellipse at 30% 20%, #d9e5ff70, #8c9ecb38 25%, #51678e09 55%, #b5d1ec33 90%);
+  box-shadow: inset 1px 1px 2px #edf4ff33, inset -1px -2px 8px #adb5e51f;
+}
+body[data-theme="liquid-glass"] #sceneBackdrop::before {
+  left: -24%; top: -32%; animation: glassFloat 38s ease-in-out infinite alternate;
+}
+body[data-theme="liquid-glass"] #sceneBackdrop::after {
+  right: -30%; bottom: -46%;
+  background: radial-gradient(ellipse at 65% 60%, #7bc9b155, #88b9d129 48%, #c6c8ea12 75%);
+  animation: glassFloat 46s -17s ease-in-out infinite alternate-reverse;
+}
+body[data-theme="liquid-glass"] #wash { background: linear-gradient(90deg, #131d3033, transparent 70%); }
+body:is([data-theme="sunroom"], [data-theme="rain-glass"], [data-theme="liquid-glass"]) #sceneDecor { display: none; }
+body.has-photo #sceneBackdrop::before, body.has-photo #sceneBackdrop::after { display: none; animation: none; }
+@keyframes windowLight {
+  from { transform: translate3d(-3%, -1%, 0) rotate(-24deg) skewY(10deg); opacity: .65; }
+  to { transform: translate3d(4%, 3%, 0) rotate(-19deg) skewY(10deg); opacity: .9; }
+}
+@keyframes sunlightBreathe { from { transform: translate3d(-4%, 0, 0) scale(.95); opacity: .6; } to { transform: translate3d(5%, 3%, 0) scale(1.08); opacity: 1; } }
+@keyframes distantLights { from { transform: translate3d(-1%, 0, 0); opacity: .5; } to { transform: translate3d(2%, 1%, 0); opacity: .9; } }
+@keyframes windowRain {
+  0% { transform: translate3d(0, 0, 0) scaleY(.6); opacity: 0; }
+  8%, 88% { opacity: .7; }
+  35% { transform: translate3d(0, 22vh, 0) scaleY(.8); }
+  100% { transform: translate3d(1.5vw, 118vh, 0) scaleY(1.4); opacity: 0; }
+}
+@keyframes glassFloat {
+  from { transform: translate3d(-2%, -2%, 0) rotate(-16deg) scale(.96); opacity: .65; }
+  to { transform: translate3d(8%, 8%, 0) rotate(12deg) scale(1.06); opacity: .95; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body #sceneBackdrop::before, body #sceneBackdrop::after { animation: none !important; }
+  #sceneParticles[data-motion="rain"] { display: none; }
+}

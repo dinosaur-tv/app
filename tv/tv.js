@@ -1,5 +1,6 @@
 import { displayThemes, normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 import { paintSceneMotion } from "./scene-motion.js";
+import { artworkFor, artworkUrl } from "../artworks.js";
 import { minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
 import { fallbackWeather, fetchWeather, placeKey } from "./weather.js";
 import { screenNameFrom } from "./screen-name.js";
@@ -69,6 +70,8 @@ const pairEyebrow = document.querySelector("#pairEyebrow");
 const pairTitle = document.querySelector("#pairTitle");
 const pairNote = document.querySelector("#pairNote");
 const photo = document.querySelector("#photo");
+const artworkFrame = document.querySelector("#artworkFrame");
+const artworkImage = document.querySelector("#artworkImage");
 const mediaBar = document.querySelector("#mediaBar");
 const mediaTitle = document.querySelector("#mediaTitle");
 const mediaArtist = document.querySelector("#mediaArtist");
@@ -599,7 +602,22 @@ function paint(force = false) {
   document.body.dataset.mode = mode.toLowerCase();
   document.body.classList.toggle("immersive", sceneThemes.includes(activeTheme));
   document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.mood !== "night");
-  paintSceneMotion(activeTheme, document.body.classList.contains("has-photo"));
+  const customPhoto = document.body.classList.contains("has-photo");
+  const artwork = customPhoto ? null : artworkFor(activeTheme);
+  document.body.classList.toggle("art-scene", Boolean(artwork));
+  artworkFrame.hidden = !artwork;
+  if (artwork) {
+    document.body.dataset.artTone = artwork.tone;
+    document.body.style.setProperty("--art-wall", artwork.wall);
+    if (artworkImage.dataset.work !== artwork.id) {
+      artworkImage.dataset.work = artwork.id;
+      artworkImage.src = artworkUrl(artwork);
+      artworkImage.alt = `${artwork.artist}. ${artwork.title}, ${artwork.year}`;
+      document.querySelector("#artworkTitle").textContent = artwork.title;
+      document.querySelector("#artworkArtist").textContent = `${artwork.artist} · ${artwork.year}`;
+    }
+  }
+  paintSceneMotion(activeTheme, customPhoto || Boolean(artwork));
   document.body.classList.toggle("guests", display.privacy);
   document.body.classList.toggle("hide-weather", !display.showWeather);
   document.body.classList.toggle("hide-calendar", !display.showCalendar);

@@ -13,7 +13,7 @@ body.immersive[data-theme] {
   --line: rgba(234, 240, 248, .16);
   --accent: #d9e4ed;
 }
-body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="dunes"]) {
+body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="dunes"], [data-theme="sunroom"]) {
   --ink: #262b31;
   --muted: #535e69;
   --accent: #465e70;

@@ -1,0 +1,120 @@
+{
+  "retrieved": "2026-10-17",
+  "processing": "Proportional downsampling to at most 3200 pixels and WebP encoding; no crop, recoloring or AI changes.",
+  "works": [
+    {
+      "id": "aivazovsky-wave",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Hovhannes_Aivazovsky_-_The_Ninth_Wave_-_Google_Art_Project.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Hovhannes_Aivazovsky_-_The_Ninth_Wave_-_Google_Art_Project.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 5090,
+      "originalHeight": 3420,
+      "file": "aivazovsky-wave.webp",
+      "width": 3200,
+      "height": 2150
+    },
+    {
+      "id": "shishkin-rye",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Ivan_Ivanovich_Shishkin_-_Rye_field%2C_1878.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Ivan_Ivanovich_Shishkin_-_Rye_field%2C_1878.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 2294,
+      "originalHeight": 1300,
+      "file": "shishkin-rye.webp",
+      "width": 2294,
+      "height": 1300
+    },
+    {
+      "id": "levitan-peace",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/9/95/Levitan_nad_vech_pok28.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Levitan_nad_vech_pok28.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 2000,
+      "originalHeight": 1434,
+      "file": "levitan-peace.webp",
+      "width": 2000,
+      "height": 1434
+    },
+    {
+      "id": "malevich-composition",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/1/13/Suprematist_Composition_-_Kazimir_Malevich.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Suprematist_Composition_-_Kazimir_Malevich.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 2296,
+      "originalHeight": 2869,
+      "file": "malevich-composition.webp",
+      "width": 2296,
+      "height": 2869
+    },
+    {
+      "id": "monet-lilies",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/6/65/Claude_Monet_-_Water_Lilies_-_1933.1157_-_Art_Institute_of_Chicago.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_1933.1157_-_Art_Institute_of_Chicago.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 3000,
+      "originalHeight": 2887,
+      "museumSource": "https://www.artic.edu/artworks/16568",
+      "metadata": "https://api.artic.edu/api/v1/artworks/16568",
+      "credit": "Mr. and Mrs. Martin A. Ryerson Collection",
+      "file": "monet-lilies.webp",
+      "width": 3000,
+      "height": 2887
+    },
+    {
+      "id": "renoir-sisters",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/1/1d/Pierre-Auguste_Renoir_-_Two_Sisters_%28On_the_Terrace%29_-_1933.455_-_Art_Institute_of_Chicago.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Pierre-Auguste_Renoir_-_Two_Sisters_%28On_the_Terrace%29_-_1933.455_-_Art_Institute_of_Chicago.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 1813,
+      "originalHeight": 2250,
+      "museumSource": "https://www.artic.edu/artworks/14655",
+      "metadata": "https://api.artic.edu/api/v1/artworks/14655",
+      "credit": "Mr. and Mrs. Lewis Larned Coburn Memorial Collection",
+      "file": "renoir-sisters.webp",
+      "width": 1813,
+      "height": 2250
+    },
+    {
+      "id": "mondrian-lozenge",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/1/14/Piet_Mondrian_-_Lozenge_Composition_with_Yellow%2C_Black%2C_Blue%2C_Red%2C_and_Gray_-_1957.307_-_Art_Institute_of_Chicago.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Piet_Mondrian_-_Lozenge_Composition_with_Yellow%2C_Black%2C_Blue%2C_Red%2C_and_Gray_-_1957.307_-_Art_Institute_of_Chicago.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 3000,
+      "originalHeight": 3000,
+      "museumSource": "https://www.artic.edu/artworks/109819",
+      "metadata": "https://api.artic.edu/api/v1/artworks/109819",
+      "credit": "Gift of Edgar Kaufmann, Jr.",
+      "file": "mondrian-lozenge.webp",
+      "width": 3000,
+      "height": 3000
+    },
+    {
+      "id": "kandinsky-improvisation",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Vasily_Kandinsky_-_Improvisation_No._30_%28Cannons%29_-_1931.511_-_Art_Institute_of_Chicago.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Vasily_Kandinsky_-_Improvisation_No._30_%28Cannons%29_-_1931.511_-_Art_Institute_of_Chicago.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 3000,
+      "originalHeight": 2997,
+      "museumSource": "https://www.artic.edu/artworks/8991",
+      "metadata": "https://api.artic.edu/api/v1/artworks/8991",
+      "credit": "Arthur Jerome Eddy Memorial Collection",
+      "file": "kandinsky-improvisation.webp",
+      "width": 3000,
+      "height": 2997
+    },
+    {
+      "id": "pissarro-palace",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/3/34/Camille_Pissarro_-_Le_Crystal_Palace%2C_Londres.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Camille_Pissarro_-_Le_Crystal_Palace%2C_Londres.jpg",
+      "license": "Public domain / PD-Art",
+      "originalWidth": 3000,
+      "originalHeight": 1898,
+      "museumSource": "https://www.artic.edu/artworks/110541",
+      "metadata": "https://api.artic.edu/api/v1/artworks/110541",
+      "credit": "Gift of Mr. and Mrs. B. E. Bensinger",
+      "file": "pissarro-palace.webp",
+      "width": 3000,
+      "height": 1898
+    }
+  ]
+}

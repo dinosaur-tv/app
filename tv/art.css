@@ -1,0 +1,127 @@
+/* Art is a complete object on a quiet wall. UI lives beside it, never on the canvas. */
+body.immersive.art-scene {
+  --ink: #2e3433;
+  --muted: #606864;
+  --accent: #5b695f;
+  --line: rgba(46, 56, 48, .14);
+  --glass: rgba(255, 255, 255, .24);
+  --glass-line: rgba(255, 255, 255, .3);
+  --bg: var(--art-wall, #e4e0d7);
+  color-scheme: light;
+  background: var(--art-wall);
+}
+body.immersive.art-scene[data-art-tone="dark"] {
+  --ink: #f0eee8; --muted: #c5cccb; --accent: #ced7d1;
+  --line: rgba(230, 237, 229, .16); --glass: rgba(255, 255, 255, .04);
+  --glass-line: rgba(255, 255, 255, .1); color-scheme: dark;
+}
+body.immersive.art-scene #sceneBackdrop,
+body.immersive.art-scene #sceneDecor,
+body.immersive.art-scene #sceneParticles,
+body.immersive.art-scene #orbs,
+body.immersive.art-scene #grain { display: none; }
+body.immersive.art-scene #wash {
+  background: radial-gradient(ellipse at 36% 20%, rgba(255, 255, 255, .12), transparent 65%), linear-gradient(90deg, transparent 65%, rgba(0, 0, 0, .025));
+}
+body.immersive.art-scene #stage {
+  grid-template-columns: minmax(0, 1.7fr) minmax(19rem, .8fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  column-gap: clamp(2rem, 4vw, 5rem);
+}
+#artworkFrame {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 1.7rem;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 1.1rem .4rem .7rem;
+}
+.art-mat { display: flex; justify-content: center; align-items: center; min-width: 0; min-height: 0; }
+#artworkImage {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 0 0 1px rgba(31, 30, 24, .18), 0 .35rem .9rem rgba(31, 30, 24, .13), 0 1.8rem 3.5rem rgba(31, 30, 24, .16);
+}
+#artworkFrame figcaption { display: grid; gap: .3rem; min-width: 0; text-align: center; line-height: 1.35; }
+#artworkTitle { font-size: .9rem; font-weight: 500; overflow-wrap: anywhere; }
+#artworkArtist { color: var(--muted); font-size: .72rem; letter-spacing: .015em; }
+body.immersive.art-scene #top { grid-column: 2; grid-row: 1; margin: 0; justify-content: flex-start; }
+body.immersive.art-scene #modes { background: transparent; border-color: var(--line); backdrop-filter: none; }
+body.immersive.art-scene #modes button { padding-inline: 1rem; }
+body.immersive.art-scene #hero { grid-column: 2; grid-row: 2; padding: 1.15rem 0 .5rem; }
+body.immersive.art-scene #clock { font-size: clamp(3.5rem, 5.7vw, 6.3rem); text-shadow: none; }
+body.immersive.art-scene .hero-copy { padding: .7rem 0 0 .15rem; font-size: .87rem; line-height: 1.4; text-shadow: none; }
+body.immersive.art-scene #weatherLine { color: var(--muted); opacity: 1; }
+body.immersive.art-scene #nextUpLine { display: none; }
+body.immersive.art-scene #screen {
+  grid-column: 2; grid-row: 3;
+  padding: 1rem 0 0;
+  border: 0; border-top: 1px solid var(--line);
+  border-radius: 0; background: transparent;
+  box-shadow: none; backdrop-filter: none;
+}
+body.immersive.art-scene .scene-agenda > .kicker { flex-wrap: wrap; align-content: start; min-height: 2rem; gap: .3rem .6rem; font-size: .85rem; }
+body.immersive.art-scene .scene-day-label { font-size: .65rem; }
+/* Current weather remains under the clock; the rail has room for the calendar. */
+body.immersive.art-scene .scene-weather { display: none; }
+body.immersive.art-scene .scene-event {
+  grid-template-columns: 2.9rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: center;
+  align-items: start;
+  gap: .2rem .6rem;
+  height: 6rem;
+  min-height: 6rem;
+  padding-block: .6rem;
+}
+body.immersive.art-scene .scene-time { grid-row: 1 / 3; padding-top: .1rem; font-size: .75rem; }
+body.immersive.art-scene .scene-title { padding-left: 0; border: 0; }
+body.immersive.art-scene .scene-title strong { font-size: .88rem; font-weight: 500; }
+body.immersive.art-scene .scene-title small { font-size: .65rem; }
+body.immersive.art-scene .scene-owner { grid-column: 2; flex-direction: row; font-size: .65rem; gap: .35rem; }
+body.immersive.art-scene .scene-owner > span:last-child { -webkit-line-clamp: 1; }
+body.immersive.art-scene .scene-owner i { width: .35rem; height: .35rem; }
+body.immersive.art-scene .agenda-pages { font-size: .6rem; }
+body.immersive.art-scene #note { grid-column: 2; grid-row: 4; padding: .85rem 1rem; border-radius: 1rem; font-size: .9rem; box-shadow: none; backdrop-filter: none; }
+body.immersive.art-scene #note::before { font-size: .62em; }
+body.immersive.art-scene #mediaBar { grid-column: 2; grid-row: 5; padding: .2rem; gap: .6rem; }
+body.immersive.art-scene #mediaBar strong { font-size: .8rem; }
+body.immersive.art-scene #mediaBar span { font-size: .7rem; }
+body.immersive.art-scene #mediaBar em { font-size: .6rem; }
+body.immersive.art-scene #eventCue {
+  left: auto; right: var(--safe);
+  width: calc((100% - var(--safe) * 2 - clamp(2rem, 4vw, 5rem)) * .32);
+  background: var(--bg); border-color: var(--line);
+}
+@media (max-width: 1100px) and (min-width: 801px) {
+  body.immersive.art-scene #stage { grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 1fr); gap: .8rem 2rem; }
+  body.immersive.art-scene #modes button { padding-inline: .7rem; }
+  body.immersive.art-scene #hero { padding-block: .4rem; }
+}
+@media (max-width: 800px) {
+  body.immersive.art-scene #stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(150px, .9fr) auto auto minmax(140px, 1fr) auto;
+    gap: .8rem 1rem;
+  }
+  #artworkFrame { grid-column: 1 / -1; grid-row: 1; gap: .5rem; padding: 0 .3rem; }
+  #artworkTitle { font-size: .75rem; }
+  #artworkArtist { font-size: .62rem; }
+  body.immersive.art-scene #top { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+  body.immersive.art-scene #hero { grid-column: 1 / -1; grid-row: 3; padding: 0; }
+  body.immersive.art-scene #clock { font-size: clamp(3rem, 12vw, 6rem); }
+  body.immersive.art-scene .hero-copy { padding: 0; font-size: .75rem; }
+  body.immersive.art-scene #screen { grid-column: 1 / -1; grid-row: 4; padding-top: .5rem; }
+  body.immersive.art-scene .scene-event { height: 5.4rem; min-height: 5.4rem; }
+  body.immersive.art-scene #note { grid-column: 1; grid-row: 5; padding: .65rem; font-size: .8rem; }
+  body.immersive.art-scene #mediaBar { grid-column: 2; grid-row: 5; }
+  body.immersive.art-scene #eventCue { width: calc(100% - var(--safe) * 2); }
+}

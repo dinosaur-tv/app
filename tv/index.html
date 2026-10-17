@@ -10,7 +10,9 @@
     <link rel="icon" type="image/png" href="/assets/dino-icon-512.png" />
     <link rel="stylesheet" href="./tv.css" />
     <link rel="stylesheet" href="./scenes.css" />
+    <link rel="stylesheet" href="./ambient.css" />
     <link rel="stylesheet" href="./layout.css" />
+    <link rel="stylesheet" href="./art.css" />
   </head>
   <body data-theme="gallery">
     <div id="sceneBackdrop" aria-hidden="true"></div>
@@ -21,6 +23,10 @@
     <div id="sceneParticles" aria-hidden="true"></div>
     <div id="grain" aria-hidden="true"></div>
     <div id="stage">
+      <figure id="artworkFrame" hidden>
+        <div class="art-mat"><img id="artworkImage" alt="" decoding="async" /></div>
+        <figcaption><strong id="artworkTitle"></strong><span id="artworkArtist"></span></figcaption>
+      </figure>
       <header id="top">
         <nav id="modes" aria-label="Экран">
           <button data-mode="TODAY">Сегодня</button>
