@@ -242,10 +242,11 @@ body.immersive[data-theme] #mediaBar {
   max-width: 100%;
   padding: .6rem .4rem;
 }
-body.immersive[data-theme] #mediaBar strong { color: var(--ink); font: 550 1rem/1.4 var(--font); text-shadow: none; }
-body.immersive[data-theme] #mediaBar span { color: var(--ink); font-size: .8rem; text-shadow: none; }
-body.immersive[data-theme] #mediaBar em { color: var(--muted); font-size: .68rem; text-shadow: none; }
-body.immersive[data-theme] #mediaBar .media-wave { opacity: .8; }
+body.immersive[data-theme] #mediaBar strong { color: var(--ink); font: 550 1.8rem/1.25 var(--font); text-shadow: none; }
+body.immersive[data-theme] #mediaBar span { color: var(--ink); font-size: 1.25rem; text-shadow: none; }
+body.immersive[data-theme] #mediaBar em { color: var(--muted); font-size: .85rem; text-shadow: none; }
+body.immersive[data-theme] #mediaBar .media-wave { opacity: .8; height: 3rem; gap: .28rem; }
+body.immersive[data-theme] #mediaBar .media-wave i { width: .28rem; }
 body.immersive[data-theme] #eventCue {
   inset: auto auto max(28px, env(safe-area-inset-bottom)) var(--safe);
   width: calc((100% - var(--safe) * 2 - clamp(2rem, 5vw, 7rem)) * .46);
@@ -260,8 +261,6 @@ body.immersive[data-theme] #eventCue strong { font: 550 1.4rem/1.25 var(--font);
 #pair h1 { max-width: 30ch; font: 550 clamp(1.6rem, 3vw, 3rem)/1.2 var(--font); }
 #pairCode { font: 400 clamp(3rem, 8vw, 6rem)/1.1 var(--font); letter-spacing: .16em; }
 #pair small { max-width: 36rem; margin-inline: auto; line-height: 1.5; }
-body.immersive[data-theme] #orbs { display: none; }
-body.immersive[data-theme] #grain { animation: none; opacity: .035; }
 /* Custom wallpaper receives a neutral dark palette and no unrelated scene motifs. */
 body.immersive[data-theme].has-photo {
   --ink: #f6f7f9; --muted: #c5cbd3; --accent: #d9e4ed;

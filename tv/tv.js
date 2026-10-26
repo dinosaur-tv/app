@@ -1,7 +1,8 @@
 import { displayThemes, normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 import { paintSceneMotion } from "./scene-motion.js";
+import { sceneLayout } from "./scene-layout.js";
 import { artworkFor, artworkUrl } from "../artworks.js";
-import { minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
+import { isLiveNow, leftPhrase, liveEvents, liveState, minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
 import { fallbackWeather, fetchWeather, placeKey } from "./weather.js";
 import { screenNameFrom } from "./screen-name.js";
 
@@ -90,6 +91,30 @@ const shownCues = readShownCues();
 let lastForcedMode = "";
 let lastRotationKey = "";
 let paintedKey = "";
+let paintedHtml = null;
+
+/**
+ * The 4K pictures cost a 33 MB texture, which a 1080p television never shows, so they are
+ * loaded only where the panel really draws that many pixels (a 4K monitor or a TV whose
+ * interface runs at 4K). The ordinary picture stays up until the large one has arrived.
+ */
+const HI_RES = Math.max(window.screen.width, window.screen.height) * (window.devicePixelRatio || 1) >= 2560;
+const backdrop = document.querySelector("#sceneBackdrop");
+
+function upgradeBackdrop(theme) {
+  if (!HI_RES || backdrop.dataset.theme === theme) return;
+  backdrop.dataset.theme = theme;
+  backdrop.style.backgroundImage = "";
+  const css = window.getComputedStyle(backdrop).backgroundImage;
+  const match = css.match(/\/assets\/scenes\/([\w-]+)\.webp/);
+  if (!match) return;
+  const large = `/assets/scenes/4k/${match[1]}.webp`;
+  const probe = new window.Image();
+  probe.onload = () => {
+    if (backdrop.dataset.theme === theme) backdrop.style.backgroundImage = css.replace(`/assets/scenes/${match[1]}.webp`, large);
+  };
+  probe.src = large;
+}
 let appliedReloadAt = localStorage.getItem("dinoTvReloadAt") || "";
 let appliedPowerAt = localStorage.getItem("dinoTvPowerAt") || "";
 let asleep = false;
@@ -101,6 +126,19 @@ const scenePageSizes = new Map();
 
 function nativeBridge() {
   return window.DinoTV || null;
+}
+
+/**
+ * Writing the same text again still swaps the text node and makes the page lay itself out,
+ * and the clock and the track line were doing it every second. Only a change is written.
+ */
+function setText(el, value) {
+  const text = String(value ?? "");
+  if (el && el.textContent !== text) el.textContent = text;
+}
+
+function setHidden(el, hidden) {
+  if (el && el.hidden !== hidden) el.hidden = hidden;
 }
 
 if (nativeBridge()) {
@@ -169,6 +207,7 @@ function showEventCue(cue) {
   document.querySelector("#eventCueMeta").textContent = [cue.ownerName, timeOf(cue.start)].filter(Boolean).join(" · ");
   el.classList.remove("leaving");
   el.hidden = false;
+  document.body.classList.add("cue-visible");
   const bar = document.querySelector("#eventCueProgress");
   // Restart the drain even when one cue replaces another mid-flight.
   bar.style.animation = "none";
@@ -177,7 +216,11 @@ function showEventCue(cue) {
   clearTimeout(eventCueTimer);
   eventCueTimer = setTimeout(() => {
     el.classList.add("leaving");
-    eventCueTimer = setTimeout(() => { el.hidden = true; el.classList.remove("leaving"); }, EVENT_CUE_LEAVE_MS);
+    eventCueTimer = setTimeout(() => {
+      el.hidden = true;
+      el.classList.remove("leaving");
+      document.body.classList.remove("cue-visible");
+    }, EVENT_CUE_LEAVE_MS);
   }, EVENT_CUE_DWELL_MS);
 }
 
@@ -188,6 +231,7 @@ function hideEventCue() {
   eventCueTimer = undefined;
   el.hidden = true;
   el.classList.remove("leaving");
+  document.body.classList.remove("cue-visible");
 }
 
 function maybeEventCue(now = new Date()) {
@@ -276,16 +320,6 @@ function upcomingEvents(now = new Date(), limit) {
   return Number.isFinite(limit) ? events.slice(0, limit) : events;
 }
 
-function eventRow(event) {
-  return `<div class="event">
-    ${ownerDots(event)}
-    <div>
-      <strong>${escapeHtml(titleOf(event))}</strong>
-      <span class="event-owner">${escapeHtml(eventOwner(event))}</span>
-      <div class="muted">${timeOf(event.start)} — ${timeOf(event.end)}</div>
-    </div>
-  </div>`;
-}
 
 function durationLabel(event) {
   if (event.allDay) return "Весь день";
@@ -358,21 +392,6 @@ function renderGuest(now = new Date()) {
   return `<section class="guest-weather">${weatherDayHtml(date, now)}</section>`;
 }
 
-function renderDay(now) {
-  const layers = screenLayers();
-  if (layers.privacy) return renderGuest(now);
-  const date = dayForMode(now);
-  const title = mode === "TOMORROW" ? "Завтра" : "Сегодня";
-  const events = layers.calendar ? eventsFor(date, now, mode === "TODAY") : [];
-  if (!layers.calendar && !layers.weather) return "";
-  return `<section class="grid-today">
-    ${layers.calendar ? `<article class="card">
-      <p class="kicker">${title}</p>
-      <div class="events">${events.length ? events.map((event) => eventRow(event)).join("") : `<p class="empty">${title} спокойно — дел нет.</p>`}</div>
-    </article>` : ""}
-    ${layers.weather ? `<article class="card"><p class="kicker">Погода</p>${weatherDayHtml(date, now)}</article>` : ""}
-  </section>`;
-}
 
 function sceneWeather(periods) {
   if (!periods?.length) return "";
@@ -381,7 +400,8 @@ function sceneWeather(periods) {
 
 function scenePageSizeKey(scene) {
   const layers = screenLayers();
-  return [scene, mode, screen.clientWidth, screen.clientHeight, layers.weather].join(":");
+  // The window, not the panel: the panel now grows and shrinks with its events.
+  return [scene, mode, window.innerWidth, window.innerHeight, layers.weather, Boolean(snapshot?.display?.note?.text), document.body.classList.contains("media-visible")].join(":");
 }
 
 function scenePageSize(scene) {
@@ -428,19 +448,102 @@ function agendaPages(events, size, now, fallbackDate = todayStamp(now)) {
   return pages.length ? pages : [{ date: fallbackDate, events: [], part: 1, parts: 1 }];
 }
 
+// A day heading is about half the height of an event row.
+const DAY_HEADING_ROWS = 0.5;
+
+/**
+ * The week used to give each day its own page, so a quiet week was seven pages of one
+ * event each. Now the days run on as one list, each under its own heading, and a page
+ * breaks only when the screen is full. A day split across pages repeats its heading.
+ */
+function weekPages(events, size, now) {
+  const pages = [];
+  let items = [];
+  let used = 0;
+  let lastDate = "";
+  for (const event of events) {
+    const date = dayKey(event.start, now);
+    const heading = date !== lastDate || !items.length;
+    const cost = 1 + (heading ? DAY_HEADING_ROWS : 0);
+    if (items.length && used + cost > size) {
+      pages.push(items);
+      items = [];
+      used = 0;
+    }
+    if (date !== lastDate || !items.length) {
+      items.push({ date });
+      used += DAY_HEADING_ROWS;
+      lastDate = date;
+    }
+    items.push({ event });
+    used += 1;
+  }
+  if (items.length) pages.push(items);
+  return pages;
+}
+
+function weekDayHeading(date, now) {
+  const stamp = new Date(`${date}T12:00:00+03:00`);
+  const day = stamp.toLocaleDateString(russian, { day: "numeric", month: "long" });
+  const name = date === todayStamp(now) ? "Сегодня"
+    : date === weekDates(now)[1] ? "Завтра"
+      : stamp.toLocaleDateString(russian, { weekday: "long" });
+  return `<h3 class="scene-day">${escapeHtml(name)}<small>${escapeHtml(day)}</small></h3>`;
+}
+
+function screenTimeZone() {
+  return snapshot?.timezone || snapshot?.display?.place?.timezone || "Europe/Moscow";
+}
+
+/** An event under way says so, shows what is left of it, and fills a bar as it goes. */
+function sceneEventHtml(event, index) {
+  const now = Date.now();
+  const live = isLiveNow(event, now) ? liveState(event, now) : null;
+  const detail = live
+    ? `<small class="live-left">Идёт · ${escapeHtml(leftPhrase(live, { timeZone: screenTimeZone() }))}</small>`
+    : `<small>${durationLabel(event)}</small>`;
+  const bar = live ? `<i class="live-bar" style="--live-progress:${live.progress.toFixed(3)}"></i>` : "";
+  return `<article class="scene-event${live ? " is-live" : ""}" style="--event-index:${index}">
+      <time class="scene-time">${live ? "Сейчас" : timeOf(event.start)}</time>
+      <div class="scene-title"><strong title="${escapeHtml(titleOf(event))}">${escapeHtml(titleOf(event))}</strong>${detail}${bar}</div>
+      <span class="scene-owner" title="${escapeHtml(eventOwner(event))}">${ownerDots(event)}<span>${escapeHtml(eventOwner(event))}</span></span>
+    </article>`;
+}
+
+function pagerHtml(index, count) {
+  const ratio = (index + 1) / count;
+  return `<div class="agenda-pages${count > 1 ? "" : " single-page"}"><span>${index + 1} / ${count}</span><i style="--page-progress:${ratio * 100}%;--page-progress-ratio:${ratio}"></i></div>`;
+}
+
+function renderWeekAgenda(now, scene) {
+  const layers = screenLayers();
+  const week = new Set(weekDates(now));
+  const events = layers.calendar ? upcomingEvents(now).filter((event) => week.has(dayKey(event.start, now))) : [];
+  const pages = weekPages(events, scenePageSize(scene), now);
+  agendaPageCount = Math.max(1, pages.length);
+  const pageIndex = agendaPage % agendaPageCount;
+  const items = pages[pageIndex] || [];
+  const first = weekDates(now)[0];
+  const last = weekDates(now)[6];
+  const range = `${new Date(`${first}T12:00:00+03:00`).getDate()}–${new Date(`${last}T12:00:00+03:00`).toLocaleDateString(russian, { day: "numeric", month: "long" })}`;
+  let eventIndex = 0;
+  const body = items.map((item) => (item.event ? sceneEventHtml(item.event, eventIndex++) : weekDayHeading(item.date, now))).join("");
+  return `<section class="scene-agenda scene-${scene}">
+    <p class="kicker"><span>Эта неделя</span><span class="scene-day-label">${escapeHtml(range)}</span></p>
+    <div class="scene-list" style="--event-count:${Math.max(eventIndex, 1)}">${body || `<p class="empty">На неделе тихо. Можно ничего не планировать.</p>`}</div>
+    ${pagerHtml(pageIndex, agendaPageCount)}
+  </section>`;
+}
+
 function renderSceneAgenda(now, scene) {
   agendaPageCount = 1;
   const layers = screenLayers();
   if (layers.privacy) return renderGuest(now);
   if (!layers.calendar && !layers.weather) return "";
-  const week = new Set(weekDates(now));
+  if (mode === "WEEK" && layers.calendar) return renderWeekAgenda(now, scene);
   const daily = mode === "TODAY" || mode === "TOMORROW";
   const selectedDate = dayForMode(now);
-  const events = layers.calendar
-    ? (daily
-      ? eventsFor(selectedDate, now, mode === "TODAY")
-      : upcomingEvents(now).filter((event) => week.has(dayKey(event.start, now))))
-    : [];
+  const events = layers.calendar && daily ? eventsFor(selectedDate, now, mode === "TODAY") : [];
   const pages = agendaPages(events, scenePageSize(scene), now, selectedDate);
   agendaPageCount = layers.calendar ? pages.length : 1;
   const pageIndex = agendaPage % pages.length;
@@ -449,59 +552,40 @@ function renderSceneAgenda(now, scene) {
   return `<section class="scene-agenda scene-${scene}">
     ${layers.calendar ? `<p class="kicker"><span>${title}</span><span class="scene-day-label">${escapeHtml(agendaDayLabel(page.date, now, daily))}${page.parts > 1 ? ` · ${page.part}/${page.parts}` : ""}</span></p>` : ""}
     ${layers.weather && daily ? sceneWeather(weatherForSelectedDay(selectedDate, now)?.periods) : ""}
-    ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map((event, index) => `<article class="scene-event" style="--event-index:${index}">
-      <time class="scene-time">${timeOf(event.start)}</time>
-      <div class="scene-title"><strong title="${escapeHtml(titleOf(event))}">${escapeHtml(titleOf(event))}</strong><small>${durationLabel(event)}</small></div>
-      <span class="scene-owner" title="${escapeHtml(eventOwner(event))}">${ownerDots(event)}<span>${escapeHtml(eventOwner(event))}</span></span>
-    </article>`).join("") : `<p class="empty">${mode === "TOMORROW" ? "Завтра" : "Сегодня"} тихо. Можно никуда не спешить.</p>`}</div>
-    <div class="agenda-pages${pages.length > 1 ? "" : " single-page"}"><span>${pageIndex + 1} / ${pages.length}</span><i style="--page-progress:${((pageIndex + 1) / pages.length) * 100}%"></i></div>` : ""}
+    ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map(sceneEventHtml).join("") : `<p class="empty">${mode === "TOMORROW" ? "Завтра" : "Сегодня"} тихо. Можно никуда не спешить.</p>`}</div>
+    ${pagerHtml(pageIndex, pages.length)}` : ""}
   </section>`;
 }
 
-function renderWeek(now) {
-  const layers = screenLayers();
-  if (layers.privacy) return renderGuest();
-  if (!layers.calendar && !layers.weather) return "";
-  const weekday = new Intl.DateTimeFormat(russian, { weekday: "short" });
-  return `<section class="week">${weekDates(now).map((date) => {
-    const stamp = new Date(`${date}T12:00:00+03:00`);
-    const weather = layers.weather ? weatherFor(date) : null;
-    const liveOnly = date === todayStamp(now);
-    const events = layers.calendar ? eventsFor(date, now, liveOnly) : [];
-    return `<article class="card ${date === todayStamp(now) ? "today" : ""}">
-      <div class="day-name">${weekday.format(stamp)}</div>
-      <div class="day-num">${stamp.getDate()}</div>
-      ${layers.weather ? `<div class="day-weather">${weather ? `${weather.high}° / ${weather.low}°` : "—"}<small>${weather ? escapeHtml(weather.description) : ""}</small></div>` : ""}
-      ${layers.calendar ? `<div class="events">${events.length ? events.map((event) => eventRow(event)).join("") : `<p class="empty">Тихо</p>`}</div>` : ""}
-    </article>`;
-  }).join("")}</section>`;
-}
 
 function paintClock(now = new Date()) {
   if (!clockEl) return;
-  clockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  if (dateLine) dateLine.textContent = now.toLocaleDateString(russian, { weekday: "long", day: "numeric", month: "long" });
+  setText(clockEl, `${pad(now.getHours())}:${pad(now.getMinutes())}`);
+  setText(dateLine, now.toLocaleDateString(russian, { weekday: "long", day: "numeric", month: "long" }));
   if (weatherLine) {
     // The clock runs before the first snapshot; the forecast has nothing to say yet.
     const visible = Boolean(snapshot?.weather) && screenLayers().weather;
-    weatherLine.hidden = !visible;
-    weatherLine.textContent = visible ? `${snapshot.weather.temperature}° · ${snapshot.weather.description}` : "";
+    setHidden(weatherLine, !visible);
+    setText(weatherLine, visible ? `${snapshot.weather.temperature}° · ${snapshot.weather.description}` : "");
   }
   if (nextUpLine) {
     const layers = screenLayers();
     const display = normalizeDisplay(snapshot?.display);
-    const timeZone = snapshot?.timezone || snapshot?.display?.place?.timezone || "Europe/Moscow";
-    const next = layers.calendar
-      ? nextUpEvent((snapshot?.days || []).flatMap((day) => day.events || []), {
-        now: now.getTime(),
-        privacy: display.privacy,
-        showCalendar: display.showCalendar,
-        timeZone,
-      })
-      : null;
-    const text = next ? nextUpPhrase(next, { timeZone }) : "";
-    nextUpLine.hidden = !text;
-    nextUpLine.textContent = text;
+    const timeZone = screenTimeZone();
+    const events = layers.calendar ? (snapshot?.days || []).flatMap((day) => day.events || []) : [];
+    const options = { now: now.getTime(), privacy: display.privacy, showCalendar: display.showCalendar, timeZone };
+    // What is on now and what comes next are two lines of one card, each only when it exists.
+    const live = liveEvents(events, options)[0];
+    const next = nextUpEvent(events, options);
+    const rows = [];
+    if (live) rows.push(["now", "Сейчас", `${live.title || "Дело"} · ${leftPhrase(live, { timeZone })}`]);
+    if (next && !next.live) rows.push(["next", "Дальше", nextUpPhrase(next, { timeZone })]);
+    const html = rows.map(([kind, label, text]) => `<span class="up-row up-${kind}"><b>${label}</b><span>${escapeHtml(text)}</span></span>`).join("");
+    setHidden(nextUpLine, !html);
+    if (nextUpLine.dataset.html !== html) {
+      nextUpLine.dataset.html = html;
+      nextUpLine.innerHTML = html;
+    }
   }
 }
 
@@ -520,7 +604,7 @@ function paintMedia() {
   const playing = pickNowPlaying(nativeNowPlaying, snapshot);
   const visible = Boolean(playing?.title);
   document.body.classList.toggle("media-visible", visible);
-  mediaBar.hidden = !visible;
+  setHidden(mediaBar, !visible);
   if (!visible) {
     stopNativeSpectrum();
     return;
@@ -528,17 +612,17 @@ function paintMedia() {
   const live = playing.isPlaying !== false;
   mediaBar.classList.toggle("is-playing", live);
   if (!live) stopNativeSpectrum();
-  mediaTitle.textContent = playing.title;
-  mediaArtist.textContent = playing.artist || "";
-  mediaArtist.hidden = !playing.artist;
+  setText(mediaTitle, playing.title);
+  setText(mediaArtist, playing.artist || "");
+  setHidden(mediaArtist, !playing.artist);
   // Still on the player, just not moving — said plainly, since the wave has gone still.
-  mediaSource.textContent = [playing.source, live ? "" : "на паузе"].filter(Boolean).join(" · ");
-  mediaSource.hidden = !mediaSource.textContent;
+  setText(mediaSource, [playing.source, live ? "" : "на паузе"].filter(Boolean).join(" · "));
+  setHidden(mediaSource, !mediaSource.textContent);
 }
 
 function stopNativeSpectrum() {
   mediaBar.classList.remove("has-audio-spectrum");
-  for (const bar of mediaBars) bar.style.height = "";
+  for (const bar of mediaBars) bar.style.removeProperty("--level");
   const bridge = nativeBridge();
   if (nativeSpectrumMayBeRunning) {
     nativeSpectrumMayBeRunning = false;
@@ -555,12 +639,13 @@ function paintNativeSpectrum() {
     const active = spectrum?.state === "active" && Array.isArray(spectrum.bands);
     mediaBar.classList.toggle("has-audio-spectrum", active);
     if (!active) {
-      for (const bar of mediaBars) bar.style.height = "";
+      for (const bar of mediaBars) bar.style.removeProperty("--level");
       return;
     }
+    // Scaled, not resized: a transform never makes the page lay itself out again.
     mediaBars.forEach((bar, index) => {
       const level = Math.max(0, Math.min(1, Number(spectrum.bands[index]) || 0));
-      bar.style.height = `${8 + level * 92}%`;
+      bar.style.setProperty("--level", (0.08 + level * 0.92).toFixed(2));
     });
   } catch {
     mediaBar.classList.remove("has-audio-spectrum");
@@ -617,12 +702,18 @@ function paint(force = false) {
       document.querySelector("#artworkArtist").textContent = `${artwork.artist} · ${artwork.year}`;
     }
   }
+  document.body.dataset.layout = sceneLayout(activeTheme, { artwork: Boolean(artwork), customPhoto });
+  upgradeBackdrop(activeTheme);
   paintSceneMotion(activeTheme, customPhoto || Boolean(artwork));
   document.body.classList.toggle("guests", display.privacy);
   document.body.classList.toggle("hide-weather", !display.showWeather);
   document.body.classList.toggle("hide-calendar", !display.showCalendar);
   if (!display.showCalendar || display.privacy) hideEventCue();
-  photo.style.backgroundImage = snapshot.display.backgroundUrl ? `url("${snapshot.display.backgroundUrl}")` : "";
+  const photoUrl = snapshot.display.backgroundUrl || "";
+  if (photo.dataset.url !== photoUrl) {
+    photo.dataset.url = photoUrl;
+    photo.style.backgroundImage = photoUrl ? `url("${photoUrl}")` : "";
+  }
   paintClock(now);
   paintMedia();
   document.querySelectorAll("#modes [data-mode]").forEach((button) => {
@@ -631,10 +722,10 @@ function paint(force = false) {
     button.setAttribute("aria-pressed", String(selected));
   });
   if (snapshot.display.note?.text && !display.privacy) {
-    noteEl.hidden = false;
-    noteEl.textContent = snapshot.display.note.text;
+    setHidden(noteEl, false);
+    setText(noteEl, snapshot.display.note.text);
   } else {
-    noteEl.hidden = true;
+    setHidden(noteEl, true);
   }
   document.body.classList.toggle("has-note", !noteEl.hidden);
   const key = `${viewSig()}|${now.getMinutes()}`;
@@ -642,16 +733,40 @@ function paint(force = false) {
   paintedKey = key;
   if (sceneThemes.includes(activeTheme)) {
     const sizeKey = scenePageSizeKey(activeTheme);
-    const previousSize = scenePageSize(activeTheme);
-    screen.innerHTML = renderSceneAgenda(now, activeTheme);
-    const measuredSize = measuredScenePageSize();
-    if (measuredSize && measuredSize !== previousSize) {
-      scenePageSizes.set(sizeKey, measuredSize);
-      screen.innerHTML = renderSceneAgenda(now, activeTheme);
+    let html = renderSceneAgenda(now, activeTheme);
+    // Measured once per screen size, against the full column the panel may grow into.
+    if (!scenePageSizes.has(sizeKey) && html) {
+      const previousSize = scenePageSize(activeTheme);
+      screen.classList.add("measuring");
+      screen.innerHTML = html;
+      const measuredSize = measuredScenePageSize();
+      screen.classList.remove("measuring");
+      if (measuredSize) {
+        scenePageSizes.set(sizeKey, measuredSize);
+        if (measuredSize !== previousSize) html = renderSceneAgenda(now, activeTheme);
+      }
+      paintedHtml = "";
     }
-  } else {
-    screen.innerHTML = mode === "WEEK" ? renderWeek(now) : renderDay(now);
+    swapScreen(html);
   }
+}
+
+/** The agenda is only rebuilt when it reads differently, and only then do its rows slide in. */
+function swapScreen(html) {
+  if (html === paintedHtml) return;
+  // The minutes left and the progress bar move every minute; that is not a new agenda,
+  // so the rows are refreshed in place without sliding in again.
+  const quiet = paintedHtml !== null && agendaShape(html) === agendaShape(paintedHtml);
+  paintedHtml = html;
+  screen.classList.remove("agenda-enter");
+  screen.innerHTML = html;
+  if (quiet) return;
+  void screen.offsetWidth;
+  screen.classList.add("agenda-enter");
+}
+
+function agendaShape(html) {
+  return html.replace(/<small class="live-left">.*?<\/small>/g, "").replace(/--live-progress:[\d.]+/g, "");
 }
 
 async function request(path, options = {}) {
@@ -707,8 +822,15 @@ function rememberedSnapshot() {
   }
 }
 
+// The screen asks every two seconds and the answer is almost always the same; an
+// unchanged answer used to repaint the screen and rewrite two caches on disk each time.
+let lastSnapshotText = "";
+
 async function loadSnapshot() {
   const data = await request("/v1/display/snapshot");
+  const text = JSON.stringify(data);
+  if (snapshot && text === lastSnapshotText) return;
+  lastSnapshotText = text;
   if (flushTvApp(data.reloadAt)) return;
   applyPower(data.power, data.powerAt);
   syncNativeSession();
@@ -831,6 +953,14 @@ setInterval(() => {
   polling = true;
   loadSnapshot().catch(() => {}).finally(() => { polling = false; });
 }, 2_000);
+
+// A mouse means the desktop app: the view pills come back while it moves.
+let pointerTimer;
+window.addEventListener("mousemove", () => {
+  document.body.classList.add("pointer-active");
+  clearTimeout(pointerTimer);
+  pointerTimer = setTimeout(() => document.body.classList.remove("pointer-active"), 3500);
+}, { passive: true });
 
 const pixelShifts = [[0, 0], [7, -4], [-5, 6], [4, 5], [-7, -3], [2, -6]];
 let pixelShiftIndex = 0;

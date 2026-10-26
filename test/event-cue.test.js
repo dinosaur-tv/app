@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
+import { isLiveNow, leftPhrase, liveEvents, minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
 
 const now = Date.parse("2026-09-08T16:00:00+03:00");
 
@@ -74,4 +74,25 @@ test("skips a lead that already had its overlay", () => {
     { id: "next", title: "Ужин", start: "2026-09-08T16:05:00+03:00" },
   ];
   assert.equal(nextEventCue(events, { now, shownIds: ["soon@5"] }).id, "next@5");
+});
+
+test("an event under way is named with how much of it is left", () => {
+  const events = [
+    { id: "a", title: "Созвон", start: "2026-09-08T15:30:00+03:00", end: "2026-09-08T16:30:00+03:00" },
+    { id: "b", title: "Ужин", start: "2026-09-08T19:00:00+03:00", end: "2026-09-08T21:00:00+03:00" },
+    { id: "c", title: "Отпуск", start: "2026-09-08", end: "2026-09-09", allDay: true },
+    { id: "d", title: "Смена", start: "2026-09-08T09:00:00+03:00", end: "2026-09-08T20:00:00+03:00" },
+  ];
+  const live = liveEvents(events, { now });
+  assert.deepEqual(live.map((event) => event.id), ["d", "a"]);
+  assert.equal(live[1].minutesLeft, 30);
+  assert.equal(live[1].progress, 0.5);
+  assert.equal(leftPhrase(live[1]), "ещё 30 мин");
+  assert.equal(leftPhrase(live[0]), "до 20:00");
+  assert.deepEqual(liveEvents(events, { now, privacy: true }), []);
+  assert.deepEqual(liveEvents(events, { now, showCalendar: false }), []);
+  assert.equal(isLiveNow(events[0], now), true);
+  assert.equal(isLiveNow(events[1], now), false);
+  assert.equal(isLiveNow(events[2], now), false, "all-day events are not shown as under way");
+  assert.equal(isLiveNow({ ...events[0], end: "2026-09-08T16:00:00+03:00" }, now), false, "an event that just ended is over");
 });

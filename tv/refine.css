@@ -1,0 +1,213 @@
+/*
+ * Read from the sofa. The screen is looked at from three metres, so nothing that carries
+ * meaning is set below ~0.85rem (≈17px at 1080p), titles sit near 1.3rem, and the panel
+ * only takes the room its events need, leaving the rest of the scene to be looked at.
+ */
+
+/* The view is chosen from the phone; on the television the pills only took a row.
+   A mouse (the desktop app) still brings them back. */
+body.immersive[data-theme] #top {
+  position: absolute;
+  top: max(18px, 1.6vh);
+  left: 50%;
+  z-index: 7;
+  margin: 0;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+body.immersive[data-theme].pointer-active #top { opacity: 1; pointer-events: auto; }
+body.immersive.art-scene #top { left: auto; right: var(--safe); transform: none; }
+
+/* A reminder and the track share the lower-left corner; the reminder wins for its 20 s. */
+body.cue-visible #mediaBar { opacity: 0 !important; transition: opacity .3s ease; }
+
+@media (min-width: 801px) {
+  /* The panel hugs its events instead of filling the column with empty glass. */
+  body.immersive[data-theme] #screen {
+    align-self: start;
+    height: auto;
+    max-height: 100%;
+    padding: 1.6rem 1.9rem 1.2rem;
+  }
+  body.immersive[data-theme] #screen.measuring { height: 100%; }
+  body.immersive[data-theme] .scene-agenda { height: auto; max-height: 100%; }
+  body.immersive[data-theme] #screen.measuring .scene-agenda { height: 100%; }
+
+  body.immersive[data-theme] .scene-agenda > .kicker {
+    min-height: 2.8rem;
+    margin-bottom: .2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  body.immersive[data-theme] .scene-day-label { font-size: .9rem; font-weight: 500; color: var(--muted); }
+
+  body.immersive[data-theme] .scene-weather { gap: .6rem; margin-bottom: 1.1rem; }
+  body.immersive[data-theme] .scene-weather > div { padding: .75rem .85rem; }
+  body.immersive[data-theme] .scene-weather small { font-size: .78rem; font-weight: 500; }
+  body.immersive[data-theme] .scene-weather b { font-size: 1.7rem; }
+  body.immersive[data-theme] .scene-weather span { font-size: .78rem; }
+
+  body.immersive[data-theme] .scene-event {
+    grid-template-columns: 4.6rem minmax(0, 1fr) minmax(4.5rem, 22%);
+    gap: 1rem;
+    height: 6.2rem;
+    min-height: 6.2rem;
+  }
+  body.immersive[data-theme] .scene-time {
+    color: var(--ink);
+    font: 500 1.15rem var(--font);
+    font-variant-numeric: tabular-nums;
+    opacity: .78;
+  }
+  body.immersive[data-theme] .scene-title { padding-left: 1rem; }
+  body.immersive[data-theme] .scene-title strong { font: 550 1.3rem/1.25 var(--font); }
+  body.immersive[data-theme] .scene-title small { margin-top: .25rem; font-size: .9rem; }
+  body.immersive[data-theme] .scene-owner { gap: .5rem; font-size: .92rem; line-height: 1.35; }
+  body.immersive[data-theme] .scene-owner i { width: .62rem; height: .62rem; }
+  body.immersive[data-theme] .scene-owner .owner-dots { margin-top: .32rem; }
+  body.immersive[data-theme] .agenda-pages { height: 2rem; font-size: .85rem; }
+  body.immersive[data-theme] .agenda-pages i { width: 6rem; height: 3px; }
+  body.immersive[data-theme] .scene-list .empty { margin: 1rem 0 .4rem; font-size: 1.2rem; color: var(--muted); }
+
+  /* Week: one list with the day written above its events, not one day per page. */
+  body.immersive[data-theme] .scene-day {
+    display: flex;
+    align-items: baseline;
+    gap: .7rem;
+    height: 3rem;
+    margin: 0;
+    padding: 1rem 0 .3rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font: 650 .95rem var(--font);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  body.immersive[data-theme] .scene-day:first-child { padding-top: .2rem; height: 2.2rem; }
+  body.immersive[data-theme] .scene-day small {
+    color: var(--muted);
+    font-size: .85rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  body.immersive[data-theme] #eventCue { padding: 1.4rem 1.6rem 1.5rem; }
+  body.immersive[data-theme] #eventCue .eyebrow { font-size: .95rem; }
+  body.immersive[data-theme] #eventCue strong { font: 600 2rem/1.2 var(--font); }
+  body.immersive[data-theme] #eventCue span { font-size: 1.1rem; }
+
+  body.immersive[data-theme] #note { font-size: clamp(1.2rem, 1.9vw, 1.8rem); }
+
+  /* Art keeps the narrow rail, but the rail is still read from the sofa. */
+  body.immersive.art-scene .scene-agenda > .kicker { font-size: 1.05rem; }
+  body.immersive.art-scene .scene-day-label { font-size: .8rem; }
+  body.immersive.art-scene .scene-event {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: .25rem .8rem;
+    height: 6.6rem;
+    min-height: 6.6rem;
+  }
+  body.immersive.art-scene .scene-time { font-size: 1rem; }
+  body.immersive.art-scene .scene-title strong { font-size: 1.12rem; }
+  body.immersive.art-scene .scene-title small { font-size: .8rem; }
+  body.immersive.art-scene .scene-owner { font-size: .8rem; }
+  body.immersive.art-scene .scene-owner i { width: .5rem; height: .5rem; }
+  body.immersive.art-scene .hero-copy { font-size: 1.05rem; }
+  body.immersive.art-scene #mediaBar strong { font-size: 1.15rem; }
+  body.immersive.art-scene #mediaBar span { font-size: .9rem; }
+  body.immersive.art-scene #mediaBar em { font-size: .75rem; }
+  body.immersive.art-scene #mediaBar .media-wave { height: 2.2rem; gap: .22rem; }
+  body.immersive.art-scene #mediaBar .media-wave i { width: .22rem; }
+  body.immersive.art-scene #artworkTitle { font-size: 1.05rem; }
+  body.immersive.art-scene #artworkArtist { font-size: .85rem; }
+  body.immersive.art-scene .scene-day { font-size: .8rem; }
+}
+
+/* Now and next: one card, one line each. The current event leads, in the accent colour. */
+body.immersive[data-theme] #nextUpLine::before { content: none; }
+body.immersive[data-theme] #nextUpLine { display: grid; gap: .55rem; }
+/* The art rail is narrow: there the agenda itself marks what is on now. */
+body.immersive.art-scene #nextUpLine { display: none; }
+#nextUpLine .up-row { display: grid; gap: .1rem; min-width: 0; }
+#nextUpLine .up-row b {
+  color: var(--muted);
+  font-size: .68em;
+  font-weight: 650;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+#nextUpLine .up-row > span { overflow-wrap: anywhere; }
+#nextUpLine .up-now b { color: var(--live, #8fd3a0); }
+#nextUpLine .up-now > span { font-weight: 600; }
+#nextUpLine .up-now + .up-next { padding-top: .5rem; border-top: 1px solid var(--line); }
+
+/* The row of an event under way: marked, and filling up as it goes. */
+body.immersive[data-theme] { --live: #8fd3a0; }
+body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="dunes"], [data-theme="sunroom"]),
+body.immersive.art-scene:not([data-art-tone="dark"]) { --live: #2f7d4a; }
+body.immersive[data-theme] .scene-event.is-live .scene-time { color: var(--live); font-weight: 650; opacity: 1; }
+body.immersive[data-theme] .scene-event.is-live .scene-title { border-left-color: var(--live); }
+body.immersive[data-theme] .scene-event.is-live .live-left { color: var(--live); font-weight: 600; }
+.live-bar {
+  display: block;
+  height: 3px;
+  margin-top: .45rem;
+  overflow: hidden;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--live, #8fd3a0) 22%, transparent);
+}
+.live-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--live, #8fd3a0);
+  transform: scaleX(var(--live-progress, 0));
+  transform-origin: left center;
+}
+
+/*
+ * Compositions (set as body[data-layout] by scene-layout.js). "split" is layout.css itself
+ * and "art" is art.css; these two only say how they differ from split.
+ */
+@media (min-width: 801px) {
+  /* mirror: the picture's subject is on the right, so the agenda moves left. */
+  body.immersive[data-layout="mirror"] #stage { grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); }
+  body.immersive[data-layout="mirror"] #screen { grid-column: 1; grid-row: 2 / 4; }
+  body.immersive[data-layout="mirror"] :is(#hero, #note) { grid-column: 2; }
+  /* The track and the reminder stay under the agenda, off the picture's subject. */
+  body.immersive[data-layout="mirror"] #mediaBar { grid-column: 1; grid-row: 4; }
+
+  /* night: a large dim clock in the middle, the day below it without a panel. */
+  body.immersive[data-layout="night"] #stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 44rem) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  body.immersive[data-layout="night"] #hero {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+    padding-top: clamp(1rem, 5vh, 4rem);
+    text-align: center;
+  }
+  body.immersive[data-layout="night"] #clock { margin: 0 auto; font-size: clamp(6rem, 11.5vw, 13rem); opacity: .8; }
+  body.immersive[data-layout="night"] .hero-copy { padding: .8rem 0 0; opacity: .8; }
+  body.immersive[data-layout="night"] #nextUpLine { margin-inline: auto; text-align: left; }
+  body.immersive[data-layout="night"] #screen {
+    grid-column: 2;
+    grid-row: 3;
+    padding: 1.2rem 0 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    opacity: .85;
+  }
+  body.immersive[data-layout="night"] .scene-weather { display: none; }
+  /* Note and track flank the agenda at the bottom instead of taking a row from it. */
+  body.immersive[data-layout="night"] #note { grid-column: 1; grid-row: 3; align-self: end; }
+  body.immersive[data-layout="night"] #mediaBar { grid-column: 3; grid-row: 3; align-self: end; }
+}

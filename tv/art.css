@@ -17,9 +17,7 @@ body.immersive.art-scene[data-art-tone="dark"] {
 }
 body.immersive.art-scene #sceneBackdrop,
 body.immersive.art-scene #sceneDecor,
-body.immersive.art-scene #sceneParticles,
-body.immersive.art-scene #orbs,
-body.immersive.art-scene #grain { display: none; }
+body.immersive.art-scene #sceneParticles { display: none; }
 body.immersive.art-scene #wash {
   background: radial-gradient(ellipse at 36% 20%, rgba(255, 255, 255, .12), transparent 65%), linear-gradient(90deg, transparent 65%, rgba(0, 0, 0, .025));
 }
