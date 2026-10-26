@@ -107,3 +107,44 @@ export function nextUpPhrase(event, { timeZone = "Europe/Moscow" } = {}) {
   if (minutes <= 90) return `Через ${minutes} мин · ${title}`;
   return `в ${clockStamp(event.start, timeZone)} · ${title}`;
 }
+
+/**
+ * Timed events going on right now. The screen used to name only what comes next, so a
+ * meeting already under way disappeared from the hero the moment it started.
+ */
+export function liveEvents(events, {
+  now = Date.now(),
+  privacy = false,
+  showCalendar = true,
+} = {}) {
+  if (privacy || showCalendar === false) return [];
+  return (events || [])
+    .filter((event) => event && !event.allDay && event.start && event.end
+      && Date.parse(event.start) <= now && Date.parse(event.end) > now)
+    .sort((a, b) => Date.parse(a.start) - Date.parse(b.start))
+    .map((event) => liveState(event, now));
+}
+
+/** How far along an event is, for the bar under it and the «ещё N мин» beside it. */
+export function liveState(event, now = Date.now()) {
+  const start = Date.parse(event.start);
+  const end = Date.parse(event.end);
+  const span = Math.max(1, end - start);
+  return {
+    ...event,
+    minutesLeft: Math.max(1, Math.ceil((end - now) / 60_000)),
+    progress: Math.min(1, Math.max(0, (now - start) / span)),
+  };
+}
+
+export function isLiveNow(event, now = Date.now()) {
+  return Boolean(event && !event.allDay && event.start && event.end
+    && Date.parse(event.start) <= now && Date.parse(event.end) > now);
+}
+
+/** «ещё 25 мин» while the end is near, «до 18:30» when it is hours away. */
+export function leftPhrase(event, { timeZone = "Europe/Moscow" } = {}) {
+  const minutes = Math.max(1, Number(event?.minutesLeft) || 1);
+  if (minutes <= 90) return `ещё ${minutes} мин`;
+  return `до ${clockStamp(event.end, timeZone)}`;
+}

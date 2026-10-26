@@ -47,7 +47,6 @@ let nowPlaying = normalizeNowPlaying();
 let tvLinked = false;
 let tvOnline = false;
 let tvPower = "on";
-const messageBox = document.querySelector("#message");
 let initData = telegram?.initData || "";
 
 function sessionToken() {
@@ -149,15 +148,25 @@ async function bootTelegram() {
   applyTelegram();
 }
 
-// A line under the fold went unread; anything worth saying is worth stopping for.
+/**
+ * News slides down from the top and leaves on its own, long enough to read it twice.
+ * A modal that had to be dismissed after every saved setting made the remote feel stuck.
+ * A tap dismisses it sooner; an empty call clears it.
+ */
+const toast = document.querySelector("#toast");
+let toastTimer;
 function setNotice(text, type = "") {
-  if (!text) { if (messageBox.open) messageBox.close(); return; }
-  document.querySelector("#messageText").textContent = text;
-  messageBox.className = `message ${type}`;
-  if (!messageBox.open) messageBox.showModal();
+  clearTimeout(toastTimer);
+  if (!text) { toast.classList.remove("shown"); return; }
+  document.querySelector("#toastText").textContent = text;
+  toast.className = `toast ${type}`;
+  toast.hidden = false;
+  void toast.offsetWidth;
+  toast.classList.add("shown");
+  const dwell = Math.min(9000, 2200 + text.length * 45) + (type === "error" ? 1500 : 0);
+  toastTimer = setTimeout(() => toast.classList.remove("shown"), dwell);
 }
-
-document.querySelector("#messageClose").addEventListener("click", () => messageBox.close());
+toast.addEventListener("click", () => setNotice(""));
 
 /**
  * A web view answers window.confirm with "no" and never shows anything, which is how the
@@ -192,28 +201,60 @@ document.querySelector("#confirmYes").addEventListener("click", () => closeConfi
 // Escape and the backdrop count as "no", never as a silent yes.
 confirmBox.addEventListener("cancel", (event) => { event.preventDefault(); closeConfirm(false); });
 
-// Only the group holding the current scene is worth having open; the rest stay folded.
-// After the user toggles any group, stop fighting them — a poll must not snap the accordion shut.
-let syncingSceneGroups = false;
-function paintSceneGroups() {
-  const groups = [...document.querySelectorAll(".theme-row")];
-  const browsing = groups.some((group) => group.dataset.touched);
-  let opened = false;
-  syncingSceneGroups = true;
-  for (const group of groups) {
-    const chosen = group.querySelector("[data-scene].active");
-    group.querySelector(".row-value").textContent = chosen ? themeNames[chosen.dataset.scene] || chosen.querySelector("span").textContent : "";
-    if (browsing) continue;
-    if (chosen && !opened) { group.open = true; opened = true; }
-    else group.open = false;
-  }
-  syncingSceneGroups = false;
+/**
+ * Collections are tabs, not an accordion: one row of chips, one grid under it. The grid
+ * opens on the collection holding the current scene until the person picks another chip,
+ * and from then on a poll never moves them.
+ */
+const sceneGroups = [...document.querySelectorAll(".scene-group")];
+const sceneChips = document.querySelector("#sceneChips");
+let browsedGroup = "";
+for (const group of sceneGroups) {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.setAttribute("role", "tab");
+  chip.dataset.group = group.dataset.group;
+  chip.textContent = group.dataset.group;
+  chip.addEventListener("click", () => {
+    browsedGroup = group.dataset.group;
+    paintSceneGroups();
+  });
+  sceneChips.append(chip);
 }
 
-for (const group of document.querySelectorAll(".theme-row")) {
-  group.addEventListener("toggle", () => {
-    if (!syncingSceneGroups) group.dataset.touched = "1";
-  });
+function paintSceneGroups() {
+  const holding = sceneGroups.find((group) => group.querySelector("[data-scene].active"));
+  const shown = browsedGroup || holding?.dataset.group || sceneGroups[0].dataset.group;
+  for (const group of sceneGroups) group.hidden = group.dataset.group !== shown;
+  for (const chip of sceneChips.children) {
+    const selected = chip.dataset.group === shown;
+    chip.classList.toggle("active", selected);
+    chip.classList.toggle("holds-scene", chip.dataset.group === holding?.dataset.group);
+    chip.setAttribute("aria-selected", String(selected));
+  }
+}
+
+/** The card at the top repeats the chosen tile, so what is on the TV is never a guess. */
+function paintNowScene(activeScene) {
+  const card = document.querySelector("#nowScene");
+  const tile = document.querySelector(`.scene-group [data-scene="${activeScene}"]`);
+  const photo = display.backgroundUrl && display.mood !== "night" ? display.backgroundUrl : "";
+  const name = themeNames[activeScene] || tile?.querySelector("span")?.firstChild?.textContent || "";
+  document.querySelector("#nowSceneName").textContent = photo ? "Свои обои" : name;
+  if (card.dataset.scene === activeScene && card.dataset.photo === photo) return;
+  card.dataset.scene = activeScene;
+  card.dataset.photo = photo;
+  const preview = document.createElement("i");
+  if (photo) {
+    card.className = "now-scene";
+    preview.style.backgroundImage = `url("${photo}")`;
+  } else if (tile) {
+    card.className = `now-scene ${[...tile.classList].filter((name) => name !== "active").join(" ")}`;
+    const source = tile.querySelector("i");
+    preview.style.backgroundColor = source.style.backgroundColor;
+    preview.innerHTML = source.innerHTML;
+  }
+  card.replaceChildren(preview);
 }
 
 function showTab(tab) {
@@ -225,6 +266,8 @@ function showTab(tab) {
   // The dock is noise until there is a screen to control.
   // The dock returns as soon as there is a home to control; before that it leads nowhere.
   document.querySelector(".dock").hidden = tab === "signin" || tab === "setup" || (tab === "home" && !houseList.length);
+  // Power and status mean nothing before there is a screen to speak of.
+  document.querySelector("#tvStatus").hidden = tab === "signin" || tab === "setup" || tab === "home";
   document.querySelector("#homePaneBack").hidden = !houseList.length;
   document.querySelector("#homePaneTitle").textContent = houseList.length ? "Ещё один дом" : "Ваш дом";
 }
@@ -243,14 +286,14 @@ function paintMusic() {
   // One screen and no picker still has a permission, and it is the one the house uses.
   const canOverlay = (screen ?? screenList[0])?.canOverlay !== false;
   const copy = musicRemoteCopy({ tvOnline, nowPlaying, canOverlay });
-  title.textContent = nowPlaying.title || "Тихо";
+  title.textContent = nowPlaying.title || "Ничего не играет";
   artist.textContent = live
     ? (nowPlaying.artist || nowPlaying.source || "Яндекс Музыка")
     : "На телевизоре сейчас ничего не играет";
   art.classList.toggle("has-art", Boolean(nowPlaying.artworkUrl));
   art.style.backgroundImage = nowPlaying.artworkUrl ? `url("${nowPlaying.artworkUrl}")` : "";
   card.classList.toggle("is-playing", live && nowPlaying.isPlaying);
-  toggle.textContent = nowPlaying.isPlaying ? "❚❚" : "▶";
+  toggle.querySelector("use").setAttribute("href", nowPlaying.isPlaying ? "#i-pause" : "#i-play");
   toggle.setAttribute("aria-label", nowPlaying.isPlaying ? "Пауза" : "Играть");
   if (document.activeElement !== volume && Date.now() - volumeTouchedAt > 2_500) {
     volume.value = String(nowPlaying.volumePercent ?? 50);
@@ -347,9 +390,11 @@ function paint() {
     button.setAttribute("aria-pressed", String(selected));
   });
   paintSceneGroups();
-  document.querySelectorAll("[data-privacy]").forEach((button) => button.classList.toggle("active", String(display.privacy) === button.dataset.privacy));
-  document.querySelector("#guestsValue").textContent = display.privacy ? "скрыты названия" : "выключен";
-  document.querySelector("#wallpaperValue").textContent = display.backgroundUrl ? "свои" : "по теме";
+  paintNowScene(activeScene);
+  document.querySelector("#guestsSwitch").setAttribute("aria-checked", String(display.privacy));
+  document.querySelector("#guestsValue").textContent = display.privacy ? "Названия дел скрыты, видно только время" : "Экран показывает названия дел";
+  document.querySelector("#wallpaperValue").textContent = display.backgroundUrl ? "Стоят вместо сцены" : "Фото вместо сцены";
+  document.querySelector("#clearBackground").hidden = !display.backgroundUrl;
   document.querySelectorAll("[data-layer]").forEach((button) => {
     const layer = button.dataset.layer;
     const on = layer === "showWeather" ? display.showWeather : layer === "showCalendar" ? display.showCalendar : false;
@@ -365,13 +410,12 @@ function paint() {
   } else {
     preview.hidden = true;
     preview.style.backgroundImage = "";
-    wallpaperLabel.textContent = "Поставить обои";
+    wallpaperLabel.textContent = "Свои обои";
   }
   const hasNote = Boolean(currentNote?.text);
-  document.querySelector("#addNote").hidden = hasNote;
   document.querySelector("#noteCard").hidden = !hasNote;
   document.querySelector("#notePreview").textContent = currentNote?.text || "";
-  document.querySelector("#noteValue").textContent = hasNote ? "на экране" : "нет";
+  document.querySelector("#noteValue").textContent = hasNote ? "На экране — нажмите, чтобы заменить" : "Написать крупно на экране";
   const status = document.querySelector("#tvStatus");
   const state = document.querySelector("#tvState");
   const power = document.querySelector("#tvPower");
@@ -379,7 +423,8 @@ function paint() {
   status.classList.toggle("online", tvOnline);
   status.classList.toggle("music", Boolean(nowPlaying.title) && !tvOnline);
   state.textContent = remote.state;
-  power.textContent = remote.power;
+  power.querySelector("span").textContent = remote.power;
+  power.classList.toggle("on", tvOnline);
   paintMusic();
   paintRotation();
   paintPairingUi();
@@ -446,6 +491,10 @@ async function request(path, options = {}) {
 
 let lastStateSignature = "";
 let statePollInFlight = false;
+// A poll that set off before a tap would answer with the old scene and undo the tap on
+// screen for a moment; such answers are dropped.
+let pendingSaves = 0;
+let localChangeAt = 0;
 
 function applyState(data) {
   lastStateSignature = JSON.stringify(data);
@@ -501,6 +550,8 @@ async function save(patch, successText = "") {
   const keepNoteUi = Boolean(patch.note || patch.clearNote);
   if (patch.tvPower === "off") tvOnline = false;
   if (patch.tvPower === "on" || patch.tvPower === "off") tvPower = patch.tvPower;
+  pendingSaves += 1;
+  localChangeAt = Date.now();
   if (!keepNoteUi) {
     const next = { ...patch };
     if (patch.rotation) next.rotation = { ...display.rotation, ...patch.rotation };
@@ -520,6 +571,9 @@ async function save(patch, successText = "") {
     telegram?.HapticFeedback?.notificationOccurred("error");
     setNotice(error.message, "error");
     return false;
+  } finally {
+    pendingSaves -= 1;
+    localChangeAt = Date.now();
   }
 }
 
@@ -625,13 +679,12 @@ document.querySelectorAll("[data-mode]").forEach((button) => {
 document.querySelectorAll("[data-scene]").forEach((button) => {
   button.addEventListener("click", () => {
     const scene = button.dataset.scene;
+    telegram?.HapticFeedback?.selectionChanged?.();
     if (scene === "night" || scene === "play") save({ mood: scene });
     else save({ theme: scene, mood: "home" });
   });
 });
-document.querySelectorAll("[data-privacy]").forEach((button) => {
-  button.addEventListener("click", () => save({ privacy: button.dataset.privacy === "true" }));
-});
+document.querySelector("#guestsSwitch").addEventListener("click", () => save({ privacy: !display.privacy }));
 document.querySelectorAll("[data-layer]").forEach((button) => {
   button.addEventListener("click", () => {
     const layer = button.dataset.layer;
@@ -691,6 +744,7 @@ function openNoteSheet() {
   noteField.value = "";
   paintDurations();
   noteSheet.hidden = false;
+  setTimeout(() => noteField.focus(), 60);
 }
 
 function closeNoteSheet() {
@@ -712,7 +766,7 @@ document.querySelector("#noteForm").addEventListener("submit", async (event) => 
     setNotice("Напишите заметку", "error");
     return;
   }
-  if (await save({ note: text, noteMinutes })) closeNoteSheet();
+  if (await save({ note: text, noteMinutes }, "Заметка на экране")) closeNoteSheet();
 });
 document.querySelector("#clearNote").addEventListener("click", () => save({ clearNote: true }));
 document.querySelector("#tvPower").addEventListener("click", () => save({ tvPower: tvOnline ? "off" : "on" }));
@@ -884,8 +938,10 @@ async function boot() {
   setInterval(() => {
     if (!hasRemoteAuth() || !householdScope.id || document.hidden || statePollInFlight) return;
     statePollInFlight = true;
+    const startedAt = Date.now();
     request("/v1/miniapp/state")
       .then((data) => {
+        if (pendingSaves || startedAt < localChangeAt) return;
         const signature = JSON.stringify(data);
         if (signature !== lastStateSignature) applyState(data);
       })

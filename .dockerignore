@@ -10,3 +10,8 @@ eslint.config.mjs
 package.json
 package-lock.json
 .DS_Store
+# Source pictures: the site serves the WebP copies in assets/scenes/.
+assets/scene-*.png
+assets/scene-*.jpg
+assets/gallery-room.png
+output
