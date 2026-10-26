@@ -530,7 +530,7 @@ function renderWeekAgenda(now, scene) {
   const body = items.map((item) => (item.event ? sceneEventHtml(item.event, eventIndex++) : weekDayHeading(item.date, now))).join("");
   return `<section class="scene-agenda scene-${scene}">
     <p class="kicker"><span>Эта неделя</span><span class="scene-day-label">${escapeHtml(range)}</span></p>
-    ${upNextHtml(now)}
+    ${upNextHtml(now, { liveListed: body.includes("is-live") })}
     <div class="scene-list" style="--event-count:${Math.max(eventIndex, 1)}">${body || `<p class="empty">На неделе тихо. Можно ничего не планировать.</p>`}</div>
     ${pagerHtml(pageIndex, agendaPageCount)}
   </section>`;
@@ -552,7 +552,7 @@ function renderSceneAgenda(now, scene) {
   const title = mode === "TODAY" ? "Сегодня" : mode === "TOMORROW" ? "Завтра" : "Эта неделя";
   return `<section class="scene-agenda scene-${scene}">
     ${layers.calendar ? `<p class="kicker"><span>${title}</span><span class="scene-day-label">${escapeHtml(agendaDayLabel(page.date, now, daily))}${page.parts > 1 ? ` · ${page.part}/${page.parts}` : ""}</span></p>
-    ${upNextHtml(now)}` : ""}
+    ${upNextHtml(now, { liveListed: page.events.some((event) => isLiveNow(event, now.getTime())) })}` : ""}
     ${layers.weather && daily ? sceneWeather(weatherForSelectedDay(selectedDate, now)?.periods) : ""}
     ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map(sceneEventHtml).join("") : `<p class="empty">${mode === "TOMORROW" ? "Завтра" : "Сегодня"} тихо. Можно никуда не спешить.</p>`}</div>
     ${pagerHtml(pageIndex, pages.length)}` : ""}
@@ -562,9 +562,10 @@ function renderSceneAgenda(now, scene) {
 
 /**
  * What is on now and what comes next, at the top of the agenda: the panel says «Сегодня»,
- * then where the day stands, then the list. Each line only when it exists.
+ * then where the day stands, then the list. Each line only when it exists, and «Сейчас»
+ * only when the list below does not already show that event.
  */
-function upNextHtml(now) {
+function upNextHtml(now, { liveListed = false } = {}) {
   const layers = screenLayers();
   if (!layers.calendar) return "";
   const display = normalizeDisplay(snapshot?.display);
@@ -574,7 +575,8 @@ function upNextHtml(now) {
   const live = liveEvents(events, options)[0];
   const next = nextUpEvent(events, options);
   const rows = [];
-  if (live) rows.push(["now", "Сейчас", live.title || "Дело", leftPhrase(live, { timeZone })]);
+  // «Сейчас» is said once: the list marks it when the event is on this page.
+  if (live && !liveListed) rows.push(["now", "Сейчас", live.title || "Дело", leftPhrase(live, { timeZone })]);
   if (next && !next.live) rows.push(["next", "Дальше", next.title, whenPhrase(next, { timeZone })]);
   if (!rows.length) return "";
   return `<div class="scene-upnext">${rows.map(([kind, label, title, when]) => `<p class="up-${kind}"><b>${label}</b><strong>${escapeHtml(title)}</strong><span>${escapeHtml(when)}</span></p>`).join("")}</div>`;
