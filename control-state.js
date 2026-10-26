@@ -5,6 +5,7 @@ export const displayThemes = [
   "gallery", "home-day", "home-evening", "forest", "autumn-forest", "mountains", "sea", "space",
   "aurora", "dunes", "mist-lake",
   "sunroom", "rain-glass", "liquid-glass",
+  "fireplace", "campfire", "window-streams", "snowfall", "starry-sky", "forest-stream",
   "petersburg", "petersburg-streets", "oranienbaum", "peterhof", "rome", "florence", "venice", "italy-sunset",
   "palace", "oak-study", "palace-study", "rus", "gzhel", "soviet-carpet", "byzantium", "india", "italy",
   ...artworkThemes,
@@ -28,6 +29,12 @@ export const themeNames = {
   sunroom: "Свет на стене",
   "rain-glass": "Дождь на стекле",
   "liquid-glass": "Жидкое стекло",
+  fireplace: "Камин",
+  campfire: "Костёр",
+  "window-streams": "Струи по стеклу",
+  snowfall: "Снегопад",
+  "starry-sky": "Звёздное небо",
+  "forest-stream": "Лесной ручей",
   petersburg: "Петербург",
   "petersburg-streets": "Улицы Петербурга",
   oranienbaum: "Ораниенбаум",
@@ -42,9 +49,9 @@ export const themeNames = {
   rus: "Русский узор",
   gzhel: "Гжель",
   "soviet-carpet": "Советский ковёр",
-  byzantium: "Византия",
-  india: "Индия",
-  italy: "Итальянский узор",
+  byzantium: "Византия · Равенна",
+  india: "Индия · каменное кружево",
+  italy: "Неаполитанская майолика",
 };
 export const moodNames = {
   home: "Дом",
@@ -124,6 +131,8 @@ export function normalizeNowPlaying(value = {}) {
     source: typeof value.source === "string" ? value.source : "Яндекс Музыка",
     isPlaying: value.isPlaying === true,
     volumePercent: Number.isFinite(volume) ? Math.max(0, Math.min(100, Math.round(volume))) : 50,
+    // Whether the television actually said how loud it is; 50 alone is only a placeholder.
+    volumeKnown: Number.isFinite(volume),
     artworkUrl: typeof value.artworkUrl === "string" ? value.artworkUrl : "",
     deviceName: typeof value.deviceName === "string" ? value.deviceName : "",
   };
@@ -190,6 +199,19 @@ export function musicRemoteCopy({ tvOnline = false, nowPlaying = {}, canOverlay 
   };
 }
 
+export const artSlideMinutes = [1, 3, 5, 10, 15, 30, 60];
+
+/** Mirrors the server: full-screen paintings and a slideshow through one section, or all. */
+export function normalizeArt(value = {}) {
+  const minutes = Number(value?.minutes);
+  return {
+    fullscreen: value?.fullscreen === true,
+    slideshow: value?.slideshow === true,
+    minutes: artSlideMinutes.includes(minutes) ? minutes : 5,
+    collection: typeof value?.collection === "string" ? value.collection.trim().slice(0, 40) : "",
+  };
+}
+
 export function normalizeDisplay(value = {}) {
   const legacyMood = value.theme === "night" || value.theme === "play" ? value.theme : "";
   const requestedMode = value.mode === "NOW" ? "TODAY" : value.mode;
@@ -204,5 +226,6 @@ export function normalizeDisplay(value = {}) {
     showCalendar: value.showCalendar !== false,
     backgroundUrl: value.backgroundUrl || "",
     rotation: normalizeRotation(value.rotation),
+    art: normalizeArt(value.art),
   };
 }

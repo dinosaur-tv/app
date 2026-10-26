@@ -17,17 +17,6 @@ body[data-theme="sunroom"] #sceneBackdrop::after {
   animation: sunlightBreathe 32s ease-in-out infinite alternate;
 }
 body[data-theme="sunroom"] #wash { background: linear-gradient(90deg, #f3eadb55, transparent 70%); }
-body[data-theme="rain-glass"] { --bg: #142633; }
-body[data-theme="rain-glass"] #sceneBackdrop {
-  opacity: 1;
-  background: radial-gradient(ellipse at 80% 72%, #e6ae7561, transparent 19%), radial-gradient(ellipse at 27% 57%, #87b8b955, transparent 24%), radial-gradient(ellipse at 57% 86%, #d2b39538, transparent 16%), linear-gradient(160deg, #314a58, #172b3b 55%, #12202e);
-}
-body[data-theme="rain-glass"] #sceneBackdrop::before {
-  content: ""; position: absolute; inset: -8%;
-  background: radial-gradient(ellipse at 82% 74%, #e4b47533, transparent 15%), radial-gradient(ellipse at 20% 62%, #92bdc244, transparent 24%);
-  animation: distantLights 35s ease-in-out infinite alternate;
-}
-body[data-theme="rain-glass"] #wash { background: linear-gradient(90deg, #0a182755, transparent 75%); }
 #sceneParticles[data-motion="rain"] i {
   top: -12%;
   width: calc(5px * var(--size)); height: calc(24px * var(--size));

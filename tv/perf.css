@@ -11,7 +11,7 @@
 
 /* Without blur the glass has to carry the contrast on its own. */
 body.immersive[data-theme] { --glass: rgba(16, 20, 25, .8); }
-body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="dunes"], [data-theme="sunroom"]) {
+body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="sunroom"]) {
   --glass: rgba(248, 247, 244, .9);
 }
 body.immersive[data-theme].has-photo { --glass: rgba(16, 20, 25, .82); }

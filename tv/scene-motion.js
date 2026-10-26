@@ -1,11 +1,15 @@
+import { videoScenes } from "./scene-video.js";
+
 // Small composited particles keep the native WebView moving without repainting
 // a full-screen photograph or animating expensive blur filters.
 export function sceneMotion(scene) {
-  if (scene === "rain-glass") return { kind: "rain", count: 24 };
-  if (scene === "liquid-glass" || scene === "sunroom") return { kind: "none", count: 0 };
+  // Filmed scenes carry their own movement; drawn particles over footage look pasted on.
+  if (videoScenes.includes(scene)) return { kind: "none", count: 0 };
+  if (scene === "dunes") return { kind: "sand", count: 16 };
+  if (["liquid-glass", "sunroom", "byzantium", "india", "italy"].includes(scene)) return { kind: "none", count: 0 };
   if (scene === "forest" || scene === "autumn-forest") return { kind: "leaf", count: 18 };
-  if (["night", "space", "aurora"].includes(scene)) return { kind: "star", count: 32 };
-  if (["sea", "venice", "peterhof", "oranienbaum", "mist-lake"].includes(scene)) return { kind: "glint", count: 18 };
+  if (["night", "space"].includes(scene)) return { kind: "star", count: 32 };
+  if (["sea", "venice", "peterhof", "oranienbaum"].includes(scene)) return { kind: "glint", count: 18 };
   if (scene === "mountains") return { kind: "snow", count: 20 };
   return { kind: "mote", count: 14 };
 }

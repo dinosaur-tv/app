@@ -15,9 +15,18 @@
     <link rel="stylesheet" href="./art.css" />
     <link rel="stylesheet" href="./refine.css" />
     <link rel="stylesheet" href="./perf.css" />
+    <link rel="stylesheet" href="./motion.css" />
+    <link rel="stylesheet" href="./splash.css" />
   </head>
   <body data-theme="gallery">
+    <section id="splash" aria-live="polite">
+      <div class="splash-mark"><img src="/assets/dino-mark.png" alt="" width="351" height="206" /></div>
+      <p class="splash-name">Dinosaur</p>
+      <i class="splash-line" aria-hidden="true"></i>
+      <p class="splash-status" id="splashStatus">Собираем ваш день</p>
+    </section>
     <div id="sceneBackdrop" aria-hidden="true"></div>
+    <video id="sceneVideo" muted playsinline loop preload="auto" aria-hidden="true"></video>
     <div id="photo"></div>
     <div id="wash"></div>
     <div id="sceneDecor" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -25,7 +34,7 @@
     <div id="stage">
       <figure id="artworkFrame" hidden>
         <div class="art-mat"><img id="artworkImage" alt="" decoding="async" /></div>
-        <figcaption><strong id="artworkTitle"></strong><span id="artworkArtist"></span></figcaption>
+        <figcaption><strong id="artworkTitle"></strong><span><span id="artworkArtist"></span>, <span id="artworkYear"></span></span></figcaption>
       </figure>
       <header id="top">
         <nav id="modes" aria-label="Экран">
@@ -39,7 +48,6 @@
         <div class="hero-copy">
           <p id="dateLine"></p>
           <p id="weatherLine"></p>
-          <p id="nextUpLine" hidden></p>
         </div>
       </section>
       <p id="note" hidden></p>

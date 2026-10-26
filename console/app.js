@@ -1,17 +1,37 @@
-import { normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, themeNames, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
+import { artSlideMinutes, normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, themeNames, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 import { shouldLoadTelegramSdk } from "./telegram.js";
 import { createHouseholdScope } from "./household-scope.js";
 import { searchPlaces } from "./places.js";
 import { needsAccount, needsHome } from "./request-scope.js";
 import { deviceTitle } from "./device-title.js";
-import { artworks, artworkThumbnailUrl } from "../artworks.js";
+import { artCollections, artworks, artworkFor, artworkThumbnailUrl } from "../artworks.js";
 
-for (const group of document.querySelectorAll("[data-art-collection]")) {
-  for (const work of artworks.filter((artwork) => artwork.collection === group.dataset.artCollection)) {
+/*
+ * Paintings are one chip among the scenes; inside it, a second row of chips picks the
+ * gallery section, and the settings for how paintings are hung sit under the grid.
+ */
+const artTiles = document.querySelector("#artTiles");
+const artChips = document.querySelector("#artChips");
+let browsedCollection = "";
+for (const { name } of artCollections) {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.setAttribute("role", "tab");
+  chip.dataset.collection = name;
+  chip.textContent = name;
+  chip.addEventListener("click", () => {
+    browsedCollection = name;
+    paintArtGroup();
+  });
+  artChips.append(chip);
+}
+{
+  for (const work of artworks) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "art-theme";
     button.dataset.scene = work.id;
+    button.dataset.collection = work.collection;
     button.setAttribute("aria-label", `${work.artist}. ${work.title}, ${work.year}`);
     const preview = document.createElement("i");
     preview.style.backgroundColor = work.wall;
@@ -26,8 +46,69 @@ for (const group of document.querySelectorAll("[data-art-collection]")) {
     title.textContent = work.title;
     name.append(title);
     button.append(preview, name);
-    group.querySelector(".themes").append(button);
+    artTiles.append(button);
   }
+}
+
+/** The section on show: the one picked by hand, else the one holding the current painting. */
+function shownCollection() {
+  return browsedCollection || artworkFor(screenTheme(display))?.collection || artCollections[0].name;
+}
+
+function paintArtGroup() {
+  const shown = shownCollection();
+  for (const chip of artChips.children) {
+    const selected = chip.dataset.collection === shown;
+    chip.classList.toggle("active", selected);
+    chip.setAttribute("aria-selected", String(selected));
+    chip.classList.toggle("holds-scene", chip.dataset.collection === artworkFor(screenTheme(display))?.collection);
+  }
+  // The row scrolls sideways only: the page itself must not jump on a poll.
+  if (artChips.dataset.shown !== shown) {
+    artChips.dataset.shown = shown;
+    const active = [...artChips.children].find((chip) => chip.dataset.collection === shown);
+    if (active) artChips.scrollLeft = Math.max(0, active.offsetLeft - artChips.offsetLeft - 16);
+  }
+  for (const tile of artTiles.children) tile.hidden = tile.dataset.collection !== shown;
+  document.querySelector("#artHint").textContent = artCollections.find((item) => item.name === shown)?.hint || "";
+  const art = display.art;
+  setSwitch(document.querySelector("#artFullSwitch"), art.fullscreen);
+  setSwitch(document.querySelector("#artShowSwitch"), art.slideshow);
+  document.querySelector("#artShowOptions").hidden = !art.slideshow;
+  document.querySelector("#artShowValue").textContent = art.slideshow
+    ? `Каждые ${art.minutes} мин · ${art.collection || "все картины"}`
+    : "Картины сменяют друг друга";
+  for (const button of document.querySelectorAll("#artMinutes [data-minutes]")) {
+    button.classList.toggle("active", Number(button.dataset.minutes) === art.minutes);
+  }
+  document.querySelector("#artScopeSection").textContent = `Только «${shown}»`;
+  for (const button of document.querySelectorAll("[data-art-scope]")) {
+    const all = button.dataset.artScope === "all";
+    button.classList.toggle("active", all ? !art.collection : art.collection === shown);
+  }
+}
+
+function setSwitch(button, on) {
+  button.setAttribute("aria-checked", String(on));
+  button.classList.toggle("on", on);
+}
+
+for (const minutes of artSlideMinutes) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.minutes = String(minutes);
+  button.textContent = minutes < 60 ? `${minutes} мин` : "1 час";
+  button.addEventListener("click", () => save({ art: { minutes } }));
+  document.querySelector("#artMinutes").append(button);
+}
+document.querySelector("#artFullSwitch").addEventListener("click", () => save({ art: { fullscreen: !display.art.fullscreen } }));
+document.querySelector("#artShowSwitch").addEventListener("click", () => {
+  const slideshow = !display.art.slideshow;
+  // Turning it on from inside a section walks that section first; «все картины» is one tap away.
+  save({ art: slideshow ? { slideshow, collection: display.art.collection || shownCollection() } : { slideshow } });
+});
+for (const button of document.querySelectorAll("[data-art-scope]")) {
+  button.addEventListener("click", () => save({ art: { collection: button.dataset.artScope === "all" ? "" : shownCollection() } }));
 }
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
@@ -295,16 +376,13 @@ function paintMusic() {
   card.classList.toggle("is-playing", live && nowPlaying.isPlaying);
   toggle.querySelector("use").setAttribute("href", nowPlaying.isPlaying ? "#i-pause" : "#i-play");
   toggle.setAttribute("aria-label", nowPlaying.isPlaying ? "Пауза" : "Играть");
-  if (document.activeElement !== volume && Date.now() - volumeTouchedAt > 2_500) {
-    volume.value = String(nowPlaying.volumePercent ?? 50);
-    lastSentVolume = Number(volume.value);
-  }
+  paintVolume(volume);
   document.querySelectorAll("[data-music]").forEach((button) => {
     // A blocked screen keeps the button pressable: pressing it is how you learn why.
     if (button.dataset.music === "toTv") button.disabled = tvOnline && !copy.blocked;
     else button.disabled = !live;
   });
-  volume.disabled = !live;
+  volume.disabled = !live || !nowPlaying.volumeKnown;
   toTv.textContent = copy.toTv;
   hint.textContent = copy.hint;
 }
@@ -427,6 +505,7 @@ function paint() {
   power.classList.toggle("on", tvOnline);
   paintMusic();
   paintRotation();
+  paintArtGroup();
   paintPairingUi();
 }
 
@@ -519,7 +598,7 @@ function applyState(data) {
   }
   if (data.display) {
     const rotation = normalizeDisplay(data.display).rotation;
-    document.querySelector("#rotationValue").textContent = rotation.enabled ? `${rotation.today} сек` : "выключена";
+    document.querySelector("#rotationValue").textContent = rotation.enabled ? `каждые ${rotation.today} сек` : "не листает";
   }
   if (data.features) {
     remoteEnabled = data.features.tvRemote === true;
@@ -555,6 +634,7 @@ async function save(patch, successText = "") {
   if (!keepNoteUi) {
     const next = { ...patch };
     if (patch.rotation) next.rotation = { ...display.rotation, ...patch.rotation };
+    if (patch.art) next.art = { ...display.art, ...patch.art };
     display = normalizeDisplay({ ...display, ...next });
     paint();
   }
@@ -790,17 +870,39 @@ document.querySelector("#openKinopoisk")?.addEventListener("click", (event) => {
 let volumeTimer;
 let lastSentVolume;
 let volumeTouchedAt = 0;
+/**
+ * What the phone asked for, held until the television reports it back. The TV answers a
+ * few seconds late, and with its own coarse steps (15 of them, say); without the hold the
+ * slider jumped back to the old level and then forward again.
+ */
+let pendingVolume = null;
+
+function paintVolume(volume = document.querySelector("#musicVolume")) {
+  const reported = nowPlaying.volumePercent;
+  if (pendingVolume) {
+    const settled = nowPlaying.volumeKnown && Math.abs(reported - pendingVolume.value) <= 7;
+    if (settled || Date.now() - pendingVolume.at > 8_000) pendingVolume = null;
+  }
+  const dragging = document.activeElement === volume && Date.now() - volumeTouchedAt < 2_500;
+  if (!dragging) {
+    const shown = pendingVolume ? pendingVolume.value : reported;
+    volume.value = String(shown);
+    if (!pendingVolume) lastSentVolume = shown;
+  }
+  volume.style.setProperty("--fill", `${volume.value}%`);
+}
+
 function sendVolume(value) {
   const next = Math.max(0, Math.min(100, Math.round(Number(value))));
   if (!Number.isFinite(next) || lastSentVolume === next) return;
   lastSentVolume = next;
   volumeTouchedAt = Date.now();
-  nowPlaying.volumePercent = next;
+  pendingVolume = { value: next, at: Date.now() };
   musicCommand("volume", { volume: next });
 }
 document.querySelector("#musicVolume").addEventListener("input", (event) => {
   volumeTouchedAt = Date.now();
-  nowPlaying.volumePercent = Number(event.target.value);
+  event.target.style.setProperty("--fill", `${event.target.value}%`);
   clearTimeout(volumeTimer);
   volumeTimer = setTimeout(() => sendVolume(event.target.value), 320);
 });

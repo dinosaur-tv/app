@@ -85,7 +85,7 @@ body.has-photo #photo { opacity: 1; }
   line-height: 1.3;
 }
 /* Date, weather and next-up share one voice; the clock keeps the display serif. */
-body[data-theme] .hero-copy #dateLine, body[data-theme] .hero-copy #weatherLine, body[data-theme] .hero-copy #nextUpLine {
+body[data-theme] .hero-copy #dateLine, body[data-theme] .hero-copy #weatherLine {
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -94,35 +94,8 @@ body[data-theme] .hero-copy #dateLine, body[data-theme] .hero-copy #weatherLine,
   text-transform: none;
 }
 
-#nextUpLine {
-  display: inline-block;
-  box-sizing: border-box;
-  margin: .75rem 0 0;
-  max-width: min(28rem, 100%);
-  padding: .55rem .9rem .6rem;
-  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
-  border-radius: .95rem;
-  background: color-mix(in srgb, var(--panel) 78%, transparent);
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: top;
-}
-#nextUpLine::before {
-  content: "Дальше";
-  display: block;
-  margin-bottom: .18rem;
-  color: var(--accent);
-  font-size: .72em;
-  font-weight: 600;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-}
-#nextUpLine[hidden] { display: none; }
 body.hide-weather #weatherLine { display: none; }
 body.hide-calendar:not(.guests) #screen { display: none !important; }
-body.hide-calendar #nextUpLine, body.guests #nextUpLine { display: none !important; }
 #note {
   margin: .8rem 0 0;
   padding: 1.05rem 1.35rem 1.15rem 1.45rem;
@@ -603,33 +576,6 @@ body[data-theme="rus"] { --bg: #f3eadb; --ink: #581314; --muted: #7d5350; --acce
 body[data-theme="rus"] #sceneBackdrop { opacity: 1; background-color: #f4ecdd; background-image: url("../assets/scenes/scene-rus-folk.webp"); background-position: center; background-size: cover; animation: slowZoom 105s ease-in-out infinite alternate; }
 
 body[data-theme="rus"] #sceneDecor i:first-child { display: block; left: -8%; top: 0; width: 15vw; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.58), transparent); filter: blur(1.5rem); animation: porcelainLight 38s ease-in-out infinite; }
-
-/* Byzantium — blue mosaic, gold tesserae and a calm ceremonial lower panel. */
-body[data-theme="byzantium"] { --bg: #071826; --ink: #f4ead5; --muted: #b9b3a4; --accent: #d7b767; --panel: rgba(8,28,44,.67); --line: rgba(226,198,124,.25); --selected: rgba(198,158,73,.2); --glow: rgba(51,92,126,.28); }
-body[data-theme="byzantium"] #sceneBackdrop { opacity: 1; background-color: #0a2133; background-image: radial-gradient(circle at 50% 50%, transparent 0 2.7rem, rgba(218,183,96,.13) 2.75rem 2.9rem, transparent 2.95rem), radial-gradient(circle at 0 0, rgba(218,183,96,.1) 0 .42rem, transparent .48rem), linear-gradient(135deg, #102f49, #071723 55%, #153b54); background-size: 8rem 8rem, 2rem 2rem, auto; animation: patternDrift 95s linear infinite alternate; }
-body[data-theme="byzantium"] #wash { background: radial-gradient(circle at 50% 24%, rgba(222,184,91,.16), transparent 27rem), linear-gradient(0deg, rgba(3,12,19,.6), transparent 58%); }
-
-body[data-theme="byzantium"] #sceneDecor i:nth-child(-n+3) { display: block; width: 11rem; height: 11rem; border: 1px solid rgba(221,185,94,.18); border-radius: 50%; box-shadow: inset 0 0 0 1.2rem rgba(18,62,90,.14), inset 0 0 0 1.3rem rgba(221,185,94,.12); animation: ornamentPulse 20s ease-in-out infinite; }
-body[data-theme="byzantium"] #sceneDecor i:nth-child(1) { left: 7%; top: 24%; }
-body[data-theme="byzantium"] #sceneDecor i:nth-child(2) { right: 8%; top: 17%; width: 8rem; height: 8rem; animation-delay: -8s; }
-body[data-theme="byzantium"] #sceneDecor i:nth-child(3) { left: 42%; bottom: 28%; width: 5rem; height: 5rem; animation-delay: -14s; }
-
-/* India — a modern jaali lattice, mineral teal and restrained saffron. */
-body[data-theme="india"] { --bg: #102d31; --ink: #f4ead9; --muted: #c7b9aa; --accent: #e0a85d; --panel: rgba(13,45,48,.68); --line: rgba(230,192,135,.22); --selected: rgba(224,168,93,.18); --glow: rgba(198,104,65,.22); }
-body[data-theme="india"] #sceneBackdrop { opacity: 1; background-color: #16383b; background-image: radial-gradient(circle at 0 50%, transparent 0 2.2rem, rgba(227,184,121,.12) 2.25rem 2.35rem, transparent 2.4rem), radial-gradient(circle at 100% 50%, transparent 0 2.2rem, rgba(227,184,121,.12) 2.25rem 2.35rem, transparent 2.4rem), linear-gradient(145deg, #214f4f, #102a30 58%, #4c2425); background-size: 5.8rem 5.8rem, 5.8rem 5.8rem, auto; animation: latticeBreathe 32s ease-in-out infinite alternate; }
-body[data-theme="india"] #wash { background: linear-gradient(90deg, rgba(5,22,24,.3), transparent 50%, rgba(35,14,18,.3)); }
-
-body[data-theme="india"] #sceneDecor i:nth-child(-n+3) { display: block; right: 20%; bottom: 16%; width: 8rem; height: 8rem; border: 1px solid rgba(229,178,105,.2); border-radius: 50% 50% 12% 50%; animation: ornamentPulse 18s ease-in-out infinite; }
-body[data-theme="india"] #sceneDecor i:nth-child(2) { right: 7%; bottom: 30%; width: 5rem; height: 5rem; animation-delay: -7s; }
-body[data-theme="india"] #sceneDecor i:nth-child(3) { right: 37%; top: 10%; width: 4rem; height: 4rem; animation-delay: -13s; }
-
-/* Italy — pale stone with broad verde and terracotta architectural bands. */
-body[data-theme="italy"] { --bg: #ddd3bf; --ink: #252822; --muted: #62675e; --accent: #9b654f; --panel: rgba(242,236,223,.78); --line: rgba(48,65,56,.19); --selected: rgba(255,251,242,.72); --glow: rgba(160,105,75,.2); color-scheme: light; }
-body[data-theme="italy"] #sceneBackdrop { opacity: 1; background-color: #ddd4c3; background-image: repeating-linear-gradient(90deg, transparent 0 8rem, rgba(48,78,64,.22) 8rem 8.72rem, rgba(244,237,222,.5) 8.72rem 9.08rem, rgba(151,91,69,.16) 9.08rem 9.68rem, transparent 9.68rem 16rem), repeating-linear-gradient(0deg, transparent 0 9rem, rgba(48,78,64,.14) 9rem 9.45rem, rgba(151,91,69,.12) 9.45rem 9.9rem, transparent 9.9rem 18rem), linear-gradient(135deg, #eee7d8, #cfc4af); animation: patternDrift 110s linear infinite alternate; }
-
-body[data-theme="italy"] #sceneDecor i:nth-child(-n+3) { display: block; left: 31%; top: 18%; width: 10rem; height: 10rem; border: 1px solid rgba(61,91,75,.16); border-radius: 50%; box-shadow: inset 0 0 0 1.4rem rgba(161,99,76,.045); animation: ornamentPulse 24s ease-in-out infinite; }
-body[data-theme="italy"] #sceneDecor i:nth-child(2) { left: 20%; bottom: 18%; top: auto; width: 5rem; height: 5rem; animation-delay: -9s; }
-body[data-theme="italy"] #sceneDecor i:nth-child(3) { right: 2%; left: auto; bottom: 13%; top: auto; width: 13rem; height: 13rem; animation-delay: -16s; }
 
 /* Autumn forest — same composition as forest, warm canopy and both drifting and falling leaves. */
 body[data-theme="autumn-forest"] { --bg: #1a120c; --ink: #f5eddf; --muted: #c1b4a1; --accent: #d5964e; --panel: rgba(32,22,14,.6); --line: rgba(235,209,165,.2); --selected: rgba(133,82,37,.48); --glow: rgba(200,119,48,.28); }

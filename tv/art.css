@@ -58,7 +58,6 @@ body.immersive.art-scene #hero { grid-column: 2; grid-row: 2; padding: 1.15rem 0
 body.immersive.art-scene #clock { font-size: clamp(3.5rem, 5.7vw, 6.3rem); text-shadow: none; }
 body.immersive.art-scene .hero-copy { padding: .7rem 0 0 .15rem; font-size: .87rem; line-height: 1.4; text-shadow: none; }
 body.immersive.art-scene #weatherLine { color: var(--muted); opacity: 1; }
-body.immersive.art-scene #nextUpLine { display: none; }
 body.immersive.art-scene #screen {
   grid-column: 2; grid-row: 3;
   padding: 1rem 0 0;
@@ -122,4 +121,70 @@ body.immersive.art-scene #eventCue {
   body.immersive.art-scene #note { grid-column: 1; grid-row: 5; padding: .65rem; font-size: .8rem; }
   body.immersive.art-scene #mediaBar { grid-column: 2; grid-row: 5; }
   body.immersive.art-scene #eventCue { width: calc(100% - var(--safe) * 2); }
+}
+
+/* ---------- The label: the museum's voice, not the interface's ---------- */
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("../assets/fonts/cormorant-garamond.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("../assets/fonts/cormorant-garamond-italic.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+:root { --label-font: "Cormorant Garamond", "Iowan Old Style", Palatino, Georgia, serif; }
+#artworkFrame figcaption { gap: .15rem; font-family: var(--label-font); }
+#artworkTitle { font: italic 500 1.55rem/1.15 var(--label-font); letter-spacing: .005em; }
+#artworkFrame figcaption > span { color: var(--muted); font: 500 1.05rem/1.3 var(--label-font); font-variant: small-caps; letter-spacing: .07em; }
+#artworkArtist, #artworkYear { font: inherit; letter-spacing: inherit; }
+#artworkImage, #artworkFrame figcaption { transition: opacity .9s ease; }
+#artworkFrame.swapping #artworkImage, #artworkFrame.swapping figcaption { opacity: 0; }
+
+/* ---------- Full screen: the painting, its label and the time — nothing else ---------- */
+body.immersive.art-scene.art-full #stage {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0 3rem;
+  padding: 2.4vh 3.2vw 2.6vh;
+}
+body.immersive.art-scene.art-full :is(#top, #screen, #note, #mediaBar, .hero-copy) { display: none !important; }
+body.immersive.art-scene.art-full #artworkFrame {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2.2vh;
+  padding: 0;
+}
+body.immersive.art-scene.art-full #artworkImage {
+  box-shadow: 0 0 0 1px rgba(31, 30, 24, .14), 0 .6rem 1.4rem rgba(20, 18, 14, .16), 0 2.6rem 5rem rgba(20, 18, 14, .2);
+}
+/* The label sits low on the left like a museum card; the clock answers it on the right. */
+body.immersive.art-scene.art-full #artworkFrame figcaption {
+  justify-self: start;
+  max-width: 62%;
+  padding-left: .2rem;
+  text-align: left;
+}
+body.immersive.art-scene.art-full #artworkTitle { font-size: clamp(1.6rem, 2.3vw, 2.6rem); }
+body.immersive.art-scene.art-full #artworkFrame figcaption > span { font-size: clamp(1rem, 1.35vw, 1.5rem); }
+body.immersive.art-scene.art-full #hero {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  z-index: 1;
+  padding: 0;
+}
+body.immersive.art-scene.art-full #clock {
+  font-family: var(--label-font);
+  font-size: clamp(2.8rem, 4.4vw, 5rem);
+  font-weight: 400;
+  letter-spacing: .01em;
+  line-height: 1;
+  opacity: .88;
 }
