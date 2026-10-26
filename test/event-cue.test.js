@@ -11,14 +11,18 @@ test("does not nag about distant or guest-hidden events", () => {
   assert.equal(nextEventCue([{ id: "1", title: "Ужин", start: "2026-09-08T16:05:00+03:00", allDay: true }], { now }), null);
 });
 
-test("the next-up line names today's soonest timed event, or the one still going", () => {
+test("the next-up line names the week's soonest timed event, or the one still going", () => {
   assert.equal(nextUpEvent([], { now }), null);
   assert.equal(nextUpEvent([{ title: "День рождения", start: "2026-09-08", end: "2026-09-09", allDay: true }], { now }), null);
   assert.equal(nextUpEvent([{ title: "Ужин", start: "2026-09-08T19:00:00+03:00", end: "2026-09-08T21:00:00+03:00" }], { now, privacy: true }), null);
   assert.equal(
-    nextUpEvent([{ title: "Понедельник", start: "2026-09-10T10:00:00+03:00", end: "2026-09-10T11:00:00+03:00" }], { now }),
+    nextUpEvent([{ title: "Четверг", start: "2026-09-10T10:00:00+03:00", end: "2026-09-10T11:00:00+03:00" }], { now }).days,
+    2,
+    "an empty evening still says what comes after it",
+  );
+  assert.equal(
+    nextUpEvent([{ title: "Через неделю", start: "2026-09-15T10:00:00+03:00", end: "2026-09-15T11:00:00+03:00" }], { now }),
     null,
-    "a Monday meeting is not next on Saturday",
   );
 
   const soon = nextUpEvent([
@@ -26,7 +30,7 @@ test("the next-up line names today's soonest timed event, or the one still going
     { title: "Созвон", start: "2026-09-08T16:40:00+03:00", end: "2026-09-08T17:00:00+03:00" },
     { title: "Понедельник", start: "2026-09-10T10:00:00+03:00", end: "2026-09-10T11:00:00+03:00" },
   ], { now });
-  assert.deepEqual(soon, { title: "Созвон", start: "2026-09-08T16:40:00+03:00", minutes: 40, live: false });
+  assert.deepEqual(soon, { title: "Созвон", start: "2026-09-08T16:40:00+03:00", minutes: 40, days: 0, live: false });
 
   const live = nextUpEvent([
     { title: "Йога", start: "2026-09-08T15:30:00+03:00", end: "2026-09-08T16:30:00+03:00" },
@@ -38,7 +42,12 @@ test("the next-up line names today's soonest timed event, or the one still going
 test("the next-up phrase stays short enough to read from the sofa", () => {
   assert.equal(nextUpPhrase({ title: "Йога", live: true }), "Сейчас · Йога");
   assert.equal(nextUpPhrase({ title: "Созвон", start: "2026-09-08T16:40:00+03:00", minutes: 40 }), "Через 40 мин · Созвон");
-  assert.equal(nextUpPhrase({ title: "Ужин", start: "2026-09-08T19:00:00+03:00", minutes: 180 }), "в 19:00 · Ужин");
+  assert.equal(nextUpPhrase({ title: "Ужин", start: "2026-09-08T19:00:00+03:00", minutes: 180, days: 0 }), "Через 3 ч · Ужин");
+  assert.equal(nextUpPhrase({ title: "Ужин", start: "2026-09-08T18:25:00+03:00", minutes: 145, days: 0 }), "Через 2 ч 25 мин · Ужин");
+  assert.equal(nextUpPhrase({ title: "Кино", start: "2026-09-08T21:30:00+03:00", minutes: 330, days: 0 }), "Сегодня в 21:30 · Кино");
+  assert.equal(nextUpPhrase({ title: "Школа", start: "2026-09-09T08:00:00+03:00", minutes: 960, days: 1 }), "Завтра в 08:00 · Школа");
+  assert.equal(nextUpPhrase({ title: "Врач", start: "2026-09-10T10:00:00+03:00", minutes: 2520, days: 2 }), "В четверг в 10:00 · Врач");
+  assert.equal(nextUpPhrase({ title: "Бассейн", start: "2026-09-08T16:40:00+03:00", minutes: 1500, days: 6 }).startsWith("Во вторник"), true);
 });
 
 test("cues thirty minutes and again at five", () => {

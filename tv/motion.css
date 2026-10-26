@@ -1,0 +1,157 @@
+/*
+ * Real footage and real photographs. The motion scenes play a filmed loop over their own
+ * first frame; the still ones (dunes, Ravenna, the jali gallery, the Naples cloister) are
+ * photographs that only drift. Sources and licences: assets/ATTRIBUTIONS.md.
+ */
+#sceneVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+body:not(.video-scene) #sceneVideo { display: none; }
+body.video-live #sceneVideo { opacity: 1; }
+body.asleep #sceneVideo { visibility: hidden; }
+/* Footage moves by itself: the backdrop under it stays still and the drawn decor steps aside. */
+body.video-scene #sceneBackdrop { opacity: 1; transform: none; inset: 0; animation: none; background-position: center; background-size: cover; }
+body.video-scene #sceneDecor { display: none; }
+
+body[data-theme="fireplace"] #sceneBackdrop { background-image: url("../assets/scenes/fireplace.webp"); }
+body[data-theme="campfire"] #sceneBackdrop { background-image: url("../assets/scenes/campfire.webp"); }
+body[data-theme="rain-glass"] #sceneBackdrop { background-image: url("../assets/scenes/rain-glass.webp"); }
+body[data-theme="window-streams"] #sceneBackdrop { background-image: url("../assets/scenes/window-streams.webp"); }
+body[data-theme="snowfall"] #sceneBackdrop { background-image: url("../assets/scenes/snowfall.webp"); }
+body[data-theme="aurora"] #sceneBackdrop { background-image: url("../assets/scenes/aurora.webp"); }
+body[data-theme="starry-sky"] #sceneBackdrop { background-image: url("../assets/scenes/starry-sky.webp"); }
+body[data-theme="forest-stream"] #sceneBackdrop { background-image: url("../assets/scenes/forest-stream.webp"); }
+body[data-theme="mist-lake"] #sceneBackdrop { background-image: url("../assets/scenes/mist-lake.webp"); }
+
+/* Fire: warm dark glass, so the flame stays the brightest thing in the room. */
+body.immersive:is([data-theme="fireplace"], [data-theme="campfire"]) {
+  --bg: #0b0605; --ink: #f7ecdf; --muted: #c9b29c; --accent: #eba564;
+  --glass: rgba(20, 11, 8, .56); --line: rgba(240, 188, 140, .16); --selected: rgba(235, 165, 100, .14); --glow: rgba(214, 106, 46, .22);
+  --glass-line: rgba(240, 188, 140, .16);
+}
+body:is([data-theme="fireplace"], [data-theme="campfire"]) #wash { background: linear-gradient(90deg, rgba(8, 4, 3, .62), rgba(8, 4, 3, .1) 55%, rgba(8, 4, 3, .4)); }
+/* The campfire burns in the middle of a black night; it is moved to the free half of the screen. */
+body[data-theme="campfire"] #sceneVideo, body[data-theme="campfire"] #sceneBackdrop { transform: translateX(-14%); }
+body[data-theme="campfire"][data-layout="mirror"] #sceneVideo, body[data-theme="campfire"][data-layout="mirror"] #sceneBackdrop { transform: translateX(14%); }
+body[data-theme="campfire"] { --bg: #000; }
+/* The hearth is filmed head-on: zoomed a little and moved left, the flames clear the panel. */
+body[data-theme="fireplace"] #sceneVideo, body[data-theme="fireplace"] #sceneBackdrop { transform: translateX(-14%) scale(1.3); }
+body[data-theme="fireplace"][data-layout="mirror"] #sceneVideo, body[data-theme="fireplace"][data-layout="mirror"] #sceneBackdrop { transform: translateX(14%) scale(1.3); }
+
+/* Glass: bright grey daylight behind the drops, cooled and dimmed under the text. */
+body.immersive:is([data-theme="rain-glass"], [data-theme="window-streams"]) {
+  --bg: #1b2125; --ink: #f2f5f5; --muted: #bcc5c8; --accent: #a9c7d3;
+  --glass: rgba(16, 22, 27, .58); --line: rgba(200, 220, 230, .16); --selected: rgba(169, 199, 211, .14); --glow: rgba(120, 160, 180, .2);
+  --glass-line: rgba(200, 220, 230, .16);
+}
+body:is([data-theme="rain-glass"], [data-theme="window-streams"]) #wash { background: linear-gradient(90deg, rgba(9, 13, 17, .62), rgba(9, 13, 17, .22) 60%, rgba(9, 13, 17, .42)), linear-gradient(0deg, rgba(9, 13, 17, .35), transparent 40%); }
+
+/* Snow: a white forest, so the type turns dark instead of greying the snow. */
+body.immersive[data-theme="snowfall"] {
+  --bg: #d9dee2; --ink: #17202a; --muted: #4f5b66; --accent: #2f5f86;
+  --glass: rgba(246, 249, 251, .72); --line: rgba(30, 50, 70, .14); --selected: rgba(47, 95, 134, .1); --glow: rgba(160, 190, 215, .25);
+  color-scheme: light;
+  --glass-line: rgba(30, 50, 70, .14);
+}
+body[data-theme="snowfall"] #wash { background: linear-gradient(90deg, rgba(244, 247, 250, .55), rgba(244, 247, 250, .05) 60%); }
+
+/* Night skies: the footage is dark already; the panel only needs to hold together. */
+body.immersive:is([data-theme="aurora"], [data-theme="starry-sky"]) {
+  --bg: #050a12; --ink: #eef3fa; --muted: #a9b6c7; --accent: #8fd8c0;
+  --glass: rgba(6, 12, 22, .5); --line: rgba(170, 200, 230, .14); --selected: rgba(143, 216, 192, .12); --glow: rgba(90, 160, 200, .18);
+  --glass-line: rgba(170, 200, 230, .14);
+}
+body.immersive[data-theme="starry-sky"] { --accent: #b9a6f0; --selected: rgba(185, 166, 240, .12); }
+body:is([data-theme="aurora"], [data-theme="starry-sky"]) #wash { background: linear-gradient(90deg, rgba(3, 6, 12, .45), transparent 55%, rgba(3, 6, 12, .3)); }
+
+body.immersive[data-theme="forest-stream"] {
+  --bg: #0c140f; --ink: #eef2ea; --muted: #b0bba8; --accent: #b8cf8a;
+  --glass: rgba(10, 18, 13, .58); --line: rgba(200, 220, 180, .15); --selected: rgba(184, 207, 138, .12); --glow: rgba(110, 150, 90, .2);
+  --glass-line: rgba(200, 220, 180, .15);
+}
+body[data-theme="forest-stream"] #wash { background: linear-gradient(90deg, rgba(5, 10, 7, .6), rgba(5, 10, 7, .12) 60%, rgba(5, 10, 7, .4)); }
+
+body.immersive[data-theme="mist-lake"] {
+  --bg: #3c4a50; --ink: #f4f6f5; --muted: #c4ccce; --accent: #d9c9a1;
+  --glass: rgba(30, 40, 44, .55); --line: rgba(230, 236, 236, .18); --selected: rgba(217, 201, 161, .14); --glow: rgba(200, 210, 210, .18);
+  --glass-line: rgba(230, 236, 236, .18);
+}
+body[data-theme="mist-lake"] #wash { background: linear-gradient(90deg, rgba(20, 28, 32, .58), rgba(20, 28, 32, .12) 60%, rgba(20, 28, 32, .38)); }
+
+/* ---------- Photographs ---------- */
+body:is([data-theme="dunes"], [data-theme="byzantium"], [data-theme="india"], [data-theme="italy"]) #sceneBackdrop {
+  opacity: 1;
+  background-color: var(--bg);
+  background-position: center;
+  background-size: cover;
+  animation: slowZoom 150s ease-in-out infinite alternate;
+}
+body:is([data-theme="dunes"], [data-theme="byzantium"], [data-theme="india"], [data-theme="italy"]) #sceneDecor { display: none; }
+
+/* Erg Chebbi at evening: the sand is bright orange, so the panel is a dark warm glass. */
+body.immersive[data-theme="dunes"] {
+  --bg: #6b3d1c; --ink: #fff4e8; --muted: #f0cfae; --accent: #ffc27a;
+  --glass: rgba(52, 26, 12, .64); --line: rgba(255, 214, 170, .2); --selected: rgba(255, 194, 122, .16); --glow: rgba(240, 150, 70, .22);
+  color-scheme: dark;
+  --glass-line: rgba(255, 214, 170, .2);
+}
+body[data-theme="dunes"] #sceneBackdrop { background-image: url("../assets/scenes/dunes.webp"); }
+body[data-theme="dunes"] #wash { background: linear-gradient(90deg, rgba(40, 18, 6, .42), rgba(40, 18, 6, .04) 55%, rgba(40, 18, 6, .28)), linear-gradient(0deg, rgba(40, 18, 6, .3), transparent 35%); }
+
+/* The starry vault of Galla Placidia, Ravenna. */
+body.immersive[data-theme="byzantium"] {
+  --bg: #0a1830; --ink: #f6ecd4; --muted: #c8bc9e; --accent: #e2c070;
+  --glass: rgba(8, 18, 38, .62); --line: rgba(226, 192, 112, .22); --selected: rgba(226, 192, 112, .15); --glow: rgba(60, 90, 150, .25);
+  --glass-line: rgba(226, 192, 112, .22);
+}
+body[data-theme="byzantium"] #sceneBackdrop { background-image: url("../assets/scenes/byzantium.webp"); }
+body[data-theme="byzantium"] #wash { background: linear-gradient(90deg, rgba(4, 10, 24, .55), rgba(4, 10, 24, .1) 55%, rgba(4, 10, 24, .35)); }
+
+/* A carved stone jali gallery: warm light through the lattice. */
+body.immersive[data-theme="india"] {
+  --bg: #3a2818; --ink: #fff4e6; --muted: #e2ccb0; --accent: #f0b46a;
+  --glass: rgba(44, 28, 16, .62); --line: rgba(255, 220, 180, .18); --selected: rgba(240, 180, 106, .15); --glow: rgba(220, 150, 80, .2);
+  --glass-line: rgba(255, 220, 180, .18);
+}
+body[data-theme="india"] #sceneBackdrop { background-image: url("../assets/scenes/india.webp"); }
+body[data-theme="india"] #wash { background: linear-gradient(90deg, rgba(30, 18, 8, .55), rgba(30, 18, 8, .12) 55%, rgba(30, 18, 8, .38)); }
+
+/* The majolica cloister of Santa Chiara, Naples, in full sun. */
+body.immersive[data-theme="italy"] {
+  --bg: #e6dcc6; --ink: #1d2a26; --muted: #4e5c54; --accent: #2f6b7c;
+  --glass: rgba(250, 246, 236, .84); --line: rgba(30, 60, 60, .16); --selected: rgba(47, 107, 124, .12); --glow: rgba(240, 210, 140, .25);
+  color-scheme: light;
+  --glass-line: rgba(30, 60, 60, .16);
+}
+body[data-theme="italy"] #sceneBackdrop { background-image: url("../assets/scenes/italy.webp"); }
+body[data-theme="italy"] #wash { background: linear-gradient(90deg, rgba(250, 246, 236, .62), rgba(250, 246, 236, .06) 55%); }
+
+/* Wind over the dunes: a few grains of sand crossing the light. */
+#sceneParticles[data-motion="sand"] i {
+  top: auto;
+  bottom: calc(var(--y) * .45);
+  left: -4%;
+  width: calc(2px * var(--size));
+  height: calc(2px * var(--size));
+  border-radius: 50%;
+  background: #ffe6c2;
+  opacity: 0;
+  animation-name: sandDrift;
+  animation-timing-function: linear;
+}
+@keyframes sandDrift {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  10%, 80% { opacity: .55; }
+  100% { transform: translate3d(108vw, calc(-6vh * var(--sway)), 0); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #sceneVideo { display: none; }
+}

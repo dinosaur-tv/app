@@ -1,0 +1,60 @@
+/*
+ * The first thing the television shows. It stays until the day (or the pairing code) is
+ * ready, then lifts away; nothing of the empty page underneath ever flashes through.
+ */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1.1rem;
+  background: radial-gradient(ellipse at 50% 42%, #1d2420 0%, #121513 46%, #0b0c0b 100%);
+  color: #eef2ec;
+  font-family: var(--font);
+  transition: opacity .8s ease, transform .9s cubic-bezier(.2, .7, .2, 1);
+}
+#splash.leaving { opacity: 0; transform: scale(1.03); pointer-events: none; }
+.splash-mark { position: relative; width: clamp(7rem, 11vw, 13rem); }
+.splash-mark::before {
+  content: "";
+  position: absolute;
+  inset: -45% -35%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(52, 230, 180, .22), transparent 62%);
+  animation: splashGlow 3.2s ease-in-out infinite;
+}
+.splash-mark img { position: relative; display: block; width: 100%; height: auto; animation: splashBreathe 3.2s ease-in-out infinite; }
+.splash-name {
+  margin: .4rem 0 0;
+  font-size: clamp(1.3rem, 1.8vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+.splash-line {
+  position: relative;
+  width: clamp(8rem, 12vw, 14rem);
+  height: 2px;
+  margin-top: .6rem;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(238, 242, 236, .1);
+}
+.splash-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, #4fe3b8, transparent);
+  animation: splashSweep 1.6s cubic-bezier(.45, .05, .55, .95) infinite;
+}
+.splash-status { margin: .2rem 0 0; color: rgba(238, 242, 236, .55); font-size: clamp(.85rem, 1vw, 1.1rem); letter-spacing: .04em; }
+@keyframes splashSweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@keyframes splashBreathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3%); } }
+@keyframes splashGlow { 0%, 100% { opacity: .55; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) {
+  .splash-mark::before, .splash-mark img, .splash-line::after { animation: none; }
+}

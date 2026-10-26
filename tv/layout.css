@@ -13,7 +13,7 @@ body.immersive[data-theme] {
   --line: rgba(234, 240, 248, .16);
   --accent: #d9e4ed;
 }
-body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="dunes"], [data-theme="sunroom"]) {
+body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="sunroom"]) {
   --ink: #262b31;
   --muted: #535e69;
   --accent: #465e70;
@@ -110,23 +110,6 @@ body.immersive[data-theme] #weatherLine {
   color: var(--ink);
 }
 body.immersive[data-theme] #weatherLine { margin-top: .4rem; opacity: .85; }
-body.immersive[data-theme] #nextUpLine {
-  display: block;
-  width: fit-content;
-  max-width: 100%;
-  margin-top: 1.4rem;
-  padding: .85rem 1.05rem;
-  border: 1px solid var(--glass-line);
-  border-radius: 1.2rem;
-  background: var(--glass);
-  backdrop-filter: blur(16px);
-  font-size: .86em;
-  text-shadow: none;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-body.immersive[data-theme] #nextUpLine::before { font-size: .68em; letter-spacing: .12em; }
-body.immersive[data-theme].has-note #nextUpLine { display: none; }
 body.immersive[data-theme] #screen {
   position: relative;
   inset: auto;
@@ -274,7 +257,6 @@ body.immersive[data-theme]:is(.hide-calendar, .guests) #screen:empty { display: 
 body.immersive[data-theme].hide-calendar:not(.guests):not(.hide-weather) #screen { display: block !important; }
 
 @media (max-height: 800px) and (min-width: 801px) {
-  body.immersive[data-theme] #nextUpLine { display: none; }
 }
 
 @media (max-height: 650px) and (min-width: 801px) {
@@ -283,7 +265,6 @@ body.immersive[data-theme].hide-calendar:not(.guests):not(.hide-weather) #screen
   body.immersive[data-theme] #hero { padding-top: .5rem; }
   body.immersive[data-theme] #clock { font-size: min(10vw, 22vh); }
   body.immersive[data-theme] .hero-copy { padding-top: .65rem; font-size: 1rem; }
-  body.immersive[data-theme] #nextUpLine { margin-top: .7rem; padding: .5rem .75rem; }
   body.immersive[data-theme] #note { font-size: 1.1rem; padding: .75rem 1rem; }
   body.immersive[data-theme] #screen { padding: 1.2rem; }
 }
@@ -299,7 +280,6 @@ body.immersive[data-theme].hide-calendar:not(.guests):not(.hide-weather) #screen
   body.immersive[data-theme] #hero { grid-column: 1 / -1; grid-row: 2; padding: 0; display: flex; align-items: center; gap: 1.5rem; }
   body.immersive[data-theme] #clock { flex: 0 0 auto; font-size: clamp(4rem, 15vw, 7rem); }
   body.immersive[data-theme] .hero-copy { min-width: 0; padding: 0; font-size: .9rem; }
-  body.immersive[data-theme] #nextUpLine { display: none; }
   body.immersive[data-theme] #screen { grid-column: 1 / -1; grid-row: 3; padding: 1.2rem; border-radius: 1.5rem; }
   body.immersive[data-theme] #note { grid-column: 1; grid-row: 4; align-self: end; font-size: .9rem; padding: .8rem; }
   body.immersive[data-theme] #mediaBar { grid-column: 2; grid-row: 4; align-self: end; padding: .5rem; }

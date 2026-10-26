@@ -1,8 +1,9 @@
 import { displayThemes, normalizeDisplay, normalizeRotation, pickNowPlaying, rotationSignature, screenTheme, shouldApplyTvReload } from "../control-state.js";
 import { paintSceneMotion } from "./scene-motion.js";
+import { paintSceneVideo } from "./scene-video.js";
 import { sceneLayout } from "./scene-layout.js";
-import { artworkFor, artworkUrl } from "../artworks.js";
-import { isLiveNow, leftPhrase, liveEvents, liveState, minutesPhrase, nextEventCue, nextUpEvent, nextUpPhrase } from "../event-cue.js";
+import { artworkFor, artworkUrl, slideshowArtwork } from "../artworks.js";
+import { isLiveNow, leftPhrase, liveEvents, liveState, minutesPhrase, nextEventCue, nextUpEvent, whenPhrase } from "../event-cue.js";
 import { fallbackWeather, fetchWeather, placeKey } from "./weather.js";
 import { screenNameFrom } from "./screen-name.js";
 
@@ -64,7 +65,6 @@ const noteEl = document.querySelector("#note");
 const clockEl = document.querySelector("#clock");
 const dateLine = document.querySelector("#dateLine");
 const weatherLine = document.querySelector("#weatherLine");
-const nextUpLine = document.querySelector("#nextUpLine");
 const pairEl = document.querySelector("#pair");
 const pairCode = document.querySelector("#pairCode");
 const pairEyebrow = document.querySelector("#pairEyebrow");
@@ -530,6 +530,7 @@ function renderWeekAgenda(now, scene) {
   const body = items.map((item) => (item.event ? sceneEventHtml(item.event, eventIndex++) : weekDayHeading(item.date, now))).join("");
   return `<section class="scene-agenda scene-${scene}">
     <p class="kicker"><span>Эта неделя</span><span class="scene-day-label">${escapeHtml(range)}</span></p>
+    ${upNextHtml(now, { liveListed: body.includes("is-live") })}
     <div class="scene-list" style="--event-count:${Math.max(eventIndex, 1)}">${body || `<p class="empty">На неделе тихо. Можно ничего не планировать.</p>`}</div>
     ${pagerHtml(pageIndex, agendaPageCount)}
   </section>`;
@@ -550,13 +551,36 @@ function renderSceneAgenda(now, scene) {
   const page = pages[pageIndex];
   const title = mode === "TODAY" ? "Сегодня" : mode === "TOMORROW" ? "Завтра" : "Эта неделя";
   return `<section class="scene-agenda scene-${scene}">
-    ${layers.calendar ? `<p class="kicker"><span>${title}</span><span class="scene-day-label">${escapeHtml(agendaDayLabel(page.date, now, daily))}${page.parts > 1 ? ` · ${page.part}/${page.parts}` : ""}</span></p>` : ""}
+    ${layers.calendar ? `<p class="kicker"><span>${title}</span><span class="scene-day-label">${escapeHtml(agendaDayLabel(page.date, now, daily))}${page.parts > 1 ? ` · ${page.part}/${page.parts}` : ""}</span></p>
+    ${upNextHtml(now, { liveListed: page.events.some((event) => isLiveNow(event, now.getTime())) })}` : ""}
     ${layers.weather && daily ? sceneWeather(weatherForSelectedDay(selectedDate, now)?.periods) : ""}
     ${layers.calendar ? `<div class="scene-list" style="--event-count:${Math.max(page.events.length, 1)}">${page.events.length ? page.events.map(sceneEventHtml).join("") : `<p class="empty">${mode === "TOMORROW" ? "Завтра" : "Сегодня"} тихо. Можно никуда не спешить.</p>`}</div>
     ${pagerHtml(pageIndex, pages.length)}` : ""}
   </section>`;
 }
 
+
+/**
+ * What is on now and what comes next, at the top of the agenda: the panel says «Сегодня»,
+ * then where the day stands, then the list. Each line only when it exists, and «Сейчас»
+ * only when the list below does not already show that event.
+ */
+function upNextHtml(now, { liveListed = false } = {}) {
+  const layers = screenLayers();
+  if (!layers.calendar) return "";
+  const display = normalizeDisplay(snapshot?.display);
+  const timeZone = screenTimeZone();
+  const events = (snapshot?.days || []).flatMap((day) => day.events || []);
+  const options = { now: now.getTime(), privacy: display.privacy, showCalendar: display.showCalendar, timeZone };
+  const live = liveEvents(events, options)[0];
+  const next = nextUpEvent(events, options);
+  const rows = [];
+  // «Сейчас» is said once: the list marks it when the event is on this page.
+  if (live && !liveListed) rows.push(["now", "Сейчас", live.title || "Дело", leftPhrase(live, { timeZone })]);
+  if (next && !next.live) rows.push(["next", "Дальше", next.title, whenPhrase(next, { timeZone })]);
+  if (!rows.length) return "";
+  return `<div class="scene-upnext">${rows.map(([kind, label, title, when]) => `<p class="up-${kind}"><b>${label}</b><strong>${escapeHtml(title)}</strong><span>${escapeHtml(when)}</span></p>`).join("")}</div>`;
+}
 
 function paintClock(now = new Date()) {
   if (!clockEl) return;
@@ -567,25 +591,6 @@ function paintClock(now = new Date()) {
     const visible = Boolean(snapshot?.weather) && screenLayers().weather;
     setHidden(weatherLine, !visible);
     setText(weatherLine, visible ? `${snapshot.weather.temperature}° · ${snapshot.weather.description}` : "");
-  }
-  if (nextUpLine) {
-    const layers = screenLayers();
-    const display = normalizeDisplay(snapshot?.display);
-    const timeZone = screenTimeZone();
-    const events = layers.calendar ? (snapshot?.days || []).flatMap((day) => day.events || []) : [];
-    const options = { now: now.getTime(), privacy: display.privacy, showCalendar: display.showCalendar, timeZone };
-    // What is on now and what comes next are two lines of one card, each only when it exists.
-    const live = liveEvents(events, options)[0];
-    const next = nextUpEvent(events, options);
-    const rows = [];
-    if (live) rows.push(["now", "Сейчас", `${live.title || "Дело"} · ${leftPhrase(live, { timeZone })}`]);
-    if (next && !next.live) rows.push(["next", "Дальше", nextUpPhrase(next, { timeZone })]);
-    const html = rows.map(([kind, label, text]) => `<span class="up-row up-${kind}"><b>${label}</b><span>${escapeHtml(text)}</span></span>`).join("");
-    setHidden(nextUpLine, !html);
-    if (nextUpLine.dataset.html !== html) {
-      nextUpLine.dataset.html = html;
-      nextUpLine.innerHTML = html;
-    }
   }
 }
 
@@ -600,8 +605,60 @@ function readNativeNowPlaying() {
   }
 }
 
+/**
+ * Hangs a painting. The next one is loaded off-screen and the old one fades out only once
+ * the new one is ready, so a slideshow never shows an empty wall or a half-drawn canvas.
+ */
+function showArtwork(work) {
+  if (artworkImage.dataset.work === work.id) return;
+  artworkImage.dataset.work = work.id;
+  const first = !artworkImage.getAttribute("src");
+  const apply = () => {
+    if (artworkImage.dataset.work !== work.id) return;
+    document.body.dataset.artTone = work.tone;
+    document.body.style.setProperty("--art-wall", work.wall);
+    artworkImage.src = artworkUrl(work);
+    artworkImage.alt = `${work.artist}. ${work.title}, ${work.year}`;
+    document.querySelector("#artworkTitle").textContent = work.title;
+    document.querySelector("#artworkArtist").textContent = work.artist;
+    document.querySelector("#artworkYear").textContent = work.year;
+    artworkFrame.classList.remove("swapping");
+  };
+  if (first) return apply();
+  const next = new window.Image();
+  next.onload = () => {
+    artworkFrame.classList.add("swapping");
+    setTimeout(apply, 900);
+  };
+  next.onerror = apply;
+  next.src = artworkUrl(work);
+}
+
+/** The splash leaves once there is something real to show: the day, or the pairing code. */
+function dismissSplash() {
+  const splash = document.querySelector("#splash");
+  if (!splash || splash.classList.contains("leaving")) return;
+  splash.classList.add("leaving");
+  setTimeout(() => splash.remove(), 900);
+}
+
+/** Footage plays only while someone can see it: not asleep, not hidden behind another app. */
+function videoRunning() {
+  return !document.hidden && !asleep && nativeForeground();
+}
+
+let heldTrack = null;
+let heldTrackAt = 0;
+
 function paintMedia() {
-  const playing = pickNowPlaying(nativeNowPlaying, snapshot);
+  const picked = pickNowPlaying(nativeNowPlaying, snapshot);
+  // The player drops out for a beat between tracks and when the overlay opens. Hiding the
+  // strip for that beat moved the whole column, the agenda frame with it, twice in a row.
+  if (picked?.title) {
+    heldTrack = picked;
+    heldTrackAt = Date.now();
+  }
+  const playing = picked?.title ? picked : (Date.now() - heldTrackAt < 8_000 ? heldTrack : null);
   const visible = Boolean(playing?.title);
   document.body.classList.toggle("media-visible", visible);
   setHidden(mediaBar, !visible);
@@ -615,8 +672,9 @@ function paintMedia() {
   setText(mediaTitle, playing.title);
   setText(mediaArtist, playing.artist || "");
   setHidden(mediaArtist, !playing.artist);
+  // The player is not named: «Яндекс Музыка» under a track only repeated what the wave says.
   // Still on the player, just not moving — said plainly, since the wave has gone still.
-  setText(mediaSource, [playing.source, live ? "" : "на паузе"].filter(Boolean).join(" · "));
+  setText(mediaSource, live ? "" : "на паузе");
   setHidden(mediaSource, !mediaSource.textContent);
 }
 
@@ -679,6 +737,7 @@ function viewSig() {
 function paint(force = false) {
   if (!snapshot) return;
   document.body.classList.remove("waking");
+  dismissSplash();
   const now = new Date();
   const display = normalizeDisplay(snapshot.display);
   const activeTheme = screenTheme(display);
@@ -688,23 +747,19 @@ function paint(force = false) {
   document.body.classList.toggle("immersive", sceneThemes.includes(activeTheme));
   document.body.classList.toggle("has-photo", Boolean(snapshot.display.backgroundUrl) && display.mood !== "night");
   const customPhoto = document.body.classList.contains("has-photo");
-  const artwork = customPhoto ? null : artworkFor(activeTheme);
+  const chosenWork = customPhoto ? null : artworkFor(activeTheme);
+  // A slideshow starts from the chosen painting's gallery and walks it (or every section).
+  const artwork = chosenWork && display.art.slideshow
+    ? slideshowArtwork(display.art.collection, display.art.minutes, now.getTime()) || chosenWork
+    : chosenWork;
   document.body.classList.toggle("art-scene", Boolean(artwork));
+  document.body.classList.toggle("art-full", Boolean(artwork) && display.art.fullscreen);
   artworkFrame.hidden = !artwork;
-  if (artwork) {
-    document.body.dataset.artTone = artwork.tone;
-    document.body.style.setProperty("--art-wall", artwork.wall);
-    if (artworkImage.dataset.work !== artwork.id) {
-      artworkImage.dataset.work = artwork.id;
-      artworkImage.src = artworkUrl(artwork);
-      artworkImage.alt = `${artwork.artist}. ${artwork.title}, ${artwork.year}`;
-      document.querySelector("#artworkTitle").textContent = artwork.title;
-      document.querySelector("#artworkArtist").textContent = `${artwork.artist} · ${artwork.year}`;
-    }
-  }
+  if (artwork) showArtwork(artwork);
   document.body.dataset.layout = sceneLayout(activeTheme, { artwork: Boolean(artwork), customPhoto });
   upgradeBackdrop(activeTheme);
   paintSceneMotion(activeTheme, customPhoto || Boolean(artwork));
+  paintSceneVideo(activeTheme, { running: videoRunning(), customPhoto });
   document.body.classList.toggle("guests", display.privacy);
   document.body.classList.toggle("hide-weather", !display.showWeather);
   document.body.classList.toggle("hide-calendar", !display.showCalendar);
@@ -751,22 +806,15 @@ function paint(force = false) {
   }
 }
 
-/** The agenda is only rebuilt when it reads differently, and only then do its rows slide in. */
+/**
+ * The agenda is only rebuilt when it reads differently, and then in place. Rows used to
+ * slide and fade in on every page turn and every re-measure, which read as the panel
+ * blinking every ten seconds.
+ */
 function swapScreen(html) {
   if (html === paintedHtml) return;
-  // The minutes left and the progress bar move every minute; that is not a new agenda,
-  // so the rows are refreshed in place without sliding in again.
-  const quiet = paintedHtml !== null && agendaShape(html) === agendaShape(paintedHtml);
   paintedHtml = html;
-  screen.classList.remove("agenda-enter");
   screen.innerHTML = html;
-  if (quiet) return;
-  void screen.offsetWidth;
-  screen.classList.add("agenda-enter");
-}
-
-function agendaShape(html) {
-  return html.replace(/<small class="live-left">.*?<\/small>/g, "").replace(/--live-progress:[\d.]+/g, "");
 }
 
 async function request(path, options = {}) {
@@ -797,6 +845,7 @@ function showGuestPair(code) {
   pairNote.textContent = "Код живёт десять минут";
   pairCode.textContent = code;
   pairEl.hidden = false;
+  dismissSplash();
 }
 
 /**
@@ -864,6 +913,7 @@ async function loadSnapshot() {
 
 async function startPairing() {
   pairEl.hidden = false;
+  dismissSplash();
   pairEyebrow.textContent = "Подключение экрана";
   pairTitle.textContent = "Владелец: откройте консоль из Telegram-бота и введите код";
   pairNote.textContent = "Код живёт десять минут. После этого телевизор запомнит дом сам.";
@@ -927,6 +977,7 @@ paintClock();
 setInterval(() => {
   const now = new Date();
   document.body.classList.toggle("motion-paused", document.hidden || asleep || !nativeForeground());
+  paintSceneVideo(document.body.dataset.theme, { running: videoRunning(), customPhoto: document.body.classList.contains("has-photo") });
   paintClock(now);
   maybeEventCue(now);
   readNativeNowPlaying();
@@ -951,7 +1002,11 @@ let polling = false;
 setInterval(() => {
   if (!session || polling) return;
   polling = true;
-  loadSnapshot().catch(() => {}).finally(() => { polling = false; });
+  loadSnapshot().catch(() => {
+    // Still on the splash: say why the day has not come yet, instead of spinning forever.
+    const status = document.querySelector("#splashStatus");
+    if (status) status.textContent = navigator.onLine === false ? "Нет интернета. Ждём сеть" : "Сервер не отвечает. Пробуем ещё раз";
+  }).finally(() => { polling = false; });
 }, 2_000);
 
 // A mouse means the desktop app: the view pills come back while it moves.

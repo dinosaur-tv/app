@@ -69,7 +69,16 @@ function clockStamp(value, timeZone) {
   return `${hour}:${minute}`;
 }
 
-/** Only today's timed events — a Monday meeting is not "next" on Saturday. */
+const WEEKDAYS = ["в воскресенье", "в понедельник", "во вторник", "в среду", "в четверг", "в пятницу", "в субботу"];
+
+function daysBetween(fromStamp, toStamp) {
+  return Math.round((Date.parse(`${toStamp}T12:00:00Z`) - Date.parse(`${fromStamp}T12:00:00Z`)) / 86_400_000);
+}
+
+/**
+ * The soonest timed event of the coming week, or the one still going. An evening with
+ * nothing left used to leave the card empty although tomorrow morning was already known.
+ */
 export function nextUpEvent(events, {
   now = Date.now(),
   privacy = false,
@@ -80,14 +89,16 @@ export function nextUpEvent(events, {
   const today = dayStamp(now, timeZone);
   const timed = (events || []).filter((event) => event && !event.allDay && event.start && event.end);
   const upcoming = timed
-    .filter((event) => Date.parse(event.start) > now && dayStamp(event.start, timeZone) === today)
-    .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+    .map((event) => ({ event, days: daysBetween(today, dayStamp(event.start, timeZone)) }))
+    .filter(({ event, days }) => Date.parse(event.start) > now && days >= 0 && days < 7)
+    .sort((a, b) => Date.parse(a.event.start) - Date.parse(b.event.start));
   const next = upcoming[0];
   if (next) {
     return {
-      title: next.title || "Дело",
-      start: next.start,
-      minutes: Math.max(1, Math.round((Date.parse(next.start) - now) / 60_000)),
+      title: next.event.title || "Дело",
+      start: next.event.start,
+      minutes: Math.max(1, Math.round((Date.parse(next.event.start) - now) / 60_000)),
+      days: next.days,
       live: false,
     };
   }
@@ -95,17 +106,31 @@ export function nextUpEvent(events, {
     .filter((event) => Date.parse(event.start) <= now && Date.parse(event.end) > now)
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start))[0];
   if (!live) return null;
-  return { title: live.title || "Дело", start: live.start, minutes: 0, live: true };
+  return { title: live.title || "Дело", start: live.start, minutes: 0, days: 0, live: true };
 }
 
-/** One glance from the sofa: when, then what — only used for today. */
+/** When it is, the way it would be said: soon in minutes, later today by the clock, then by the day. */
+export function whenPhrase(event, { timeZone = "Europe/Moscow" } = {}) {
+  const minutes = Math.max(1, Number(event.minutes) || 1);
+  const days = Number(event.days) || 0;
+  const clock = clockStamp(event.start, timeZone);
+  if (days === 0 && minutes < 60) return `через ${minutes} мин`;
+  if (days === 0 && minutes < 240) {
+    const rest = minutes % 60;
+    return `через ${Math.floor(minutes / 60)} ч${rest ? ` ${rest} мин` : ""}`;
+  }
+  if (days === 0) return `сегодня в ${clock}`;
+  if (days === 1) return `завтра в ${clock}`;
+  const weekday = new Date(Date.parse(`${dayStamp(event.start, timeZone)}T12:00:00Z`)).getUTCDay();
+  return `${WEEKDAYS[weekday]} в ${clock}`;
+}
+
 export function nextUpPhrase(event, { timeZone = "Europe/Moscow" } = {}) {
   if (!event) return "";
   const title = event.title || "Дело";
   if (event.live) return `Сейчас · ${title}`;
-  const minutes = Math.max(1, Number(event.minutes) || 1);
-  if (minutes <= 90) return `Через ${minutes} мин · ${title}`;
-  return `в ${clockStamp(event.start, timeZone)} · ${title}`;
+  const when = whenPhrase(event, { timeZone });
+  return `${when[0].toUpperCase()}${when.slice(1)} · ${title}`;
 }
 
 /**

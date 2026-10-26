@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { displayThemes, themeNames, displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, normalizeRotation, noteDurations, pickNowPlaying, screenTheme, shouldApplyTvReload, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 
-const idleDisplay = { mode: "TODAY", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, today: 30, tomorrow: 30, week: 30 } };
+const idleDisplay = { mode: "TODAY", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, today: 30, tomorrow: 30, week: 30 }, art: { fullscreen: false, slideshow: false, minutes: 5, collection: "" } };
 
 test("normalizes incomplete display state to a safe gallery dashboard", () => {
   assert.deepEqual(normalizeDisplay(), idleDisplay);
@@ -51,7 +51,7 @@ test("keeps a living note and drops an expired one", () => {
 });
 
 test("keeps now-playing values safe for the remote and the living-room bar", () => {
-  assert.deepEqual(normalizeNowPlaying(), { title: "", artist: "", source: "Яндекс Музыка", isPlaying: false, volumePercent: 50, artworkUrl: "", deviceName: "" });
+  assert.deepEqual(normalizeNowPlaying(), { title: "", artist: "", source: "Яндекс Музыка", isPlaying: false, volumePercent: 50, volumeKnown: false, artworkUrl: "", deviceName: "" });
   assert.equal(normalizeNowPlaying({ title: "Ночь", isPlaying: true, volumePercent: 140 }).volumePercent, 100);
 });
 

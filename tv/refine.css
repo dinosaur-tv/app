@@ -47,7 +47,18 @@ body.cue-visible #mediaBar { opacity: 0 !important; transition: opacity .3s ease
   body.immersive[data-theme] .scene-weather > div { padding: .75rem .85rem; }
   body.immersive[data-theme] .scene-weather small { font-size: .78rem; font-weight: 500; }
   body.immersive[data-theme] .scene-weather b { font-size: 1.7rem; }
-  body.immersive[data-theme] .scene-weather span { font-size: .78rem; }
+  /* «Преимущественно ясно» is two words: they wrap onto a second line instead of an ellipsis. */
+  body.immersive[data-theme] .scene-weather span {
+    display: -webkit-box;
+    min-height: 2.4em;
+    font-size: .78rem;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 
   body.immersive[data-theme] .scene-event {
     grid-template-columns: 4.6rem minmax(0, 1fr) minmax(4.5rem, 22%);
@@ -101,6 +112,12 @@ body.cue-visible #mediaBar { opacity: 0 !important; transition: opacity .3s ease
 
   body.immersive[data-theme] #note { font-size: clamp(1.2rem, 1.9vw, 1.8rem); }
 
+  /* The date and the weather under the clock are read first, from across the room. */
+  body.immersive[data-theme] .hero-copy { font-size: clamp(1.35rem, 2.15vw, 2.1rem); line-height: 1.3; }
+  body.immersive[data-theme] #weatherLine { margin-top: .3rem; opacity: .92; }
+  body.immersive[data-theme] #dateLine::first-letter { text-transform: uppercase; }
+  /* The now/next card keeps its own, smaller voice under them. */
+
   /* Art keeps the narrow rail, but the rail is still read from the sofa. */
   body.immersive.art-scene .scene-agenda > .kicker { font-size: 1.05rem; }
   body.immersive.art-scene .scene-day-label { font-size: .8rem; }
@@ -115,38 +132,62 @@ body.cue-visible #mediaBar { opacity: 0 !important; transition: opacity .3s ease
   body.immersive.art-scene .scene-title small { font-size: .8rem; }
   body.immersive.art-scene .scene-owner { font-size: .8rem; }
   body.immersive.art-scene .scene-owner i { width: .5rem; height: .5rem; }
-  body.immersive.art-scene .hero-copy { font-size: 1.05rem; }
+  body.immersive.art-scene .hero-copy { font-size: 1.25rem; }
   body.immersive.art-scene #mediaBar strong { font-size: 1.15rem; }
   body.immersive.art-scene #mediaBar span { font-size: .9rem; }
   body.immersive.art-scene #mediaBar em { font-size: .75rem; }
   body.immersive.art-scene #mediaBar .media-wave { height: 2.2rem; gap: .22rem; }
   body.immersive.art-scene #mediaBar .media-wave i { width: .22rem; }
-  body.immersive.art-scene #artworkTitle { font-size: 1.05rem; }
-  body.immersive.art-scene #artworkArtist { font-size: .85rem; }
   body.immersive.art-scene .scene-day { font-size: .8rem; }
 }
 
-/* Now and next: one card, one line each. The current event leads, in the accent colour. */
-body.immersive[data-theme] #nextUpLine::before { content: none; }
-body.immersive[data-theme] #nextUpLine { display: grid; gap: .55rem; }
-/* The art rail is narrow: there the agenda itself marks what is on now. */
-body.immersive.art-scene #nextUpLine { display: none; }
-#nextUpLine .up-row { display: grid; gap: .1rem; min-width: 0; }
-#nextUpLine .up-row b {
+/*
+ * Now and next, under the panel's heading: the time-left or time-until sits on the right,
+ * where the eye lands after reading the title. The current event leads, in green.
+ */
+body.immersive[data-theme] .scene-upnext {
+  display: grid;
+  gap: .5rem;
+  margin: .2rem 0 .9rem;
+  padding: .75rem .95rem;
+  border-radius: .9rem;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+body.immersive[data-theme] .scene-upnext p {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: .9rem;
+  margin: 0;
+  min-width: 0;
+}
+body.immersive[data-theme] .scene-upnext b {
   color: var(--muted);
-  font-size: .68em;
+  font-size: .72rem;
   font-weight: 650;
   letter-spacing: .12em;
   text-transform: uppercase;
 }
-#nextUpLine .up-row > span { overflow-wrap: anywhere; }
-#nextUpLine .up-now b { color: var(--live, #8fd3a0); }
-#nextUpLine .up-now > span { font-weight: 600; }
-#nextUpLine .up-now + .up-next { padding-top: .5rem; border-top: 1px solid var(--line); }
+body.immersive[data-theme] .scene-upnext strong {
+  overflow: hidden;
+  font-size: 1.12rem;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.immersive[data-theme] .scene-upnext span { color: var(--muted); font-size: .98rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.immersive[data-theme] .scene-upnext .up-now b,
+body.immersive[data-theme] .scene-upnext .up-now span { color: var(--live); }
+body.immersive.art-scene .scene-upnext { padding: .55rem .7rem; }
+body.immersive.art-scene .scene-upnext p { grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .6rem; }
+body.immersive.art-scene .scene-upnext b { grid-column: 1 / -1; font-size: .62rem; }
+body.immersive.art-scene .scene-upnext strong { font-size: .9rem; }
+body.immersive.art-scene .scene-upnext span { font-size: .8rem; }
+body.immersive[data-layout="night"] .scene-upnext { background: transparent; padding-inline: 0; }
 
 /* The row of an event under way: marked, and filling up as it goes. */
 body.immersive[data-theme] { --live: #8fd3a0; }
-body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="dunes"], [data-theme="sunroom"]),
+body.immersive[data-theme]:is([data-theme="home-day"], [data-theme="palace"], [data-theme="rome"], [data-theme="rus"], [data-theme="gzhel"], [data-theme="italy"], [data-theme="sunroom"]),
 body.immersive.art-scene:not([data-art-tone="dark"]) { --live: #2f7d4a; }
 body.immersive[data-theme] .scene-event.is-live .scene-time { color: var(--live); font-weight: 650; opacity: 1; }
 body.immersive[data-theme] .scene-event.is-live .scene-title { border-left-color: var(--live); }
@@ -195,7 +236,6 @@ body.immersive[data-theme] .scene-event.is-live .live-left { color: var(--live);
   }
   body.immersive[data-layout="night"] #clock { margin: 0 auto; font-size: clamp(6rem, 11.5vw, 13rem); opacity: .8; }
   body.immersive[data-layout="night"] .hero-copy { padding: .8rem 0 0; opacity: .8; }
-  body.immersive[data-layout="night"] #nextUpLine { margin-inline: auto; text-align: left; }
   body.immersive[data-layout="night"] #screen {
     grid-column: 2;
     grid-row: 3;
