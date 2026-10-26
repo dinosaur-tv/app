@@ -288,7 +288,7 @@ function paintMusic() {
   const copy = musicRemoteCopy({ tvOnline, nowPlaying, canOverlay });
   title.textContent = nowPlaying.title || "Ничего не играет";
   artist.textContent = live
-    ? (nowPlaying.artist || nowPlaying.source || "Яндекс Музыка")
+    ? (nowPlaying.artist || (nowPlaying.isPlaying ? "Играет на телевизоре" : "На паузе"))
     : "На телевизоре сейчас ничего не играет";
   art.classList.toggle("has-art", Boolean(nowPlaying.artworkUrl));
   art.style.backgroundImage = nowPlaying.artworkUrl ? `url("${nowPlaying.artworkUrl}")` : "";

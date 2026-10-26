@@ -600,8 +600,18 @@ function readNativeNowPlaying() {
   }
 }
 
+let heldTrack = null;
+let heldTrackAt = 0;
+
 function paintMedia() {
-  const playing = pickNowPlaying(nativeNowPlaying, snapshot);
+  const picked = pickNowPlaying(nativeNowPlaying, snapshot);
+  // The player drops out for a beat between tracks and when the overlay opens. Hiding the
+  // strip for that beat moved the whole column, the agenda frame with it, twice in a row.
+  if (picked?.title) {
+    heldTrack = picked;
+    heldTrackAt = Date.now();
+  }
+  const playing = picked?.title ? picked : (Date.now() - heldTrackAt < 8_000 ? heldTrack : null);
   const visible = Boolean(playing?.title);
   document.body.classList.toggle("media-visible", visible);
   setHidden(mediaBar, !visible);
@@ -615,8 +625,9 @@ function paintMedia() {
   setText(mediaTitle, playing.title);
   setText(mediaArtist, playing.artist || "");
   setHidden(mediaArtist, !playing.artist);
+  // The player is not named: «Яндекс Музыка» under a track only repeated what the wave says.
   // Still on the player, just not moving — said plainly, since the wave has gone still.
-  setText(mediaSource, [playing.source, live ? "" : "на паузе"].filter(Boolean).join(" · "));
+  setText(mediaSource, live ? "" : "на паузе");
   setHidden(mediaSource, !mediaSource.textContent);
 }
 
@@ -751,22 +762,15 @@ function paint(force = false) {
   }
 }
 
-/** The agenda is only rebuilt when it reads differently, and only then do its rows slide in. */
+/**
+ * The agenda is only rebuilt when it reads differently, and then in place. Rows used to
+ * slide and fade in on every page turn and every re-measure, which read as the panel
+ * blinking every ten seconds.
+ */
 function swapScreen(html) {
   if (html === paintedHtml) return;
-  // The minutes left and the progress bar move every minute; that is not a new agenda,
-  // so the rows are refreshed in place without sliding in again.
-  const quiet = paintedHtml !== null && agendaShape(html) === agendaShape(paintedHtml);
   paintedHtml = html;
-  screen.classList.remove("agenda-enter");
   screen.innerHTML = html;
-  if (quiet) return;
-  void screen.offsetWidth;
-  screen.classList.add("agenda-enter");
-}
-
-function agendaShape(html) {
-  return html.replace(/<small class="live-left">.*?<\/small>/g, "").replace(/--live-progress:[\d.]+/g, "");
 }
 
 async function request(path, options = {}) {

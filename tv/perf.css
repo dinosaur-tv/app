@@ -21,12 +21,8 @@ body.immersive.art-scene[data-art-tone="dark"] { --glass: rgba(255, 255, 255, .0
 /* Each region repaints on its own: a new clock minute does not touch the agenda. */
 #hero, #screen, #mediaBar, #eventCue, #note { contain: layout paint; }
 
-/* Rows slide in when the agenda changes, not every minute the page is redrawn. */
+/* Rows stand still: a page turn swaps them in place instead of fading them in. */
 body.immersive[data-theme] .scene-event { animation: none; }
-body.immersive[data-theme] #screen.agenda-enter .scene-event {
-  animation: eventArrive .45s both cubic-bezier(.2, .8, .2, 1);
-  animation-delay: calc(var(--event-index, 0) * 40ms);
-}
 
 /* The level bars scale instead of changing height, so no frame needs a layout. */
 .media-wave i {
