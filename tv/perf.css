@@ -19,7 +19,10 @@ body.immersive.art-scene { --glass: rgba(255, 255, 255, .24); }
 body.immersive.art-scene[data-art-tone="dark"] { --glass: rgba(255, 255, 255, .04); }
 
 /* Each region repaints on its own: a new clock minute does not touch the agenda. */
-#hero, #screen, #mediaBar, #eventCue, #note { contain: layout paint; }
+#screen, #mediaBar, #eventCue, #note { contain: layout paint; }
+/* The clock's digits overhang their box (tight tracking, tall glyphs); paint containment
+   cut the last «0» and the bottoms off wherever the box hugged the digits. */
+#hero { contain: layout; }
 
 /* Rows stand still: a page turn swaps them in place instead of fading them in. */
 body.immersive[data-theme] .scene-event { animation: none; }
