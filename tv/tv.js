@@ -393,9 +393,24 @@ function renderGuest(now = new Date()) {
 }
 
 
+/*
+ * The forecast's longest words do not fit a quarter of the panel, and the TV's WebView
+ * cannot hyphenate Russian, so «Преимущественно» broke in the middle. Same meaning, shorter.
+ */
+const SHORT_WEATHER = [
+  [/^Преимущественно ясно$/i, "Почти ясно"],
+  [/^Переменная облачность$/i, "Облачно с прояснениями"],
+  [/^Сильная гроза с градом$/i, "Гроза с градом"],
+];
+
+function shortWeather(description = "") {
+  const text = String(description).trim();
+  return SHORT_WEATHER.find(([pattern]) => pattern.test(text))?.[1] ?? text;
+}
+
 function sceneWeather(periods) {
   if (!periods?.length) return "";
-  return `<div class="scene-weather">${periods.slice(0, 4).map((period) => `<div><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><span>${escapeHtml(period.description)}</span></div>`).join("")}</div>`;
+  return `<div class="scene-weather">${periods.slice(0, 4).map((period) => `<div><small>${escapeHtml(period.label)}</small><b>${period.temperature}°</b><span>${escapeHtml(shortWeather(period.description))}</span></div>`).join("")}</div>`;
 }
 
 function scenePageSizeKey(scene) {

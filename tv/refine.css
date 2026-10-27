@@ -54,8 +54,8 @@ body.cue-visible #mediaBar { opacity: 0 !important; transition: opacity .3s ease
     font-size: .78rem;
     line-height: 1.2;
     white-space: normal;
-    overflow-wrap: anywhere;
-    hyphens: auto;
+    overflow-wrap: normal;
+    word-break: normal;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
