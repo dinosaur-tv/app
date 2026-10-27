@@ -716,9 +716,10 @@ function paintNativeSpectrum() {
       return;
     }
     // Scaled, not resized: a transform never makes the page lay itself out again.
+    // The curve lifts quiet bands, so the bars move with the music instead of idling low.
     mediaBars.forEach((bar, index) => {
       const level = Math.max(0, Math.min(1, Number(spectrum.bands[index]) || 0));
-      bar.style.setProperty("--level", (0.08 + level * 0.92).toFixed(2));
+      bar.style.setProperty("--level", (0.1 + Math.pow(level, 0.65) * 0.9).toFixed(2));
     });
   } catch {
     mediaBar.classList.remove("has-audio-spectrum");
