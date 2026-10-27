@@ -241,28 +241,45 @@ body.hide-calendar:not(.guests) #screen { display: none !important; }
 .media-wave {
   display: flex;
   align-items: flex-end;
-  gap: .2rem;
-  height: 1.4rem;
-  opacity: .5;
+  gap: .24rem;
+  height: 1.8rem;
+  opacity: .62;
 }
+/*
+ * Each bar has its own rhythm and its own height, taller towards the middle: five bars
+ * pulsing to one beat read as a loading spinner, not as music.
+ */
 .media-wave i {
+  --peak: .7;
+  --eq: eqA;
+  --eq-time: 1.05s;
+  --eq-delay: 0s;
   display: block;
-  width: .18rem;
+  width: .26rem;
   height: 35%;
   border-radius: 99px;
-  background: color-mix(in srgb, var(--accent) 68%, var(--ink));
+  /* Faint at the root, bright at the tip: the shape reads even where the accent is pale. */
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--accent) 30%, transparent),
+    color-mix(in srgb, var(--accent) 60%, #fff));
+  box-shadow: 0 0 .7rem color-mix(in srgb, var(--accent) 45%, transparent);
   transform-origin: center bottom;
 }
+.media-wave i:nth-child(2) { --peak: .88; --eq: eqB; --eq-time: .86s; --eq-delay: -.31s; }
+.media-wave i:nth-child(3) { --peak: 1; --eq: eqC; --eq-time: 1.22s; --eq-delay: -.57s; }
+.media-wave i:nth-child(4) { --peak: .84; --eq: eqB; --eq-time: .97s; --eq-delay: -.12s; }
+.media-wave i:nth-child(5) { --peak: .66; --eq: eqA; --eq-time: .78s; --eq-delay: -.44s; }
+#mediaBar.is-playing .media-wave { opacity: .95; }
 #mediaBar.is-playing .media-wave i {
-  animation: mediaWave 1.45s ease-in-out infinite;
+  animation: var(--eq) var(--eq-time) ease-in-out var(--eq-delay) infinite;
 }
-#mediaBar.has-audio-spectrum .media-wave { opacity: .78; }
+#mediaBar.has-audio-spectrum .media-wave { opacity: .95; }
 #mediaBar.has-audio-spectrum .media-wave i {
   animation: none !important;
   transition: height 75ms linear;
 }
 body.native-tv:not(.supports-audio-spectrum) #mediaBar.is-playing .media-wave i {
-  animation: mediaWave 1.45s ease-in-out infinite !important;
+  animation: var(--eq) var(--eq-time) ease-in-out var(--eq-delay) infinite !important;
 }
 /*
  * Между открытием страницы и первым снимком показывать нечего, кроме времени: пустая
@@ -276,11 +293,7 @@ body:not(.waking) #screen, body:not(.waking) #modes { transition: opacity .5s ea
 
 /* Paused: the bars go flat and the whole strip steps back, without disappearing. */
 #mediaBar:not(.is-playing) { opacity: .72; }
-#mediaBar:not(.is-playing) .media-wave i { height: 22%; }
-#mediaBar.is-playing .media-wave i:nth-child(2) { animation-delay: -.22s; }
-#mediaBar.is-playing .media-wave i:nth-child(3) { animation-delay: -.48s; }
-#mediaBar.is-playing .media-wave i:nth-child(4) { animation-delay: -.71s; }
-#mediaBar.is-playing .media-wave i:nth-child(5) { animation-delay: -.95s; }
+#mediaBar:not(.is-playing) .media-wave i { height: 22%; box-shadow: none; }
 
 #mediaBar strong {
   display: block;
@@ -307,10 +320,6 @@ body:not(.waking) #screen, body:not(.waking) #modes { transition: opacity .5s ea
   color: color-mix(in srgb, var(--muted) 72%, transparent);
   font-size: .78rem;
   letter-spacing: .04em;
-}
-@keyframes mediaWave {
-  0%, 100% { height: 28%; opacity: .42; }
-  50% { height: 100%; opacity: .78; }
 }
 @keyframes ken { from { transform: scale(1.05) translate3d(0, 0, 0); } to { transform: scale(1.14) translate3d(-2%, 1%, 0); } }
 @keyframes drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(4%, -6%, 0); } }

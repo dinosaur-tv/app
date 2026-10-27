@@ -136,8 +136,8 @@ body.cue-visible #mediaBar { opacity: 0 !important; transition: opacity .3s ease
   body.immersive.art-scene #mediaBar strong { font-size: 1.15rem; }
   body.immersive.art-scene #mediaBar span { font-size: .9rem; }
   body.immersive.art-scene #mediaBar em { font-size: .75rem; }
-  body.immersive.art-scene #mediaBar .media-wave { height: 2.2rem; gap: .22rem; }
-  body.immersive.art-scene #mediaBar .media-wave i { width: .22rem; }
+  body.immersive.art-scene #mediaBar .media-wave { height: 2.5rem; gap: .26rem; }
+  body.immersive.art-scene #mediaBar .media-wave i { width: .28rem; }
   body.immersive.art-scene .scene-day { font-size: .8rem; }
 }
 

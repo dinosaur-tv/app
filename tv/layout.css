@@ -228,8 +228,8 @@ body.immersive[data-theme] #mediaBar {
 body.immersive[data-theme] #mediaBar strong { color: var(--ink); font: 550 1.8rem/1.25 var(--font); text-shadow: none; }
 body.immersive[data-theme] #mediaBar span { color: var(--ink); font-size: 1.25rem; text-shadow: none; }
 body.immersive[data-theme] #mediaBar em { color: var(--muted); font-size: .85rem; text-shadow: none; }
-body.immersive[data-theme] #mediaBar .media-wave { opacity: .8; height: 3rem; gap: .28rem; }
-body.immersive[data-theme] #mediaBar .media-wave i { width: .28rem; }
+body.immersive[data-theme] #mediaBar .media-wave { height: 3.4rem; gap: .34rem; }
+body.immersive[data-theme] #mediaBar .media-wave i { width: .38rem; }
 body.immersive[data-theme] #eventCue {
   inset: auto auto max(28px, env(safe-area-inset-bottom)) var(--safe);
   width: calc((100% - var(--safe) * 2 - clamp(2rem, 5vw, 7rem)) * .46);

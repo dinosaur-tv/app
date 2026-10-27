@@ -37,11 +37,29 @@ body.immersive[data-theme] .scene-event { animation: none; }
 #mediaBar:not(.is-playing) .media-wave i { transform: scaleY(.22); }
 #mediaBar.has-audio-spectrum .media-wave i {
   transform: scaleY(var(--level, .08));
-  transition: transform 90ms linear;
+  transition: transform 70ms linear;
 }
-@keyframes mediaWave {
-  0%, 100% { transform: scaleY(.28); opacity: .42; }
-  50% { transform: scaleY(1); opacity: .8; }
+/* Uneven peaks, like a real level meter; --peak keeps the middle bars the tallest. */
+@keyframes eqA {
+  0%, 100% { transform: scaleY(calc(var(--peak) * .3)); }
+  22% { transform: scaleY(var(--peak)); }
+  41% { transform: scaleY(calc(var(--peak) * .45)); }
+  63% { transform: scaleY(calc(var(--peak) * .82)); }
+  80% { transform: scaleY(calc(var(--peak) * .38)); }
+}
+@keyframes eqB {
+  0%, 100% { transform: scaleY(calc(var(--peak) * .55)); }
+  18% { transform: scaleY(calc(var(--peak) * .24)); }
+  46% { transform: scaleY(var(--peak)); }
+  70% { transform: scaleY(calc(var(--peak) * .6)); }
+  86% { transform: scaleY(calc(var(--peak) * .92)); }
+}
+@keyframes eqC {
+  0%, 100% { transform: scaleY(calc(var(--peak) * .4)); }
+  15% { transform: scaleY(calc(var(--peak) * .9)); }
+  33% { transform: scaleY(calc(var(--peak) * .52)); }
+  54% { transform: scaleY(var(--peak)); }
+  76% { transform: scaleY(calc(var(--peak) * .26)); }
 }
 .agenda-pages i::after {
   width: 100% !important;
