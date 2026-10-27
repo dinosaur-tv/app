@@ -178,13 +178,13 @@ body.immersive.art-scene.art-full #hero {
   grid-row: 2;
   align-self: end;
   z-index: 1;
-  padding: 0;
+  padding: 0 .15em 0 0;
 }
+/* The time is the same thin face as on every other screen, only smaller and quieter;
+   the serif stays with the painting's label. */
 body.immersive.art-scene.art-full #clock {
-  font-family: var(--label-font);
-  font-size: clamp(2.8rem, 4.4vw, 5rem);
-  font-weight: 400;
-  letter-spacing: .01em;
-  line-height: 1;
-  opacity: .88;
+  font: 200 clamp(3rem, 4.8vw, 5.4rem)/1.15 var(--font);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -.03em;
+  opacity: .82;
 }
