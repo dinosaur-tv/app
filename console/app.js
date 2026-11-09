@@ -799,9 +799,34 @@ const remoteText = document.querySelector("#remoteText");
 document.querySelector("#keyboardToggle").addEventListener("click", (event) => {
   toggleRemotePanel(event.currentTarget, document.querySelector("#remoteKeyboard"), remoteText);
 });
-document.querySelector("#touchpadToggle").addEventListener("click", (event) => {
-  toggleRemotePanel(event.currentTarget, document.querySelector("#remoteTouchpad"));
-});
+const touchpad = createTouchpad(document.querySelector("#touchpad"), { send: tvSend, trail: document.querySelector("#touchpadTrail") });
+/**
+ * The touchpad takes the whole phone screen: a bigger surface for the thumb, and nothing to
+ * scroll or tap by mistake under it. «Готово» or the system back closes it.
+ */
+const touchpadSheet = document.querySelector("#remoteTouchpad");
+const touchpadToggle = document.querySelector("#touchpadToggle");
+let backButtonWired = false;
+function setTouchpadOpen(open) {
+  touchpadSheet.hidden = !open;
+  touchpadToggle.setAttribute("aria-expanded", String(open));
+  document.body.classList.toggle("touchpad-open", open);
+  if (open) {
+    touchpad.resize();
+    // The SDK may arrive after this file ran, so the back handler is attached on first use.
+    if (telegram?.BackButton && !backButtonWired) {
+      telegram.BackButton.onClick(() => { if (!touchpadSheet.hidden) setTouchpadOpen(false); });
+      backButtonWired = true;
+    }
+    telegram?.BackButton?.show?.();
+  } else {
+    touchpad.stop();
+    telegram?.BackButton?.hide?.();
+  }
+}
+touchpadToggle.addEventListener("click", () => setTouchpadOpen(true));
+document.querySelector("#touchpadClose").addEventListener("click", () => setTouchpadOpen(false));
+window.addEventListener("keydown", (event) => { if (event.key === "Escape" && !touchpadSheet.hidden) setTouchpadOpen(false); });
 document.querySelector("#remoteKeyboard").addEventListener("submit", async (event) => {
   event.preventDefault();
   const text = remoteText.value;
@@ -810,7 +835,7 @@ document.querySelector("#remoteKeyboard").addEventListener("submit", async (even
   await tvCommand({ action: "text", text }, event.submitter);
   remoteText.focus();
 });
-createTouchpad(document.querySelector("#touchpad"), { send: tvSend });
+
 document.querySelectorAll("[data-mode]").forEach((button) => {
   button.addEventListener("click", () => save({ mode: button.dataset.mode }));
 });

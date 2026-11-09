@@ -927,3 +927,38 @@ a { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   .remote-key.is-sent, .remote-key.is-error, .dpad button.is-sent, .dpad button.is-error, .volume-rocker button.is-sent, .volume-rocker button.is-error { animation: none; }
 }
+
+/* The touchpad opens over the whole console: one big surface for the thumb. */
+.remote-touchpad { display: none; }
+.touchpad-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: .7rem;
+  padding: max(.9rem, env(safe-area-inset-top)) .9rem max(.9rem, env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+.touchpad-sheet[hidden] { display: none; }
+.touchpad-sheet .touchpad {
+  position: relative;
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+  --trail: var(--brass);
+}
+.touchpad-trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.touchpad-hint {
+  position: absolute;
+  inset: auto 1rem 1rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+}
+.touchpad-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .45rem; }
+body.touchpad-open { overflow: hidden; }
+body.touchpad-open .dock { display: none; }

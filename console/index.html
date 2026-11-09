@@ -287,11 +287,15 @@
             <button type="button" class="remote-key" data-tv-key="enter" aria-label="Enter">↵</button>
           </div>
         </form>
-        <div class="remote-touchpad" id="remoteTouchpad" hidden>
-          <div class="touchpad" id="touchpad" role="application" aria-label="Тачпад: водите пальцем, касание — клик, двумя пальцами — прокрутка"></div>
-          <div class="remote-keyboard-keys">
+        <div class="touchpad-sheet" id="remoteTouchpad" role="dialog" aria-modal="true" aria-label="Тачпад" hidden>
+          <div class="touchpad" id="touchpad">
+            <canvas class="touchpad-trail" id="touchpadTrail" aria-hidden="true"></canvas>
+            <p class="touchpad-hint">Водите пальцем — курсор на экране повторит.<br>Касание — клик, двумя пальцами — прокрутка.</p>
+          </div>
+          <div class="touchpad-bar">
             <button type="button" class="remote-key" data-tv-click="left">Клик</button>
             <button type="button" class="remote-key" data-tv-click="right">Правый клик</button>
+            <button type="button" class="remote-key" id="touchpadClose">Готово</button>
           </div>
         </div>
         <p class="list-title">Приложения</p>

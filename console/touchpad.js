@@ -38,7 +38,79 @@ export function isTap(startedAt, endedAt, moved) {
   return endedAt - startedAt <= TAP_MS && moved <= TAP_SLOP;
 }
 
-export function createTouchpad(element, { send, every = 90, now = () => Date.now() }) {
+/** How long a stroke stays visible, and which points of it are still worth drawing. */
+export const TRAIL_MS = 650;
+export function liveTrail(points, at, life = TRAIL_MS) {
+  return points.filter((point) => at - point.t < life);
+}
+
+/**
+ * A fading line behind the finger, so the thumb sees what the cursor is being told to do.
+ * Each finger keeps its own stroke; the newest part is brightest.
+ */
+function createTrail(canvas, now) {
+  if (!canvas?.getContext) return { add() {}, resize() {}, clear() {} };
+  const context = canvas.getContext("2d");
+  const strokes = new Map();
+  let frame = 0;
+  let ratio = 1;
+  const color = () => window.getComputedStyle(canvas).getPropertyValue("--trail").trim() || "#c4a06a";
+
+  function resize() {
+    ratio = window.devicePixelRatio || 1;
+    const box = canvas.getBoundingClientRect();
+    canvas.width = Math.round(box.width * ratio);
+    canvas.height = Math.round(box.height * ratio);
+  }
+
+  function draw() {
+    frame = 0;
+    const at = now();
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.strokeStyle = color();
+    let alive = false;
+    for (const [id, points] of strokes) {
+      const live = liveTrail(points, at);
+      strokes.set(id, live);
+      if (!live.length) { strokes.delete(id); continue; }
+      alive = true;
+      for (let i = 1; i < live.length; i += 1) {
+        const fade = 1 - (at - live[i].t) / TRAIL_MS;
+        context.globalAlpha = Math.max(0, fade) * 0.9;
+        context.lineWidth = (3 + 9 * fade) * ratio;
+        context.beginPath();
+        context.moveTo(live[i - 1].x * ratio, live[i - 1].y * ratio);
+        context.lineTo(live[i].x * ratio, live[i].y * ratio);
+        context.stroke();
+      }
+      const head = live.at(-1);
+      context.globalAlpha = Math.max(0, 1 - (at - head.t) / TRAIL_MS);
+      context.fillStyle = context.strokeStyle;
+      context.beginPath();
+      context.arc(head.x * ratio, head.y * ratio, 9 * ratio, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.globalAlpha = 1;
+    if (alive) frame = window.requestAnimationFrame(draw);
+  }
+
+  return {
+    add(id, x, y) {
+      const box = canvas.getBoundingClientRect();
+      const points = strokes.get(id) ?? [];
+      points.push({ x: x - box.left, y: y - box.top, t: now() });
+      strokes.set(id, points);
+      if (!frame) frame = window.requestAnimationFrame(draw);
+    },
+    resize,
+    clear() { strokes.clear(); context.clearRect(0, 0, canvas.width, canvas.height); },
+  };
+}
+
+export function createTouchpad(element, { send, trail: canvas, every = 90, now = () => Date.now() }) {
+  const trail = createTrail(canvas, now);
   const fingers = new Map();
   const motion = createMotionAccumulator();
   const scroll = createScrollAccumulator();
@@ -66,6 +138,7 @@ export function createTouchpad(element, { send, every = 90, now = () => Date.now
     event.preventDefault();
     element.setPointerCapture?.(event.pointerId);
     fingers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    trail.add(event.pointerId, event.clientX, event.clientY);
     if (fingers.size === 1) gesture = { at: now(), moved: 0, multi: false };
     else if (gesture) gesture.multi = true;
     start();
@@ -77,6 +150,7 @@ export function createTouchpad(element, { send, every = 90, now = () => Date.now
     const x = event.clientX - last.x;
     const y = event.clientY - last.y;
     fingers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    trail.add(event.pointerId, event.clientX, event.clientY);
     if (gesture) gesture.moved += Math.abs(x) + Math.abs(y);
     // Two fingers: each reports its own travel, so half of it makes one scroll.
     if (fingers.size >= 2) scroll.add(y / 2);
@@ -93,5 +167,8 @@ export function createTouchpad(element, { send, every = 90, now = () => Date.now
   element.addEventListener("pointerup", lift);
   element.addEventListener("pointercancel", lift);
 
-  return { stop };
+  return {
+    stop() { stop(); fingers.clear(); gesture = null; trail.clear(); },
+    resize: trail.resize,
+  };
 }
