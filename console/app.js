@@ -1,6 +1,8 @@
 import { artSlideMinutes, normalizeDisplay, normalizeNote, normalizeNowPlaying, noteDurations, rotationPresets, screenTheme, themeNames, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 import { shouldLoadTelegramSdk } from "./telegram.js";
 import { createHouseholdScope } from "./household-scope.js";
+import { createRemotePressController } from "./remote-press.js";
+import { createTouchpad } from "./touchpad.js";
 import { searchPlaces } from "./places.js";
 import { needsAccount, needsHome } from "./request-scope.js";
 import { deviceTitle } from "./device-title.js";
@@ -339,6 +341,7 @@ function paintNowScene(activeScene) {
 }
 
 function showTab(tab) {
+  if (tab === "remote" && !remoteEnabled) tab = "screen";
   if (!hasRemoteAuth()) tab = "signin";
   else if (!householdScope.id) tab = "home";
   else if (!tvLinked && tab !== "home") tab = "setup";
@@ -605,6 +608,8 @@ function applyState(data) {
     // The one thing left that speaks to the television directly. Без пульта на сервере
     // it can do nothing, so it goes away rather than sitting there in silence.
     document.querySelector("#openKinopoisk").hidden = !remoteEnabled;
+    document.querySelector('[data-tab="remote"]').hidden = !remoteEnabled;
+    if (!remoteEnabled && !document.querySelector("#pane-remote").hidden) showTab("screen");
   }
   if (data.calendars) paintCalendars(data.calendars, data.googleConfigured);
   if (data.display?.place) paintPlace(data.display.place);
@@ -702,6 +707,17 @@ async function tvCommand(body, button, { repeat = false } = {}) {
   }
 }
 
+/**
+ * Cursor travel and scroll go out several times a second: no press animation, no haptics and
+ * no repaint of the whole console for each, and a lost one is not worth an error banner.
+ */
+async function tvSend(body) {
+  if (!remoteEnabled) return;
+  try {
+    await request("/v1/miniapp/tv", { method: "POST", body: JSON.stringify({ ...body, ...screenTarget() }) });
+  } catch { /* the next movement carries on from wherever the cursor is */ }
+}
+
 function bumpRemoteButton(button, kind) {
   if (!button) return;
   button.classList.remove("is-pressing", "is-sent", "is-error");
@@ -753,6 +769,48 @@ async function load() {
 document.querySelectorAll("[data-tab]").forEach((button) => {
   button.addEventListener("click", () => showTab(button.dataset.tab));
 });
+const remotePress = createRemotePressController({
+  send: (key, button, options) => tvCommand({ action: "key", key }, button, options),
+  feedback: () => navigator.vibrate?.(8),
+});
+document.querySelectorAll("[data-tv-key]").forEach((button) => {
+  button.addEventListener("pointerdown", (event) => remotePress.pointerDown(button, event));
+  button.addEventListener("pointerup", (event) => remotePress.pointerEnd(button, event));
+  button.addEventListener("pointercancel", (event) => remotePress.pointerEnd(button, event));
+  button.addEventListener("lostpointercapture", (event) => remotePress.pointerEnd(button, event));
+  button.addEventListener("click", (event) => remotePress.click(button, event));
+});
+document.querySelectorAll("[data-tv-launch]").forEach((button) => {
+  button.addEventListener("click", () => tvCommand({ action: "launch", app: button.dataset.tvLaunch }, button));
+});
+document.querySelectorAll("[data-tv-click]").forEach((button) => {
+  button.addEventListener("click", () => tvCommand({ action: "click", button: button.dataset.tvClick }, button));
+});
+/** Keyboard and touchpad fold away, so the pad stays the first thing under the thumb. */
+function toggleRemotePanel(toggle, panel, focus) {
+  const open = panel.hidden;
+  panel.hidden = !open;
+  toggle.setAttribute("aria-expanded", String(open));
+  toggle.classList.toggle("is-on", open);
+  if (open && focus) focus.focus();
+  if (!open) focus?.blur();
+}
+const remoteText = document.querySelector("#remoteText");
+document.querySelector("#keyboardToggle").addEventListener("click", (event) => {
+  toggleRemotePanel(event.currentTarget, document.querySelector("#remoteKeyboard"), remoteText);
+});
+document.querySelector("#touchpadToggle").addEventListener("click", (event) => {
+  toggleRemotePanel(event.currentTarget, document.querySelector("#remoteTouchpad"));
+});
+document.querySelector("#remoteKeyboard").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const text = remoteText.value;
+  if (!text) return;
+  remoteText.value = "";
+  await tvCommand({ action: "text", text }, event.submitter);
+  remoteText.focus();
+});
+createTouchpad(document.querySelector("#touchpad"), { send: tvSend });
 document.querySelectorAll("[data-mode]").forEach((button) => {
   button.addEventListener("click", () => save({ mode: button.dataset.mode }));
 });
@@ -1056,7 +1114,7 @@ boot();
 
 function resetHousehold(id) {
   householdScope.select(id);
-  clearTimeout(volumeTimer); closeNoteSheet();
+  remotePress.stop(); clearTimeout(volumeTimer); closeNoteSheet();
   display = normalizeDisplay(); currentNote = null; nowPlaying = normalizeNowPlaying();
   tvLinked = false; tvOnline = false; tvPower = "on"; calendarUiKey = ""; canManageHome = false;
   // A different home has different screens; the one picked here is remembered for later.

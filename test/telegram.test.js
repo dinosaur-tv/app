@@ -12,7 +12,7 @@ test("does not block the console on telegram.org", () => {
   assert.equal(/<script[^>]+telegram\.org/.test(html), false);
   assert.match(html, /id="invitePhone"/);
   assert.match(html, /id="openKinopoisk"/);
-  assert.equal(/data-tab="remote"/.test(html), false, "вкладку пульта убрали, кнопка Кинопоиска осталась в музыке");
+  assert.match(html, /data-tab="remote"/, "пульт вернулся: им управляют компьютером под телевизором");
 });
 
 test("loads the Telegram SDK only inside Telegram", () => {
