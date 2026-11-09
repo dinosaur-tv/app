@@ -5,7 +5,7 @@ import { sceneLayout } from "./scene-layout.js";
 import { artworkFor, artworkUrl, slideshowArtwork } from "../artworks.js";
 import { isLiveNow, leftPhrase, liveEvents, liveState, minutesPhrase, nextEventCue, nextUpEvent, whenPhrase } from "../event-cue.js";
 import { fallbackWeather, fetchWeather, placeKey } from "./weather.js";
-import { screenNameFrom } from "./screen-name.js";
+import { screenNameFrom, screenNameHeader } from "./screen-name.js";
 
 const API = window.DINO_API_BASE_URL || `${location.origin}/api`;
 const modes = ["TODAY", "TOMORROW", "WEEK"];
@@ -839,7 +839,7 @@ async function request(path, options = {}) {
   headers["x-dino-visible"] = asleep || !nativeForeground() ? "0" : "1";
   // Says what this screen is, so a home with two of them can tell them apart.
   const name = screenNameFrom(navigator.userAgent, window.dino?.computerName || "");
-  if (name) headers["x-dino-screen-name"] = name;
+  if (name) headers["x-dino-screen-name"] = screenNameHeader(name);
   const response = await fetch(`${API}${path}`, { ...options, headers });
   if (response.status === 401) {
     session = "";

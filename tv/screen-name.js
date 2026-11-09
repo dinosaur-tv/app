@@ -19,3 +19,13 @@ export function screenNameFrom(userAgent = "", host = "") {
   const platform = PLATFORMS.find(([pattern]) => pattern.test(userAgent));
   return platform ? platform[1] : "";
 }
+
+/**
+ * The name as it may travel in the x-dino-screen-name header. fetch() refuses any header
+ * value outside Latin-1, so «Dino TV на Кабинет» sent as is made every request of a paired
+ * desktop screen throw before it left the browser. The server decodes it back.
+ * @param {string} name  what screenNameFrom returned
+ */
+export function screenNameHeader(name = "") {
+  return name ? encodeURIComponent(name) : "";
+}
