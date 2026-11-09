@@ -109,7 +109,7 @@ function createTrail(canvas, now) {
   };
 }
 
-export function createTouchpad(element, { send, trail: canvas, every = 90, now = () => Date.now() }) {
+export function createTouchpad(element, { send, trail: canvas, every = 60, now = () => Date.now() }) {
   const trail = createTrail(canvas, now);
   const fingers = new Map();
   const motion = createMotionAccumulator();
