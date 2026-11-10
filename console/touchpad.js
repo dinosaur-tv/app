@@ -7,12 +7,24 @@ const TAP_MS = 230;
 const TAP_SLOP = 8;
 const SCROLL_STEP = 14;
 
+/**
+ * Pointer acceleration, as on a laptop touchpad: a slow finger moves the cursor a little
+ * for precision, a quick swipe carries it across the screen.
+ */
+export function acceleration(step, base = TOUCHPAD_SPEED) {
+  return Math.min(base * 2.4, base * (0.75 + step * 0.09));
+}
+
 /** Adds finger travel up and hands it out in whole pixels, keeping the remainder. */
-export function createMotionAccumulator(speed = TOUCHPAD_SPEED) {
+export function createMotionAccumulator(speed = TOUCHPAD_SPEED, { accelerate = false } = {}) {
   let dx = 0;
   let dy = 0;
   return {
-    add(x, y) { dx += x * speed; dy += y * speed; },
+    add(x, y) {
+      const factor = accelerate ? acceleration(Math.hypot(x, y), speed) : speed;
+      dx += x * factor;
+      dy += y * factor;
+    },
     take() {
       const out = { dx: Math.trunc(dx), dy: Math.trunc(dy) };
       dx -= out.dx; dy -= out.dy;
@@ -112,7 +124,7 @@ function createTrail(canvas, now) {
 export function createTouchpad(element, { send, trail: canvas, every = 60, now = () => Date.now() }) {
   const trail = createTrail(canvas, now);
   const fingers = new Map();
-  const motion = createMotionAccumulator();
+  const motion = createMotionAccumulator(TOUCHPAD_SPEED, { accelerate: true });
   const scroll = createScrollAccumulator();
   let timer = null;
   let gesture = null;

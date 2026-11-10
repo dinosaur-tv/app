@@ -3,6 +3,7 @@ import { shouldLoadTelegramSdk } from "./telegram.js";
 import { createHouseholdScope } from "./household-scope.js";
 import { createRemotePressController } from "./remote-press.js";
 import { createTouchpad } from "./touchpad.js";
+import { createLiveText } from "./live-text.js";
 import { searchPlaces } from "./places.js";
 import { needsAccount, needsHome } from "./request-scope.js";
 import { deviceTitle } from "./device-title.js";
@@ -786,19 +787,29 @@ document.querySelectorAll("[data-tv-launch]").forEach((button) => {
 document.querySelectorAll("[data-tv-click]").forEach((button) => {
   button.addEventListener("click", () => tvCommand({ action: "click", button: button.dataset.tvClick }, button));
 });
-/** Keyboard and touchpad fold away, so the pad stays the first thing under the thumb. */
-function toggleRemotePanel(toggle, panel, focus) {
-  const open = panel.hidden;
-  panel.hidden = !open;
-  toggle.setAttribute("aria-expanded", String(open));
-  toggle.classList.toggle("is-on", open);
-  if (open && focus) focus.focus();
-  if (!open) focus?.blur();
-}
+/**
+ * The keyboard lives inside the touchpad sheet. Letters go to the screen as they are typed;
+ * the ⌨ key shows and hides the phone keyboard.
+ */
 const remoteText = document.querySelector("#remoteText");
-document.querySelector("#keyboardToggle").addEventListener("click", (event) => {
-  toggleRemotePanel(event.currentTarget, document.querySelector("#remoteKeyboard"), remoteText);
+const sheetKeyboard = document.querySelector("#sheetKeyboard");
+const keyboardToggle = document.querySelector("#keyboardToggle");
+const liveText = createLiveText(remoteText, {
+  send: (body) => request("/v1/miniapp/tv", { method: "POST", body: JSON.stringify({ ...body, ...screenTarget() }) }),
 });
+function setKeyboardOpen(open) {
+  sheetKeyboard.hidden = !open;
+  keyboardToggle.setAttribute("aria-expanded", String(open));
+  keyboardToggle.classList.toggle("is-on", open);
+  if (open) {
+    liveText.reset();
+    remoteText.focus();
+  } else {
+    remoteText.blur();
+  }
+  window.requestAnimationFrame(() => touchpad.resize());
+}
+keyboardToggle.addEventListener("click", () => setKeyboardOpen(sheetKeyboard.hidden));
 const touchpad = createTouchpad(document.querySelector("#touchpad"), { send: tvSend, trail: document.querySelector("#touchpadTrail") });
 /**
  * The touchpad takes the whole phone screen: a bigger surface for the thumb, and nothing to
@@ -821,20 +832,13 @@ function setTouchpadOpen(open) {
     telegram?.BackButton?.show?.();
   } else {
     touchpad.stop();
+    setKeyboardOpen(false);
     telegram?.BackButton?.hide?.();
   }
 }
 touchpadToggle.addEventListener("click", () => setTouchpadOpen(true));
 document.querySelector("#touchpadClose").addEventListener("click", () => setTouchpadOpen(false));
 window.addEventListener("keydown", (event) => { if (event.key === "Escape" && !touchpadSheet.hidden) setTouchpadOpen(false); });
-document.querySelector("#remoteKeyboard").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const text = remoteText.value;
-  if (!text) return;
-  remoteText.value = "";
-  await tvCommand({ action: "text", text }, event.submitter);
-  remoteText.focus();
-});
 
 document.querySelectorAll("[data-mode]").forEach((button) => {
   button.addEventListener("click", () => save({ mode: button.dataset.mode }));

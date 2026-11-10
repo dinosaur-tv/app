@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createMotionAccumulator, createScrollAccumulator, isTap, liveTrail } from "../console/touchpad.js";
+import { acceleration, createMotionAccumulator, createScrollAccumulator, isTap, liveTrail } from "../console/touchpad.js";
 
 test("движение пальца копится и уходит целыми пикселями, остаток не теряется", () => {
   const motion = createMotionAccumulator(2);
@@ -29,4 +29,10 @@ test("касание — это быстро и почти без движени
 test("след пальца гаснет: старые точки не рисуются", () => {
   const points = [{ x: 0, y: 0, t: 0 }, { x: 5, y: 5, t: 500 }, { x: 9, y: 9, t: 900 }];
   assert.deepEqual(liveTrail(points, 1000, 650).map((point) => point.t), [500, 900]);
+});
+
+test("медленный палец двигает курсор точно, быстрый — далеко, но не бесконечно", () => {
+  assert.ok(acceleration(1) < acceleration(10));
+  assert.ok(acceleration(1) < 2.2, "a crawl is finer than the base speed");
+  assert.equal(acceleration(500), 2.2 * 2.4, "capped");
 });
