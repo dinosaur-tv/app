@@ -129,11 +129,19 @@ export function createTouchpad(element, { send, trail: canvas, every = 60, now =
   let timer = null;
   let gesture = null;
 
+  // One request in flight at a time. On a slow connection the moves made meanwhile are
+  // added up and go out together, instead of queueing behind each other and arriving late.
+  let busy = false;
   function flush() {
+    if (busy) return;
     const move = motion.take();
-    if (move) send({ action: "pointer", ...move });
     const lines = scroll.take();
-    if (lines) send({ action: "scroll", dy: lines });
+    const sends = [];
+    if (move) sends.push(send({ action: "pointer", ...move }));
+    if (lines) sends.push(send({ action: "scroll", dy: lines }));
+    if (!sends.length) return;
+    busy = true;
+    Promise.allSettled(sends).finally(() => { busy = false; });
   }
 
   function start() {
