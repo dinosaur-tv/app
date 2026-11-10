@@ -785,7 +785,7 @@ document.querySelectorAll("[data-tv-launch]").forEach((button) => {
   button.addEventListener("click", () => tvCommand({ action: "launch", app: button.dataset.tvLaunch }, button));
 });
 document.querySelectorAll("[data-tv-click]").forEach((button) => {
-  button.addEventListener("click", () => tvCommand({ action: "click", button: button.dataset.tvClick }, button));
+  sheetKey(button, () => tvCommand({ action: "click", button: button.dataset.tvClick }, button));
 });
 /**
  * The keyboard lives inside the touchpad sheet. Letters go to the screen as they are typed;
@@ -809,7 +809,7 @@ function setKeyboardOpen(open) {
   }
   window.requestAnimationFrame(() => touchpad.resize());
 }
-keyboardToggle.addEventListener("click", () => setKeyboardOpen(sheetKeyboard.hidden));
+sheetKey(keyboardToggle, () => setKeyboardOpen(sheetKeyboard.hidden));
 const touchpad = createTouchpad(document.querySelector("#touchpad"), { send: tvSend, trail: document.querySelector("#touchpadTrail") });
 /**
  * The touchpad takes the whole phone screen: a bigger surface for the thumb, and nothing to
@@ -837,7 +837,19 @@ function setTouchpadOpen(open) {
   }
 }
 touchpadToggle.addEventListener("click", () => setTouchpadOpen(true));
-document.querySelector("#touchpadClose").addEventListener("click", () => setTouchpadOpen(false));
+/**
+ * Keys in the sheet answer on pointerdown and keep the text field focused: with the phone
+ * keyboard open, a click waited for the keyboard to fold, the layout jumped, and the tap
+ * landed on nothing — «Готово» seemed dead.
+ */
+function sheetKey(button, action) {
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    action(event);
+  });
+  button.addEventListener("click", (event) => event.preventDefault());
+}
+sheetKey(document.querySelector("#touchpadClose"), () => setTouchpadOpen(false));
 window.addEventListener("keydown", (event) => { if (event.key === "Escape" && !touchpadSheet.hidden) setTouchpadOpen(false); });
 
 document.querySelectorAll("[data-mode]").forEach((button) => {

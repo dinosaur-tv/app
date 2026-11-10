@@ -722,6 +722,10 @@ a { color: var(--accent); }
 .sub-details[open] > summary::before { content: "－ "; }
 .sub-details .rotation-times { margin-top: 10px; }
 
+/* The remote's styles came back from before the theme was renamed: its two old colours are
+   the current accent and raised surface. */
+:root { --brass: var(--accent); --fill: var(--surface-2); }
+
 /* Remote: the pad, the volume rocker and the keys around them. */
 #pane-remote { gap: .85rem; }
 .remote-system {
@@ -890,6 +894,15 @@ body.touchpad-open .dock { display: none; }
 }
 .sheet-keyboard input:focus { outline: none; border-color: var(--brass); }
 .sheet-keyboard .remote-key { min-width: 3.2rem; padding: 0 .9rem; }
-.touchpad-sheet { grid-template-rows: auto 1fr auto; }
+/* Fixed rows, so a hidden keyboard does not hand its row to the touchpad: the pad is always
+   the stretching middle and the keys always sit at the bottom, above the phone keyboard. */
+.touchpad-sheet {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: var(--tg-viewport-height, 100dvh);
+  bottom: auto;
+}
+.sheet-keyboard { grid-row: 1; }
+.touchpad-sheet .touchpad { grid-row: 2; min-height: 12rem; }
+.touchpad-bar { grid-row: 3; }
 .touchpad-bar { grid-template-columns: 1fr 1fr auto 1fr; }
 .touchpad-bar #keyboardToggle { min-width: 3.4rem; padding: 0 .9rem; font-size: 1.2rem; }

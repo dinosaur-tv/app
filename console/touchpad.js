@@ -148,7 +148,8 @@ export function createTouchpad(element, { send, trail: canvas, every = 60, now =
 
   element.addEventListener("pointerdown", (event) => {
     event.preventDefault();
-    element.setPointerCapture?.(event.pointerId);
+    // Some webviews refuse capture for a pointer they did not start; the pad works without it.
+    try { element.setPointerCapture?.(event.pointerId); } catch { /* keep going */ }
     fingers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     trail.add(event.pointerId, event.clientX, event.clientY);
     if (fingers.size === 1) gesture = { at: now(), moved: 0, multi: false };
