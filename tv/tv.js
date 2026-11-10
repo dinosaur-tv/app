@@ -206,7 +206,7 @@ function showEventCue(cue) {
   const el = document.querySelector("#eventCue");
   document.querySelector("#eventCueWhen").textContent = minutesPhrase(cue.minutes);
   document.querySelector("#eventCueTitle").textContent = cue.title;
-  document.querySelector("#eventCueMeta").textContent = [cue.ownerName, timeOf(cue.start)].filter(Boolean).join(" · ");
+  document.querySelector("#eventCueMeta").textContent = [severalCalendars() ? cue.ownerName : "", timeOf(cue.start)].filter(Boolean).join(" · ");
   el.classList.remove("leaving");
   el.hidden = false;
   document.body.classList.add("cue-visible");
@@ -329,6 +329,11 @@ function durationLabel(event) {
   if (minutes < 60) return `${minutes} мин`;
   if (minutes % 60 === 0) return `${minutes / 60} ч`;
   return `${Math.floor(minutes / 60)} ч ${minutes % 60} мин`;
+}
+
+/** A home with one calendar has nobody to tell apart: its events carry no name. */
+function severalCalendars() {
+  return (snapshot?.calendars?.length ?? 0) > 1;
 }
 
 function eventOwner(event) {
@@ -523,7 +528,7 @@ function sceneEventHtml(event, index) {
   return `<article class="scene-event${live ? " is-live" : ""}" style="--event-index:${index}">
       <time class="scene-time">${live ? "Сейчас" : timeOf(event.start)}</time>
       <div class="scene-title"><strong title="${escapeHtml(titleOf(event))}">${escapeHtml(titleOf(event))}</strong>${detail}${bar}</div>
-      <span class="scene-owner" title="${escapeHtml(eventOwner(event))}">${ownerDots(event)}<span>${escapeHtml(eventOwner(event))}</span></span>
+      ${severalCalendars() ? `<span class="scene-owner" title="${escapeHtml(eventOwner(event))}">${ownerDots(event)}<span>${escapeHtml(eventOwner(event))}</span></span>` : ""}
     </article>`;
 }
 
@@ -779,6 +784,7 @@ function paint(force = false) {
   paintSceneMotion(activeTheme, customPhoto || Boolean(artwork));
   paintSceneVideo(activeTheme, { running: videoRunning(), customPhoto });
   document.body.classList.toggle("guests", display.privacy);
+  document.body.classList.toggle("one-calendar", !severalCalendars());
   document.body.classList.toggle("hide-weather", !display.showWeather);
   document.body.classList.toggle("hide-calendar", !display.showCalendar);
   if (!display.showCalendar || display.privacy) hideEventCue();

@@ -305,3 +305,7 @@ body.immersive[data-theme].hide-calendar:not(.guests):not(.hide-weather) #screen
   body.immersive[data-theme] #stage { transform: none; }
   body.native-tv:not(.supports-audio-spectrum) #mediaBar.is-playing .media-wave i { animation: none !important; }
 }
+
+/* One calendar: no owner column, the title takes its room. */
+body.one-calendar .scene-event,
+body.immersive.one-calendar[data-theme] .scene-event { grid-template-columns: max-content minmax(0, 1fr); }
