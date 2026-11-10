@@ -386,7 +386,8 @@ function paintMusic() {
     if (button.dataset.music === "toTv") button.disabled = tvOnline && !copy.blocked;
     else button.disabled = !live;
   });
-  volume.disabled = !live || !nowPlaying.volumeKnown;
+  // With nothing playing the slider sets the computer's own volume, so it stays usable.
+  volume.disabled = live ? !nowPlaying.volumeKnown : !tvOnline;
   toTv.textContent = copy.toTv;
   hint.textContent = copy.hint;
 }
@@ -999,8 +1000,17 @@ let volumeTouchedAt = 0;
  * slider jumped back to the old level and then forward again.
  */
 let pendingVolume = null;
+/** The last level set while nothing played: nobody reports that one back, so the phone keeps it. */
+let idleVolume = 50;
+try { idleVolume = Number(localStorage.getItem("dino.idleVolume")) || 50; } catch { /* storage may be off */ }
 
 function paintVolume(volume = document.querySelector("#musicVolume")) {
+  if (!nowPlaying.title) {
+    if (!(document.activeElement === volume && Date.now() - volumeTouchedAt < 2_500)) volume.value = String(idleVolume);
+    lastSentVolume = Number(volume.value);
+    volume.style.setProperty("--fill", `${volume.value}%`);
+    return;
+  }
   const reported = nowPlaying.volumePercent;
   if (pendingVolume) {
     const settled = nowPlaying.volumeKnown && Math.abs(reported - pendingVolume.value) <= 7;
@@ -1020,7 +1030,12 @@ function sendVolume(value) {
   if (!Number.isFinite(next) || lastSentVolume === next) return;
   lastSentVolume = next;
   volumeTouchedAt = Date.now();
-  pendingVolume = { value: next, at: Date.now() };
+  if (!nowPlaying.title) {
+    idleVolume = next;
+    try { localStorage.setItem("dino.idleVolume", String(next)); } catch { /* storage may be off */ }
+  } else {
+    pendingVolume = { value: next, at: Date.now() };
+  }
   musicCommand("volume", { volume: next });
 }
 document.querySelector("#musicVolume").addEventListener("input", (event) => {
