@@ -830,7 +830,11 @@ function setTouchpadOpen(open) {
       backButtonWired = true;
     }
     telegram?.BackButton?.show?.();
+    // A drag down the touchpad is a cursor move, not a request to fold the mini app away.
+    telegram?.expand?.();
+    telegram?.disableVerticalSwipes?.();
   } else {
+    telegram?.enableVerticalSwipes?.();
     touchpad.stop();
     setKeyboardOpen(false);
     telegram?.BackButton?.hide?.();
