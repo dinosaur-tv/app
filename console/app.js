@@ -603,6 +603,7 @@ function applyState(data) {
   if (data.display) {
     const rotation = normalizeDisplay(data.display).rotation;
     document.querySelector("#rotationValue").textContent = rotation.enabled ? `каждые ${rotation.today} сек` : "не листает";
+    paintSleep(normalizeDisplay(data.display).sleep);
   }
   if (data.features) {
     remoteEnabled = data.features.tvRemote === true;
@@ -875,6 +876,25 @@ document.querySelectorAll("[data-layer]").forEach((button) => {
     save({ [layer]: display[layer] === false });
   });
 });
+/** The night window: on/off and its two times; each change is saved at once. */
+function paintSleep(sleep) {
+  document.querySelector("#sleepValue").textContent = sleep.enabled ? `${sleep.from}–${sleep.to}` : "не гасить";
+  document.querySelectorAll("[data-sleep-enabled]").forEach((button) => {
+    button.classList.toggle("active", (button.dataset.sleepEnabled === "true") === sleep.enabled);
+  });
+  const from = document.querySelector("#sleepFrom");
+  const to = document.querySelector("#sleepTo");
+  if (document.activeElement !== from) from.value = sleep.from;
+  if (document.activeElement !== to) to.value = sleep.to;
+}
+document.querySelectorAll("[data-sleep-enabled]").forEach((button) => {
+  button.addEventListener("click", () => save({ sleep: { enabled: button.dataset.sleepEnabled === "true" } }));
+});
+for (const [id, key] of [["#sleepFrom", "from"], ["#sleepTo", "to"]]) {
+  document.querySelector(id).addEventListener("change", (event) => {
+    if (/^\d\d:\d\d$/.test(event.target.value)) save({ sleep: { [key]: event.target.value } });
+  });
+}
 document.querySelectorAll("[data-rotation-enabled]").forEach((button) => {
   button.addEventListener("click", () => save({ rotation: { enabled: button.dataset.rotationEnabled === "true" } }));
 });

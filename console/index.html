@@ -34,6 +34,7 @@
       <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20.5v-6h5v6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
       <symbol id="i-devices" viewBox="0 0 24 24"><rect x="2.5" y="5" width="14" height="10" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 18.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="16.5" y="9" width="5" height="10" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
       <symbol id="i-remote" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="8.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 14h4M10 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
       <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.8" r="1.1" fill="currentColor"/></symbol>
     </svg>
 
@@ -321,6 +322,20 @@
               <div id="placeResults" class="place-results"></div>
               <button type="button" class="btn" id="placeLocate">Определить по телефону</button>
               <p class="hint">Название возьмётся из поля выше — впишите, как подписать это место на экране.</p>
+            </div>
+          </details>
+          <details class="row" name="more">
+            <summary><span class="row-icon"><svg><use href="#i-moon"/></svg></span><span class="row-label">Гасить экран ночью</span><span class="row-value" id="sleepValue"></span></summary>
+            <div class="row-body">
+              <p class="hint">Телевизор гаснет, чтобы не выгорал, а компьютер продолжает работать. Любая кнопка пульта будит экран на полчаса.</p>
+              <div class="segmented two" role="group" aria-label="Ночной режим">
+                <button type="button" data-sleep-enabled="true">Гасить</button>
+                <button type="button" data-sleep-enabled="false">Не гасить</button>
+              </div>
+              <div class="rotation-times sleep-times">
+                <label>С<input id="sleepFrom" type="time" step="300" /></label>
+                <label>До<input id="sleepTo" type="time" step="300" /></label>
+              </div>
             </div>
           </details>
           <details class="row" name="more">

@@ -4,6 +4,8 @@
 
 export const TOUCHPAD_SPEED = 2.2;
 const TAP_MS = 230;
+/** How long the pad waits for an answer before it sends the next move regardless. */
+export const STALL_MS = 1200;
 const TAP_SLOP = 8;
 const SCROLL_STEP = 14;
 
@@ -141,7 +143,10 @@ export function createTouchpad(element, { send, trail: canvas, every = 60, now =
     if (lines) sends.push(send({ action: "scroll", dy: lines }));
     if (!sends.length) return;
     busy = true;
-    Promise.allSettled(sends).finally(() => { busy = false; });
+    // A request a mobile network never answers must not freeze the pad: after a moment the
+    // next move goes out anyway.
+    const giveUp = new Promise((resolve) => window.setTimeout(resolve, STALL_MS));
+    Promise.race([Promise.allSettled(sends), giveUp]).finally(() => { busy = false; });
   }
 
   function start() {
@@ -189,7 +194,7 @@ export function createTouchpad(element, { send, trail: canvas, every = 60, now =
   element.addEventListener("pointercancel", lift);
 
   return {
-    stop() { stop(); fingers.clear(); gesture = null; trail.clear(); },
+    stop() { stop(); fingers.clear(); gesture = null; busy = false; trail.clear(); },
     resize: trail.resize,
   };
 }

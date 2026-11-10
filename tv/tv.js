@@ -94,11 +94,13 @@ let paintedKey = "";
 let paintedHtml = null;
 
 /**
- * The 4K pictures cost a 33 MB texture, which a 1080p television never shows, so they are
- * loaded only where the panel really draws that many pixels (a 4K monitor or a TV whose
- * interface runs at 4K). The ordinary picture stays up until the large one has arrived.
+ * The ordinary pictures are 1672 px wide. A 4K picture costs a 33 MB texture, so a TV box
+ * gets it only where the panel really draws 4K. A computer has the memory, and on its 1080p
+ * screen the 1672 px picture was stretched soft and blocky; there the 4K one, scaled down,
+ * is sharp. The ordinary picture stays up until the large one has arrived.
  */
-const HI_RES = Math.max(window.screen.width, window.screen.height) * (window.devicePixelRatio || 1) >= 2560;
+const PHYSICAL_WIDTH = Math.max(window.screen.width, window.screen.height) * (window.devicePixelRatio || 1);
+const HI_RES = PHYSICAL_WIDTH >= 2560 || (PHYSICAL_WIDTH > 1700 && !/android/i.test(navigator.userAgent));
 const backdrop = document.querySelector("#sceneBackdrop");
 
 function upgradeBackdrop(theme) {

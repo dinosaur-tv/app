@@ -202,6 +202,17 @@ export function musicRemoteCopy({ tvOnline = false, nowPlaying = {}, canOverlay 
 export const artSlideMinutes = [1, 3, 5, 10, 15, 30, 60];
 
 /** Mirrors the server: full-screen paintings and a slideshow through one section, or all. */
+const clockTime = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** The night window the screen goes dark in; the same rules as the server's. */
+export function normalizeSleep(value = {}) {
+  return {
+    enabled: value?.enabled === true,
+    from: clockTime.test(value?.from ?? "") ? value.from : "01:00",
+    to: clockTime.test(value?.to ?? "") ? value.to : "08:00",
+  };
+}
+
 export function normalizeArt(value = {}) {
   const minutes = Number(value?.minutes);
   return {
@@ -227,5 +238,6 @@ export function normalizeDisplay(value = {}) {
     backgroundUrl: value.backgroundUrl || "",
     rotation: normalizeRotation(value.rotation),
     art: normalizeArt(value.art),
+    sleep: normalizeSleep(value.sleep),
   };
 }

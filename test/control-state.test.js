@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { displayThemes, themeNames, displayModeName, displayMoodName, normalizeDisplay, normalizeNote, normalizeNowPlaying, normalizeRotation, noteDurations, pickNowPlaying, screenTheme, shouldApplyTvReload, tvRemoteStatus, musicRemoteCopy } from "../control-state.js";
 
-const idleDisplay = { mode: "TODAY", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, today: 30, tomorrow: 30, week: 30 }, art: { fullscreen: false, slideshow: false, minutes: 5, collection: "" } };
+const idleDisplay = { mode: "TODAY", theme: "gallery", mood: "home", privacy: false, showWeather: true, showCalendar: true, backgroundUrl: "", rotation: { enabled: true, today: 30, tomorrow: 30, week: 30 }, art: { fullscreen: false, slideshow: false, minutes: 5, collection: "" }, sleep: { enabled: false, from: "01:00", to: "08:00" } };
 
 test("normalizes incomplete display state to a safe gallery dashboard", () => {
   assert.deepEqual(normalizeDisplay(), idleDisplay);
@@ -103,4 +103,11 @@ test("пауза — это тоже трек: он остаётся на экр
   assert.equal(pickNowPlaying(playing, null)?.title, "На здравом");
   // Поле может не прийти вовсе: старые клиенты не присылали isPlaying.
   assert.equal(pickNowPlaying({ title: "Без флага" }, null)?.title, "Без флага");
+});
+
+test("ночное окно: по умолчанию выключено, неверное время заменяется", async () => {
+  const { normalizeSleep, normalizeDisplay } = await import("../control-state.js");
+  assert.deepEqual(normalizeSleep(), { enabled: false, from: "01:00", to: "08:00" });
+  assert.deepEqual(normalizeSleep({ enabled: true, from: "23:30", to: "7:00" }), { enabled: true, from: "23:30", to: "08:00" });
+  assert.deepEqual(normalizeDisplay({ sleep: { enabled: true } }).sleep, { enabled: true, from: "01:00", to: "08:00" });
 });
