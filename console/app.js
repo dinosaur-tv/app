@@ -1124,8 +1124,13 @@ document.querySelector("#revokeDevices").addEventListener("click", async () => {
 async function boot() {
   await bootTelegram();
   await load();
+  let lastPollAt = 0;
   setInterval(() => {
     if (!hasRemoteAuth() || !householdScope.id || document.hidden || statePollInFlight) return;
+    // A track and its play / pause state go stale fast; the rest of the console does not.
+    const lively = !document.querySelector("#pane-music").hidden || !document.querySelector("#pane-remote").hidden;
+    if (Date.now() - lastPollAt < (lively ? 2000 : 5000)) return;
+    lastPollAt = Date.now();
     statePollInFlight = true;
     const startedAt = Date.now();
     request("/v1/miniapp/state")
@@ -1136,7 +1141,7 @@ async function boot() {
       })
       .catch(() => {})
       .finally(() => { statePollInFlight = false; });
-  }, 5000);
+  }, 500);
 }
 
 boot();
