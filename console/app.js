@@ -11,6 +11,8 @@ import { createHostSignIn } from "./host-sign-in.js";
 import { artCollections, artworks, artworkFor, artworkThumbnailUrl } from "../artworks.js";
 
 // Inside DinoOS the console needs no code from the bot: the dashboard hands one over.
+// Phones are not paired from the dashboard for now, so that part stays out of sight there.
+if (window.parent !== window) document.body.classList.add("framed");
 const hostSignIn = createHostSignIn({
   win: window,
   claim: async (code) => {

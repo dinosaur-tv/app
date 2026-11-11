@@ -852,6 +852,7 @@ a { color: var(--accent); }
   pointer-events: none;
 }
 .touchpad-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .45rem; }
+body.framed #invitePhone, body.framed #inviteCode { display: none !important; }
 body.touchpad-open { overflow: hidden; }
 body.touchpad-open .dock { display: none; }
 
