@@ -7,7 +7,24 @@ import { createLiveText } from "./live-text.js";
 import { searchPlaces } from "./places.js";
 import { needsAccount, needsHome } from "./request-scope.js";
 import { deviceTitle } from "./device-title.js";
+import { createHostSignIn } from "./host-sign-in.js";
 import { artCollections, artworks, artworkFor, artworkThumbnailUrl } from "../artworks.js";
+
+// Inside DinoOS the console needs no code from the bot: the dashboard hands one over.
+const hostSignIn = createHostSignIn({
+  win: window,
+  claim: async (code) => {
+    try {
+      const { token } = await request("/v1/miniapp/login", { method: "POST", body: JSON.stringify({ code }) });
+      rememberSession(token);
+      await load();
+      return true;
+    } catch (error) {
+      setNotice(error.message, "error");
+      return false;
+    }
+  },
+});
 
 /*
  * Paintings are one chip among the scenes; inside it, a second row of chips picks the
@@ -346,6 +363,7 @@ function showTab(tab) {
   if (!hasRemoteAuth()) tab = "signin";
   else if (!householdScope.id) tab = "home";
   else if (!tvLinked && tab !== "home") tab = "setup";
+  if (tab === "signin") hostSignIn.ask();
   document.querySelectorAll(".pane").forEach((pane) => { pane.hidden = pane.id !== `pane-${tab}`; });
   document.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
   // The dock is noise until there is a screen to control.
